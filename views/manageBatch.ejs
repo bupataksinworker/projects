@@ -1,0 +1,107 @@
+<%- include('head') %>
+</head>
+    <body>
+        <%- include('navbar') %>
+            <br>
+            <div class="w3-display-container">
+                <div align="center">
+                    <label>
+                        <b>จัดการชุด</b>
+                    </label>
+                </div>
+                
+                <div class="row">
+                    <!-- ส่วนเมนู NAVBAR -->
+                    <div class="col-sm-1"></div>
+                    <!-- ส่วนซ้าย: ฟอร์ม -->
+                    <div class="col-sm-2">
+                        <form id="addBatchForm">
+                            <div class="form-group">
+                                <label for="batchYear">เลือกปี</label>
+                                <select class="form-control" name="batchYear" id="batchYear" required
+                                    onchange="batchForm()">
+                                    <option value=""></option>
+                                    <% batchYears.forEach(function(year) { %>
+                                        <option value="<%= year %>%>">
+                                            <%= year %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                                <label for="number">เลือกเลขชุด</label>
+                                <select class="form-control" name="number" id="number" required
+                                    onchange="batchForm()">
+                                    <option value=""></option>
+                                    <% numbers.forEach(function(num) { %>
+                                        <option value="<%= num %>%>">
+                                            <%= num %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                                <label for="typeID">เลือกประเภท</label>
+                                <select class="form-control" name="typeID" id="typeID" required
+                                    onchange="batchForm()">
+                                    <option value=""></option>
+                                    <% types.forEach(function(type) { %>
+                                        <option value="<%= type._id %>">
+                                            <%= type.typeName %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                                <!-- <% types.forEach(function(type) { %>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="typeID" value="<%= type._id %>" id="type_<%= type._id %>">
+                                        <label class="form-check-label" for="type_<%= type._id %>">
+                                            <%= type.typeName %>
+                                        </label>
+                                    </div>
+                                <% }); %> -->
+                            </div><br>
+                            <div class="form-group">
+                                <label for="batchName">ชื่อชุด</label>
+                                <input class="form-control" type="text" name="batchName" id="batchName" required>
+                            </div><br>
+                            <div class="form-group">
+                                <label>ทุนจากชุดเก่า</label>
+                                <input class="form-control" type="number" name="costOfBatchBefore" id="costOfBatchBefore" required value="0">
+                                <label>ทุนของใหม่</label>
+                                <input class="form-control" type="number" name="costOfBatchNew" id="costOfBatchNew" required value="0">
+                                <label>ค่าแรง</label>
+                                <input class="form-control" type="number" name="costOfBatchLabor" id="costOfBatchLabor" required value="0">
+                                <label for="costOfBatch">ทุนตั้งต้น</label>
+                                <input class="form-control" type="number" name="costOfBatch" id="costOfBatch" required value="0" disabled>
+                            </div><br>
+                            <button type="button" class="btn btn-success btn-lg" onclick="addBatch()">เพิ่มชุด</button>
+                        </form>
+                    </div>
+
+                    <!-- ส่วนขวา: ตารางแสดงข้อมูล -->
+                    <div class="col-sm-9">
+                        <table class="table" style="text-align: center;">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ลำดับ</th>
+                                    <th scope="col">ชื่อชุด</th>
+                                    <th scope="col">ประเภท</th>
+                                    <th scope="col">ชุด</th>
+                                    <th scope="col">ปี</th>
+                                    <th scope="col">ทุนตั้งต้น</th>
+                                    <th scope="col">สถานะทุน</th>
+                                    <th scope="col">ทุนชุดก่อนหน้า</th>
+                                    <th scope="col">ทุนของใหม่</th>
+                                    <th scope="col">รวมทุนทั้งหมดของชุด</th>
+                                    <th scope="col">แก้ไข</th>
+                                    <th scope="col">ลบ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBatch">
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+    </body>
+
+    </html>
+<script src="script/batchScript.js"></script>

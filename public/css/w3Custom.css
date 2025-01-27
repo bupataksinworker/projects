@@ -1,0 +1,74 @@
+/* Override styles for w3.css */
+.w3-bar-item {
+  background-color: white !important;
+  /* !important อาจจะต้องใช้ถ้าสไตล์ไม่ถูก override */
+  color: black;
+}
+
+.w3-bar-item:hover {
+  background-color: black !important;
+  color: white !important;
+}
+
+/* Style for active menu item */
+.active-menu {
+  background-color: black !important;
+  color: white !important;
+}
+
+/* Style for submenu items */
+.w3-dropdown-content a {
+  background-color: white;
+  color: black;
+}
+
+.w3-dropdown-content a:hover {
+  background-color: black;
+  color: white;
+}
+
+.no-wrap {
+  white-space: nowrap;
+  /* ป้องกันการ wrap ข้อความ */
+}
+
+/* custom.css */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.full-height {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.half-height {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Flexbox container for the main content */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .half-height {
+      flex: 1 0 100%;
+  }
+}
+
+@media (min-width: 769px) {
+  .half-height {
+      flex: 1 0 50%;
+  }
+}

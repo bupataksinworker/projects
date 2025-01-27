@@ -1,0 +1,17 @@
+
+> sv@1.0.0 start
+> nodemon ./bin/www
+
+[33m[nodemon] 3.0.3[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node ./bin/www app.js`[39m
+Start server port 3000
+MongoDB connection established
+✅ Connected to MongoDB successfully!
+[32m[nodemon] restarting child process[39m
+[32m[nodemon] starting `node ./bin/www app.js`[39m
+Start server port 3000
+MongoDB connection established
+✅ Connected to MongoDB successfully!

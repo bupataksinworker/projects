@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Report</title>
+    <link rel="stylesheet" href="/css/w3combined.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css" >
+    <link rel="stylesheet" href="/fonts/fontawesome-free-6.5.2-web/css/all.min.css">
+    <script src="/js/jquery-3.7.1.min.js"></script>
+    <script src="/script/utilityScript.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            /* text-align: center; */
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Transaction Report</h1>
+        <table id="transactionTable">
+            <thead>
+                <tr style="text-align: center;">
+                    <th>ชื่อชุด</th>
+                    <th>ประเภท</th>
+                    <th>ไซส์</th>
+                    <th>เกรด</th>
+                    <th style="text-align: right;">ต้นทุน</th>
+                    <th style="text-align: right;">จำนวน</th>
+                    <th>หมายเหตุ</th>
+                    <th>วันที่เพิ่มสต๊อก</th>
+                    <th>ลบ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- ข้อมูลจะถูกเพิ่มในส่วนนี้จาก JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- เรียกใช้สคริปต์ที่แยกออกไป -->
+    <script src="/script/reportTransactionScript.js"></script>
+</body>
+</html>

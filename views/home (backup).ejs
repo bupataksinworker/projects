@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>บริษัท บุพทักษิณ เจมส์ จำกัด</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/w3combined.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="fonts/fontawesome-free-6.5.2-web/css/all.min.css">
+    <script src="js/jquery-3.7.1.min.js"></script>
+    <script src="script/utilityScript.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+    <style>
+        .full-height {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .half-height {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        #salesChartContainer,
+        #customerPieChartContainer,
+        #batchBarChartContainer {
+            width: 100%;
+            height: 100%;
+            padding-left: 10%;
+        }
+        .split-chart-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            height: 100%;
+        }
+        .split-chart {
+            width: 50%;
+            height: 100%;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('navbar') %>
+    <div class="w3-display-container full-height">
+        <div class="row half-height">
+            <div class="split-chart-container">
+                <div class="split-chart" id="customerPieChartContainer">
+                    <canvas id="customerPieChart"></canvas>
+                </div>
+                <div class="split-chart" id="batchBarChartContainer">
+                    <canvas id="batchBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row half-height" id="salesChartContainer">
+            <div class="col-sm-12">
+                <canvas id="salesChart"></canvas>
+                <div id="dataContainer" 
+                    data-sales='<%= salesData %>'
+                    data-sale-entries='<%= saleEntriesData %>'></div>
+            </div>
+        </div>
+
+        <script>
+            const dataContainer = document.getElementById('dataContainer');
+            let sales = [];
+            let saleEntries = [];
+            try {
+                sales = JSON.parse(dataContainer.getAttribute('data-sales'));
+                saleEntries = JSON.parse(dataContainer.getAttribute('data-sale-entries'));
+                console.log('Parsed sales data:', sales);
+                console.log('Parsed sale entries data:', saleEntries);
+            } catch (e) {
+                console.error('Error parsing data:', e);
+            }
+
+            if (!Array.isArray(sales)) {
+                console.error('Sales data is not an array:', sales);
+                sales = [];
+            }
+
+            if (!Array.isArray(saleEntries)) {
+                console.error('Sale entries data is not an array:', saleEntries);
+                saleEntries = [];
+            }
+
+            const salesData = sales.reduce((acc, sale) => {
+                if (sale.saleDate && sale.totalSaleAfterDC) {
+                    const month = moment(sale.saleDate).format('YYYY-MM');
+                    acc[month] = (acc[month] || 0) + sale.totalSaleAfterDC;
+                }
+                return acc;
+            }, {});
+
+            const labels = [];
+            const data = [];
+            const currentMonth = moment().startOf('month');
+
+            for (let i = 11; i >= 0; i--) {
+                const month = currentMonth.clone().subtract(i, 'months').format('YYYY-MM');
+                labels.push(month);
+                data.push(salesData[month] || 0);
+            }
+
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ยอดขายในแต่ละเดือน',
+                        data: data,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'category'
+                        },
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // กราฟวงกลมแสดงจำนวนลูกค้า
+            const currentYear = moment().year();
+            const customerSalesData = sales.reduce((acc, sale) => {
+                const saleYear = moment(sale.saleDate).year();
+                if (saleYear === currentYear && sale.totalSaleAfterDC > 0) {
+                    const customerName = sale.customerID.customerName;
+                    acc[customerName] = (acc[customerName] || 0) + sale.totalSaleAfterDC;
+                }
+                return acc;
+            }, {});
+
+            const customerLabels = Object.keys(customerSalesData);
+            const customerData = customerLabels.map(label => customerSalesData[label]);
+
+            const pieCtx = document.getElementById('customerPieChart').getContext('2d');
+            new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: customerLabels,
+                    datasets: [{
+                        label: 'ยอดขายรวมของลูกค้าในปีปัจจุบัน',
+                        data: customerData,
+                        backgroundColor: customerLabels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.2)`),
+                        borderColor: customerLabels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // กราฟแท่งแสดงจำนวนชุดที่มีการขาย
+            const batchSalesData = saleEntries.reduce((acc, entry) => {
+                const entryYear = moment(entry.entryDate).year();
+                if (entryYear === currentYear && entry.totalSale > 0) {
+                    const batchName = entry.batchID.batchName; // assuming batchName is a field in SaleEntry
+                    acc[batchName] = (acc[batchName] || 0) + entry.totalSale;
+                }
+                return acc;
+            }, {});
+
+            const batchLabels = Object.keys(batchSalesData);
+            const batchData = batchLabels.map(label => batchSalesData[label]);
+
+            const batchCtx = document.getElementById('batchBarChart').getContext('2d');
+            new Chart(batchCtx, {
+                type: 'bar',
+                data: {
+                    labels: batchLabels,
+                    datasets: [{
+                        label: 'ยอดขายรวมของชุดในปีปัจจุบัน',
+                        data: batchData,
+                        backgroundColor: batchLabels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.2)`),
+                        borderColor: batchLabels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

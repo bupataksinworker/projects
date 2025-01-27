@@ -1,0 +1,92 @@
+<%- include('head') %>
+</head>
+    <body>
+        <%- include('navbar') %>
+            <br>
+            <div class="w3-display-container">
+                <div class="row">
+                    <div class="col-md-6 offset-md-3">
+                        <h2 class="text-center mb-4"><b>แก้ไขราคาเริ่มต้นของสินค้า</b></h2>
+
+                        <form>
+                            <div class="form-group">
+                                <label for="productID">ชื่อสินค้า</label>
+                                <input type="hidden" id="productID" name="productID" value="<%= edit_id1 %>">
+                                <input class="form-control" type="text" value="<%= edit_id2 %>" readonly>
+                            </div><br>
+                            <div class="form-group">
+                                <label for="costID">ราคาสินค้า</label>
+                                <input type="hidden" id="costIdOld" name="costIdOld" value="<%= edit_id3 %>">
+                                <select class="form-control" id="costID" name="costID" required>
+                                    <% costs.forEach(function(cost) { %>
+                                        <option value="<%= cost._id %>" <%=cost._id.toString()===edit_id3.toString()
+                                            ? 'selected' : '' %>>
+                                            <%= cost.costOfProduct %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                            </div><br>
+                            <div class="text-center">
+                                <button type="button" class="btn btn-primary mr-2"
+                                    onclick="updateCost()">อัพเดท</button>
+                                ||
+                                <a class="btn btn-warning" href="javascript:void(0)" onclick="handleCancel()">ยกเลิก</a>
+
+                            </div>
+                        </form>
+                        <hr>
+                        <table class="table" style="text-align: center;">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ลำดับ</th>
+                                    <th scope="col">วันที่</th>
+                                    <th scope="col">ราคาสินค้า</th>
+                                    <th scope="col">ลบข้อมูล</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% const sortedCosts=costs.sort((a, b)=> b.costOfProduct - a.costOfProduct);
+                                    sortedCosts.forEach(function(cost, index) { %>
+                                    <tr>
+                                        <td>
+                                            <%= index + 1 %>
+                                        </td>
+                                        <td>
+                                            <%= cost.costDate %>
+                                        </td>
+                                        <td>
+                                            <%= cost.costOfProduct %>
+                                        </td>
+                                        <td>
+                                            <!-- <form action="/deleteCostOne" method="POST" style="display: inline;">
+                                                <input type="hidden" name="delete_id" value="<%= cost._id %>">
+                                                <button type="submit" class="btn btn-danger ml-2"
+                                                    onclick="return confirm('ต้องการลบราคาสินค้านี้?')">ลบ</button>
+                                            </form> -->
+                                            <button class="btn btn-danger"
+                                                onclick="deleteCostOne('<%= cost._id %>')">ลบ</button>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                            </tbody>
+                        </table>
+                        <table class="table" style="text-align: center;">
+                            <form style="display: inline;"></form>
+                            <tr>
+                                <td>
+                                    <input class="form-control" type="number" id="newCostOfProduct"
+                                        name="newCostOfProduct" placeholder="add new cost">
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-success" onclick="addNewCost()">เพิ่ม</button>
+                                </td>
+                            </tr>
+                            </form>
+                        </table>
+                    </div>
+                </div>
+            </div>
+    </body>
+
+    </html>
+    <script src="script/costScript.js"></script>

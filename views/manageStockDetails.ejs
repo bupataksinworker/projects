@@ -1,0 +1,228 @@
+<%- include('head') %>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            display: flex;
+            padding-left: 5%;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .section {
+            border: 1px solid white;
+            display: flex;
+            justify-content: center;
+            align-items: top;
+            overflow: auto;
+            /* เพิ่มการเลื่อนภายใน section */
+        }
+
+        #section1 {
+            background-color: white;
+            flex: 0 0 35%;
+            /* ความสูงขั้นต่ำ 25% */
+            max-height: 35%;
+        }
+
+        .section-container {
+            display: flex;
+            flex: 1;
+            /* ใช้พื้นที่ที่เหลือทั้งหมด */
+        }
+
+        #section2 {
+            background-color: white;
+            flex: 1;
+        }
+
+        #section3 {
+            background-color: white;
+            flex: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            height: fit-content;
+        }
+
+        tr:hover {
+            background-color: #f0f0f0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ababab;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #d3d3d3;
+        }
+
+        #typeDetails tbody tr.selected {
+            background-color: #7dbdf8;
+            /* สีพื้นหลังที่ row ที่เลือก */
+        }
+
+        #sizeDetails tbody tr.selected {
+            background-color: #7dbdf8;
+            /* สีพื้นหลังที่ row ที่เลือก */
+        }
+
+        #gradeDetails tbody tr.selected {
+            background-color: #7dbdf8;
+            /* สีพื้นหลังที่ row ที่เลือก */
+        }
+
+        .auto-shrink {
+            /* ปรับขนาด font อัตโนมัติ */
+            white-space: nowrap;
+            /* ป้องกันข้อความจากการแยกบรรทัด */
+            overflow: hidden;
+            /* ซ่อนส่วนที่เกินความกว้าง */
+            text-overflow: ellipsis;
+            /* ใส่ ... แทนส่วนที่ถูกตัด */
+            max-width: 100px;
+            /* ปรับขนาดความกว้างตามที่ต้องการ */
+            font-size: 1rem;
+            /* กำหนดขนาดฟอนต์เริ่มต้น */
+        }
+
+        .classTitle {
+            position: relative;
+        }
+
+        .classTitle:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            white-space: pre-line;
+            /* ทำให้บรรทัดใหม่ใน tooltip แสดงได้ */
+            right: 0;
+            /* ชิดขวา */
+            top: 100%;
+            /* แสดงด้านล่าง */
+            text-align: right;
+            /* จัดข้อความให้ชิดขวา */
+            display: block;
+            /* ทำให้แต่ละบรรทัดจัดตำแหน่งเป็นบล็อก */
+            min-width: 150px;
+            z-index: 10;
+        }
+
+        .circle-button {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+
+    <body>
+        <%- include('navbar') %>
+            <div class="container" style="height: auto;">
+                <div class="form-control d-flex align-items-center"
+                    style="gap: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                    <select class="form-control" id="typeDetails_dropdown" style="width: 200px;">
+                        <option value="">เลือกประเภท</option>
+                    </select>
+                    <select class="form-control" id="sizeDetails_dropdown" style="width: 200px;">
+                        <option value="">เลือกไซส์</option>
+                    </select>
+                    <select class="form-control" id="gradeDetails_dropdown" style="width: 200px;">
+                        <option value="">เลือกเกรด</option>
+                    </select>
+                    <select class="form-control" id="cost_dropdown" style="width: 200px;">
+                        <option value="">เลือกต้นทุน</option>
+                    </select>
+                    <input type="number" value="0" class="form-control" id="stockQuantityInput" style="width: 200px;">
+                    <input type="text" class="form-control" id="textComment" placeholder="หมายเหตุ"
+                        style="width: 200px;">
+                    <button class="btn btn-success btn-sm text-white" style="width: 100px;" id="addStockButton">
+                        <b>เพิ่มสต๊อก</b>
+                    </button>
+                    <a id="reportTransaction" href="/reportTransaction/<%= batchID %>" target="_blank" type="button"
+                        class="btn btn-primary btn-sm text-white" style="width: 100px;">
+                        ประวัติ
+                    </a>
+
+                </div>
+            </div>
+
+
+            <div class="container">
+                <div class="section" id="section1">
+                    <table id="typeDetails">
+                        <!-- ตารางจะถูกสร้างขึ้นที่นี่โดย stockDetailsScript.js -->
+                    </table>
+                </div>
+                <hr>
+                <div class="section-container">
+                    <div class="section" id="section2">
+                        <table id="sizeDetails">
+                            <thead>
+                                <tr>
+                                    <th>ชื่อไซส์</th>
+                                    <th>พร้อมขาย</th>
+                                    <th>รอขาย</th>
+                                    <th>ขายแล้ว</th>
+                                    <th>ทั้งหมด</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- สร้างขึ้นที่นี่โดย stockDetailsScript_size.js -->
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <div class="section" id="section3">
+                        <table id="gradeDetails">
+                            <thead>
+                                <tr>
+                                    <th>ชื่อเกรด</th>
+                                    <th>พร้อมขาย</th>
+                                    <th>รอขาย</th>
+                                    <th>ขายแล้ว</th>
+                                    <th>ทั้งหมด</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- สร้างขึ้นที่นี่โดย stockDetailsScript_size.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <script>
+                const batchID = "<%= batchID %>"; // รับค่า batchID จาก server-side และแทรกลงในตัวแปร JavaScript
+                const year = "<%= year %>"; // รับค่า year จาก server-side และแทรกลงในตัวแปร JavaScript
+                // เรียกใช้งานฟังก์ชัน updateTableType เมื่อหน้าเว็บโหลดเสร็จ
+                document.addEventListener('DOMContentLoaded', function () {
+                    updateTableType(year, batchID); // เรียกใช้งานฟังก์ชันเพื่ออัปเดตตารางประเภท (Type)
+                });
+
+            </script>
+            <script src="/script/stockDetailsScript_addStock.js"></script>
+            <script src="/script/stockDetailsScript.js"></script>
+            <script src="/script/stockDetailsScript_size.js"></script>
+            <script src="/script/stockDetailsScript_grade.js"></script>
+    </body>
+
+    </html>

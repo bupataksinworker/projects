@@ -1,0 +1,39 @@
+<%- include('head') %>
+</head>
+    <body>
+        <%- include('navbar') %>
+            <br>
+            <div class="w3-display-container">
+                <div class="row">
+                    <div class="col-md-6 offset-md-3">
+                        <h2 class="text-center mb-4"><b>แก้ไขขนาดสินค้า</b></h2>
+                        <form>
+                            <input type="hidden" name="edit_id" id="edit_id" value="<%= size._id %>">
+                            <div class="form-group">
+                                <label for="grainID">เลือกประเภท</label>
+                                <select class="form-control" name="grainID" id="grainID" required>
+                                    <% grains.forEach(function(grain) { %>
+                                        <option value="<%= grain._id %>" <%= grain._id.toString() === size.grainID._id.toString() ? 'selected' : '' %>><%= grain.grainName %></option>
+                                    <% }); %>
+                                </select>                                
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label for="sizeName">ชื่อไซส์</label>
+                                <input type="text" class="form-control" name="sizeName" id="sizeName" value="<%= size.sizeName %>"
+                                    required>
+                            </div>
+                            <br>
+                            <div class="text-center">
+                                <button type="button" class="btn btn-primary mr-2" onclick="updateSize()">อัพเดท</button>
+                                ||
+                                <a class="btn btn-warning" href="javascript:void(0)" onclick="handleCancel()">ยกเลิก</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+    </body>
+
+    </html>
+    <script src="script/sizeScript.js"></script>

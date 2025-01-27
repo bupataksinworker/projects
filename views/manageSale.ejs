@@ -1,0 +1,161 @@
+<%- include('head') %>
+</head>
+  <body>
+    <%- include('navbar') %>
+      <br>
+      <div class="w3-display-container">
+        <div align="center">
+          <label>
+            <b>ข้อมูลขาย</b>
+          </label>
+        </div>
+        <br>
+        <div class="row">
+          <div class="col-sm-1"></div>
+          <div class="col-sm-1">
+            <button type="button" class="btn btn-success btn-xs" onclick="openModalCreateBill()"
+              title="คลิกเพื่อเปิดเมนูสร้างบิลใหม่"><i class="fas fa-plus"></i></button>
+          </div>
+          <div class="col-sm-10">
+
+            <table class="w3-table">
+              <tr class="active">
+                <td class="col-sm-1 text-center"><b>ลูกค้า:</b></td>
+                <td class="col-sm-2">
+                  <select class="form-control" id="customerDropdown"
+                    onchange="getSubCustomerNames();loadSales(currentPage);">
+                    <option value="">เลือกลูกค้า...</option>
+                    <% customers.forEach(function(customer) { %>
+                      <option value="<%= customer._id %>">
+                        <%= customer.customerName %>
+                      </option>
+                      <% }); %>
+                  </select>
+                </td>
+                <td class="col-sm-1 text-center"><b>รายย่อย:</b></td>
+                <td class="col-sm-2">
+                  <select class="form-control" id="subCustomerDropdown" disabled onchange="loadSales(currentPage);">
+                    <option value="">กรุณาเลือกลูกค้าก่อน</option>
+                  </select>
+                </td>
+                <td class="col-sm-1 text-center"><b>วันที่:</b></td>
+                <td class="col-sm-1">
+                  <input type="date" class="date form-control" id="inputDateStart"
+                    value="<%= new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().slice(0, 10) %>"
+                    onchange="loadSales(currentPage);">
+                </td>
+                <td class="col-sm-1 text-center"><b>ถึงวันที่:</b></td>
+                <td class="col-sm-1">
+                  <input type="date" class="date form-control" id="inputDateEnd"
+                    value="<%= new Date().toISOString().slice(0, 10) %>" onchange="loadSales(currentPage);">
+                </td>
+                <td>
+                  <button type="button" class="btn btn-default btn-sm"
+                    style="width: 80px;background-color:rgb(219, 219, 219)"
+                    onclick="window.location.reload();"><b>ล้าง</b></button>
+                </td>
+              </tr>
+            </table>
+
+          </div>
+        </div>
+
+        <br>
+        
+        <div class="row">
+          <!-- ส่วนเมนู NAVBAR 2 -->
+          <div class="col-sm-1"></div>
+          <!-- ส่วนแสดงผลทั้งหมด 2 -->
+          <div class="col-sm-11">
+            <table id="salesTable" class="table table-hover">
+              <thead>
+                <tr style="text-align: center;">
+                  <th>ลำดับ</th>
+                  <th>วันที่</th>
+                  <th>ลูกค้า</th>
+                  <th>รายย่อย</th>
+                  <th style="text-align: right;">ยอดขาย</th>
+                  <th style="text-align: right;">ส่วนลดเงินสด</th>
+                  <th style="text-align: right;">ขายได้</th>
+                  <th>สถานะ</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Rows will be inserted by JavaScript -->
+              </tbody>
+            </table>
+            <div id="pagination"></div>
+            <hr>
+            
+          </div>
+
+          <!-- -----------------createBillModal-------------------------------------------------------------------------------------------------- -->
+
+          <div id="createBillModal" class="w3-modal">
+            <div class="w3-modal-content">
+              <div class="w3-container w3-padding">
+                <span onclick="closeModalCreateBill()" class="w3-closebutton w3-hover-red w3-large">&times;</span>
+                <h2>สร้างบิลใหม่</h2>
+                <form>
+                  <table class="table">
+                    <tbody>
+                      <tr>
+                        <td>
+                          <label for="inputCustomerName">ลูกค้า:</label>
+                          <select class="form-control" id="inputCustomerName" onchange="updateSubCustomerNames()" required>
+                            <option value="">เลือกลูกค้า...</option>
+                            <% customers.forEach(function(customer) { %>
+                              <option value="<%= customer._id %>">
+                                <%= customer.customerName %>
+                              </option>
+                            <% }); %>
+                          </select>
+                        </td>
+                        <td>
+                          <label for="inputSubCustomerName">รายย่อย:</label>
+                          <select class="form-control" id="inputSubCustomerName" disabled>
+                            <option value="">กรุณาเลือกลูกค้าก่อน</option>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <label for="inputDate">วันที่:</label>
+                          <input type="date" class="form-control" id="inputDate"
+                            value="<%= new Date().toISOString().slice(0, 10) %>">
+                        </td>
+                        <td>
+                          <label for="inputDiscount">ส่วนลด:</label>
+                          <select class="form-control" id="inputDiscount">
+                            <option value="4.455">4.455%</option>
+                            <option value="3.47">3.47%</option>
+                            <option value="3">3%</option>
+                            <option value="2" selected="true">2%</option>
+                            <option value="1.2">1.2%</option>
+                            <option value="1">1%</option>
+                            <option value="0">0%</option>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" class="text-right">
+                          <button type="button" class="btn btn-primary" onclick="submitCreateBill()">บันทึก</button>
+                          <button type="button" class="btn btn-secondary" onclick="closeModalCreateBill()">ยกเลิก</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </form>
+                
+              </div>
+            </div>
+          </div>
+          <!-- -----------------createBillModal-------------------------------------------------------------------------------------------------- -->
+
+        </div>
+      </div>
+      <script src="script/saleScript.js"></script>
+  </body>
+
+  </html>

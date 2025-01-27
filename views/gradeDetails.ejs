@@ -1,0 +1,98 @@
+<%- include('head') %>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .container {
+            display: flex;
+            padding-left: 5%;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .section {
+            border: 1px solid white;
+            display: flex;
+            justify-content: center;
+            align-items: top;
+            overflow: auto;
+            /* เพิ่มการเลื่อนภายใน section */
+        }
+
+        #section1 {
+            background-color: white;
+            flex: 0 0 35%;
+            /* ความสูงขั้นต่ำ 25% */
+            max-height: 35%;
+        }
+
+        .section-container {
+            display: flex;
+            flex: 1;
+            /* ใช้พื้นที่ที่เหลือทั้งหมด */
+        }
+
+        #section2 {
+            background-color: white;
+            flex: 1;
+        }
+
+        #section3 {
+            background-color: white;
+            flex: 1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            height: fit-content;
+        }
+
+        tr:hover {
+            background-color: #f0f0f0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ababab;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #d3d3d3;
+        }
+    </style>
+
+    <body>
+        <%- include('navbar') %>
+
+            <div class="container">
+                <div class="section" id="section1">
+                    
+                    <table id="readyForSaleTable">
+                        <!-- ตารางจะถูกสร้างขึ้นที่นี่โดย gradeDetailsScript.js -->
+                    </table>
+                </div>
+                <hr>
+                <div class="section" id="section2">
+                    <table id="waitingForSaleTable">
+                        <!-- ตารางจะถูกสร้างขึ้นที่นี่โดย gradeDetailsScript.js -->
+                    </table>
+                </div>
+                <hr>
+                <div class="section" id="section3">
+                    <table id="soldTable">
+                        <!-- ตารางจะถูกสร้างขึ้นที่นี่โดย gradeDetailsScript.js -->
+                    </table>
+                </div>
+            </div>
+            <script src="/script/gradeDetailsScript.js"></script>
+    </body>
+
+    </html>

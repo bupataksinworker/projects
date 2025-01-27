@@ -1,0 +1,77 @@
+<%- include('head') %>
+</head>
+    <body>
+        <%- include('navbar') %>
+            <br>
+            <div class="w3-display-container">
+                <div align="center">
+                    <label>
+                        <b>จัดการเกรดสินค้า</b>
+                    </label>
+                </div>
+                <br>
+                <div class="row">
+                    <!-- ส่วนเมนู NAVBAR -->
+                    <div class="col-sm-1"></div>
+                    <!-- ส่วนซ้าย: ฟอร์ม -->
+                    <div class="col-sm-2">
+                        <form id="addGradeForm">
+                            <div>
+                                <Label for="gradeName">เพิ่มชื่อเกรด</Label>
+                                <input type="text" class="form-control" name="gradeName" id="gradeName" required>
+                            </div>
+                            <div align="center"><br>
+                                <button type="button" class="btn btn-success btn-lg" onclick="addGrade()">เพิ่มเกรด</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- ส่วนขวา: ตารางแสดงข้อมูล -->
+                    <div class="col-sm-9">
+                        <table class="table" style="text-align: center;">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ลำดับ</th>
+                                    <th scope="col">ชื่อเกรด</th>
+                                    <th scope="col">แก้ไข</th>
+                                    <th scope="col">ลบข้อมูล</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% grades.forEach(function(grade, index) { %>
+                                    <tr>
+                                        <td>
+                                            <%= index + 1 %>
+                                        </td>
+                                        <td>
+                                            <%= grade.gradeName %>
+                                        </td>
+                                        <td>
+                                            <form class="editForm" action="/editGrade" method="POST">
+                                                <!-- ใช้ input hidden เพื่อส่งค่า _id ไปยังหน้า edit -->
+                                                <input type="hidden" name="edit_id1" value="<%= grade._id %>">
+                                                <!-- เพิ่มปุ่มสำหรับส่งแบบฟอร์ม -->
+                                                <button type="submit" class="btn btn-primary">แก้ไข</button>
+                                            </form>
+                                            
+                                        </td>
+                                        <td>
+                                            <form action="/deleteGrade" method="POST" style="display: inline;">
+                                                <input type="hidden" name="delete_id" value="<%= grade._id %>">
+                                                <button type="submit" class="btn btn-danger ml-2"
+                                                    onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้? ')">ลบ</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+    </body>
+
+    </html>
+    <script src="script/gradeScript.js"></script>

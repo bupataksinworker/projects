@@ -1,0 +1,83 @@
+<%- include('head') %>
+</head>
+<body>
+    <%- include('navbar') %>
+    <br>
+    <div class="w3-display-container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h2 class="text-center mb-4"><b>แก้ไขข้อมูลสินค้า</b></h2>
+                <form id="updateBatch">
+                    <input type="hidden" name="edit_id" id="edit_id" value="<%= batchs._id %>">
+                    <div class="form-group">
+                        <label for="batchYear">เลือกปี</label>
+                        <select class="form-control" name="batchYear" id="batchYear" required>
+                            <option value=""></option>
+                            <% [67, 68, 69].forEach(function(year) { %>
+                                <option value="<%= year %>" <%=year==batchs.batchYear ? 'selected' : '' %>><%= year %></option>
+                            <% }); %>
+                        </select>
+                    </div><br>
+                    <div class="form-group">
+                        <label for="number">เลือกเลขชุด</label>
+                        <select class="form-control" name="number" id="number" required>
+                            <option value=""></option>
+                            <% [1, 2, 3, 4, 5, 6, 7].forEach(function(num) { %>
+                                <option value="<%= num %>" <%=num==batchs.number ? 'selected' : '' %>><%= num %></option>
+                            <% }); %>
+                        </select>
+                    </div><br>
+                    <div class="form-group">
+                        <label for="typeID">เลือกประเภท</label>
+                        <% types.forEach(function(type) { %>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="typeID" value="<%= type._id %>" id="type_<%= type._id %>" 
+                                    <%= batchs.typeID.some(t => t._id.toString() === type._id.toString()) ? 'checked' : '' %>>
+                                <label class="form-check-label" for="type_<%= type._id %>">
+                                    <%= type.typeName %>
+                                </label>
+                            </div>
+                        <% }); %>
+                    </div><br>
+                    <div class="form-group">
+                        <label for="batchName">ชื่อชุด</label>
+                        <input class="form-control" type="text" name="batchName" id="batchName"
+                            value="<%= batchs.batchName %>" required>
+                    </div><br>
+                    <div class="form-group">
+                        <label for="costOfBatch">ทุนตั้งต้น</label>
+                        <input class="form-control" type="number" name="costOfBatch" id="costOfBatch"
+                            value="<%= batchs.costOfBatch %>" required disabled>
+                    </div><br>
+
+                    <!-- ////////////////////////////////////////////////////////////// -->
+                    <div class="form-group">
+                        <label for="costOfBatchBefore">ทุนชุดก่อนหน้า</label>
+                        <input class="form-control" type="number" name="costOfBatchBefore" id="costOfBatchBefore"
+                            value="<%= batchs.costOfBatchBefore %>" required>
+                    </div><br>
+                    <div class="form-group">
+                        <label for="costOfBatchNew">ทุนของใหม่</label>
+                        <input class="form-control" type="number" name="costOfBatchNew" id="costOfBatchNew"
+                            value="<%= batchs.costOfBatchNew %>" required>
+                    </div><br>
+                    <div class="form-group">
+                        <label for="costOfBatchLabor">ทุนค่าแรง</label>
+                        <input class="form-control" type="number" name="costOfBatchLabor" id="costOfBatchLabor"
+                            value="<%= batchs.costOfBatchLabor %>" required>
+                    </div><br>
+                    <!-- ////////////////////////////////////////////////////////////// -->
+                    
+                    <div class="text-center">
+                        <button type="button" class="btn btn-primary mr-2" onclick="updateBatch()">อัพเดท</button>
+                        ||
+                        <a class="btn btn-warning" href="javascript:void(0)" onclick="handleCancel()">ยกเลิก</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+<script src="script/batchScript.js"></script>

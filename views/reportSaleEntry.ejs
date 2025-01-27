@@ -1,0 +1,243 @@
+<%- include('head') %>
+    <style>
+        #sizeSelectContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            /* Adjust the gap between elements */
+        }
+
+        #sizeSelectContainer span {
+            display: flex;
+            align-items: center;
+            margin-right: 10px;
+            /* Adjust spacing between each pair */
+        }
+
+        #sizeSelectContainer input[type="checkbox"] {
+            margin-right: 5px;
+            /* Adjust spacing between checkbox and label */
+        }
+    </style>
+</head>
+    <body>
+        <%- include('navbar') %>
+        <br>
+            <div class="w3-display-container">
+                <div align="center">
+                    <label>
+                        <b><u>ค้นหารายการสินค้า</u></b>
+                    </label>
+                </div>
+
+                <div class="row mb-4" id="top-section">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-11">
+                        <table class="table no-wrap">
+                            <tr>
+                                <td>
+                                    <label for="filterStatus">สถานะ:</label>
+                                </td>
+                                <td>
+                                    <select id="filterStatus" class="form-control" onchange="filterEntries()">
+                                        <option value="">ทั้งหมด</option>
+                                        <option value="Y">สิ้นสุด</option>
+                                        <option value="N">ยังไม่สิ้นสุด</option>
+                                        <option value="C">คืนสินค้า</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <label for="customerName">ลูกค้า:</label>
+                                </td>
+                                <td>
+                                    <select id="customerName" class="form-control" onchange="updateSubCustomers()">
+                                        <option value="">เลือก</option>
+                                        <% customers.forEach(customer=> { %>
+                                            <option value="<%= customer._id %>">
+                                                <%= customer.customerName %>
+                                            </option>
+                                            <% }) %>
+                                    </select>
+                                </td>
+                                <td>
+                                    <label for="subCustomerName">รายย่อย:</label>
+                                </td>
+                                <td>
+                                    <select id="subCustomerName" class="form-control">
+                                        <option value="">เลือก</option>
+                                        <!-- Sub-customer options will be populated dynamically -->
+                                    </select>
+                                </td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <label>เลือก :</label>
+                                </td>
+                                <td>
+                                    <% grains.forEach(grain=> { %>
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" name="grain"
+                                                value="<%= grain._id %>" onchange="updateSizes();">
+                                            <label class="form-check-label">
+                                                <%= grain.grainName %>
+                                            </label>
+                                        </div>
+                                        <% }) %>
+                                </td>
+                                <td>
+                                    <label>เลือก :</label>
+                                </td>
+                                <td>
+                                    <% origins.forEach(origin=> { %>
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" name="origin"
+                                                value="<%= origin._id %>">
+                                            <label class="form-check-label">
+                                                <%= origin.originName %>
+                                            </label>
+                                        </div>
+                                        <% }) %>
+                                </td>
+                                <td>
+                                    <label>เลือก :</label>
+                                </td>
+                                <td>
+                                    <% heats.forEach(heat=> { %>
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" name="heat"
+                                                value="<%= heat._id %>">
+                                            <label class="form-check-label">
+                                                <%= heat.heatName %>
+                                            </label>
+                                        </div>
+                                        <% }) %>
+                                </td>
+                                <td><label for="batchSelect">เลือกชุด:</label></td>
+                                <td colspan="7">
+                                    <select class="form-control" id="batchSelect" name="batch">
+                                        <option value="">-- เลือกชุด --</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td><label>เลือกไซส์:</label></td>
+                                <td colspan="7">
+                                    <div id="sizeSelectContainer">-- เลือกประเภทก่อน--</div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td><label>เลือกเกรด:</label></td>
+                                <td colspan="7">
+                                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                        <% grades.forEach(grade=> { %>
+                                            <div class="form-check form-check-inline">
+                                                <input type="checkbox" class="form-check-input" name="grade"
+                                                    value="<%= grade._id %>" id="grade_<%= grade._id %>">
+                                                <label class="form-check-label" for="grade_<%= grade._id %>">
+                                                    <%= grade.gradeName %>
+                                                </label>
+                                            </div>
+                                            <% }) %>
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <label>รูปทรง:</label>
+                                </td>
+                                <td colspan="7">
+                                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                    <% sharps.forEach(sharp=> { %>
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" name="sharp"
+                                                value="<%= sharp.sharpName %>">
+                                            <label class="form-check-label">
+                                                <%= sharp.sharpName %>
+                                            </label>
+                                        </div>
+                                        <% }) %>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <label for="priceFrom">ราคา:</label>
+                                </td>
+                                <td>
+                                    <input type="number" id="priceFrom" class="form-control" placeholder="0">
+                                </td>
+                                <td>
+                                    <label for="priceTo">ถึง:</label>
+                                </td>
+                                <td>
+                                    <input type="number" id="priceTo" class="form-control" placeholder="0">
+                                </td>
+                                <td>
+                                    <label for="entryDateFrom">วันที่:</label>
+                                </td>
+                                <td>
+                                    <input type="date" id="entryDateFrom" class="form-control"
+                                        value="<%= new Date(Date.now() - 365*24*60*60*1000).toISOString().split('T')[0] %>">
+                                </td>
+                                <td>
+                                    <label for="entryDateTo">ถึง:</label>
+                                </td>
+                                <td>
+                                    <input type="date" id="entryDateTo" class="form-control"
+                                        value="<%= new Date().toISOString().split('T')[0] %>">
+                                </td>
+                            </tr>
+
+                        </table>
+                        
+                        <div align="center">
+                            <label>
+                                <button class="btn btn-primary btn-xs" onclick="fetchAllEntries();"><< ค้นหา >></button>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="main-section">
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-11">
+                        <table id="entriesTable" class="table table-hover no-wrap">
+                            <thead>
+                                <tr>
+                                    <th class="bg-gray setCenter">ลำดับที่</th>
+                                    <th class="bg-gray setCenter">วันที่</th>
+                                    <th class="bg-gray setCenter">ลูกค้า</th>
+                                    <th class="bg-gray setCenter">ชุด</th>
+                                    <th class="bg-gray setCenter">สินค้า</th>
+                                    <th class="bg-gray setNumber">ต้นทุน(บาท)</th>
+                                    <th class="bg-gray setNumber">น้ำหนัก(กะรัต)</th>
+                                    <th class="bg-gray setNumber">ราคา(บาท)</th>
+                                    <th class="bg-gray setNumber">รวม(บาท)</th>
+                                    <th class="bg-gray setText">รูปร่าง</th>
+                                    <th class="bg-gray setCenter">สถานะ</th>
+                                    <th class="bg-gray setCenter">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- updateTable() -->
+                            </tbody>
+                        </table>
+                        <div id="pagination" class="mt-4"></div>
+                        <hr>
+
+                    </div>
+                </div>
+            </div>
+
+            <script src="script/reportSaleEntryScript.js"></script>
+    </body>
+
+    </html>

@@ -1,0 +1,70 @@
+<%- include('head') %>
+<style>
+  
+  table {
+            width: 100%;
+            border-collapse: collapse;
+            height: fit-content;
+        }
+
+        tr:hover {
+            background-color: #f0f0f0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ababab;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #d3d3d3;
+        }
+</style>
+<script src="js/moment.min.js"></script>
+</head>
+<body>
+  <%- include('navbar') %>
+  <br>
+  <div class="w3-display-container">
+    <div align="center">
+      <label>
+        <b>จัดการสต๊อกสินค้า</b>
+      </label>
+    </div>
+    <br>
+    <div class="row">
+      <div class="col-sm-1"></div>
+      <div class="col-sm-11">
+        <div class="form-group d-flex align-items-center">
+          <select id="yearSelector" class="form-control me-3" style="width: auto;"></select>
+          <input type="checkbox" name="origin" value="Myn" class="me-1" checked> พม่า
+          <input type="checkbox" name="origin" value="Moz" class="ms-3 me-1" checked> โมซัมบิก
+          <button class="btn btn-primary btn-sm ms-3" id="findStockButton">ค้นหา</button>
+        </div>
+        <br>
+        <div id="stockContainer">
+          <table id="stockTable">
+              <thead>
+                  <tr>
+                      <th class="setCenter">ชื่อชุด</th>
+                      <th class="setCenter">พร้อมขาย</th>
+                      <th class="setCenter">รอขาย</th>
+                      <th class="setCenter">ขายแล้ว</th>
+                      <th class="setCenter">ทั้งหมด</th>
+                  </tr>
+              </thead>
+              <tbody id="stockTableBody">
+                  <!-- ตารางจะถูกเติมเต็มจากฝั่งไคลเอนต์ -->
+              </tbody>
+          </table>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/script/stockScript.js"></script>
+</body>
+
+</html>

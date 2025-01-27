@@ -1,0 +1,76 @@
+<%- include('head') %>
+</head>
+    <body>
+        <%- include('navbar') %>
+            <br>
+            <div class="w3-display-container">
+                <div class="row">
+                    <div class="col-md-6 offset-md-3">
+                        <h2 class="text-center mb-4"><b>แก้ไขข้อมูลสินค้า</b></h2>
+                        <form>
+                            <input type="hidden" name="edit_id" id="edit_id" value="<%= product._id %>">
+                            <div class="form-group">
+                                <label for="ber">เลือกเบอร์</label>
+                                <select class="form-control" name="ber" id="ber" required>
+                                    <option value="<%= product.ber %>">
+                                        <%= product.ber %>
+                                    </option>
+                                    <option value=""></option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                </select>
+                            </div><br>
+                            <div class="form-group">
+                                <label for="sizeID">เลือกไซส์</label>
+                                <select class="form-control" name="sizeID" id="sizeID" required>
+                                    <% sizes.forEach(function(size) { %>
+                                        <option value="<%= size._id %>" <% if
+                                            (product.sizeID.toString()===size._id.toString()) { %> selected <% } %>>
+                                                <%= size.sizeName %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                            </div><br>
+                            <div class="form-group">
+                                <label for="typeID">เลือกประเภท</label>
+                                <select class="form-control" name="typeID" id="typeID" required>
+                                    <% types.forEach(function(type) { %>
+                                        <option value="<%= type._id %>" <% if
+                                            (product.typeID.toString()===type._id.toString()) { %> selected <% } %>>
+                                                <%= type.typeName %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                            </div><br>
+                            <div class="form-group">
+                                <label for="gradeID">เลือกเกรด</label>
+                                <select class="form-control" name="gradeID" id="gradeID" required>
+                                    <% grades.forEach(function(grade) { %>
+                                        <option value="<%= grade._id %>" <% if
+                                            (product.gradeID.toString()===grade._id.toString()) { %> selected <% } %>>
+                                                <%= grade.gradeName %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                            </div><br>
+                            <div class="form-group">
+                                <label for="gradeID">DisplayName</label>
+                                <input class="form-control" type="text" name="displayName" id="displayName"
+                                    value="<%= product.displayName %>">
+                            </div><br>
+                            <div class="text-center">
+                                <button type="button" class="btn btn-primary"
+                                    onclick="updateProduct()">อัพเดท</button>
+                                ||
+                                <a class="btn btn-warning" href="javascript:void(0)" onclick="handleCancel()">ยกเลิก</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+    </body>
+
+    </html>
+    <script src="script/productScript.js"></script>

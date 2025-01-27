@@ -1,0 +1,121 @@
+<%- include('head') %>
+</head>
+    <body>
+        <%- include('navbar') %>
+            <br>
+            <div class="w3-display-container">
+                <div align="center">
+                    <label>
+                        <b>จัดการต้นทุนสินค้า</b>
+                    </label>
+                </div>
+                <br>
+                <div class="row">
+                    <!-- ส่วนเมนู NAVBAR -->
+                    <div class="col-sm-1"></div>
+                    <!-- ส่วนซ้าย: ฟอร์ม -->
+                    <div class="col-sm-2">
+                        <div class="form-group">
+                            <label for="typeID">เลือกประเภท</label>
+                            <select class="form-control" name="typeID" id="typeID" required
+                                onchange="selectedType(this.value)">
+                                <option value=""></option>
+                                <% types.forEach(function(type) { %>
+                                    <option value="<%= type._id %>">
+                                        <%= type.typeName %>
+                                    </option>
+                                    <% }); %>
+                            </select>
+                        </div><br>
+                        <div class="form-group">
+                            <label for="sizeID">เลือกไซส์</label>
+                            <select class="form-control" name="sizeID" id="sizeID" required
+                                onchange="selectedProduct(document.getElementById('typeID').value,this.value,document.getElementById('gradeID').value),fetchProductGroups(document.getElementById('typeID').value,this.value,document.getElementById('gradeID').value)">
+                                <option value=""></option>
+                            </select>
+                        </div><br>
+                        <div class="form-group">
+                            <label for="gradeID">เลือกเกรด</label>
+                            <select class="form-control" name="gradeID" id="gradeID" required
+                                onchange="selectedProduct(document.getElementById('typeID').value,document.getElementById('sizeID').value,this.value),fetchProductGroups(document.getElementById('typeID').value,document.getElementById('sizeID').value,this.value)">
+                                <option value=""></option>
+                            </select>
+                        </div><br>
+                        <!-- <div class="form-group">
+                            <label for="ber">เลือกเบอร์</label>
+                            <select class="form-control" name="ber" id="ber" required
+                                onchange="selectedProduct(document.getElementById('typeID').value,document.getElementById('sizeID').value,document.getElementById('gradeID').value,this.value),fetchProductGroups(document.getElementById('typeID').value,document.getElementById('sizeID').value,document.getElementById('gradeID').value,this.value)">
+                                <option value=""></option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div><br> -->
+                        <hr>
+                        <form id="addCostForm">
+                            <div class="form-group">
+                              <label for="productID">เลือกสินค้า</label>
+                              <select class="form-control" name="productID" id="productID" required>
+                                <option value=""></option>
+                                </select>
+                            </div><br>
+                            <div class="form-group">
+                              <label for="costOfProduct">เพิ่มราคาต้นทุนสินค้า</label>
+                              <input type="number" class="form-control" id="costOfProduct" name="costOfProduct"
+                                value="" required>
+                            </div><br>
+                            <button type="button" class="btn btn-success btn-lg" onclick="addCost()">เพิ่มข้อมูล</button>
+                          </form>
+                    </div>
+
+                    <!-- ส่วนขวา: ตารางแสดงข้อมูล -->
+                    <div class="col-sm-9">
+                        <table class="table" style="text-align: center;">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ลำดับ</th>
+                                    <th scope="col">ชื่อสินค้า</th>
+                                    <th scope="col">ราคาล่าสุด</th>
+                                    <th scope="col">แก้ไข</th>
+                                    <th scope="col">ลบข้อมูล</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableProductGroups">
+                                <!-- <% Object.keys(productGroups).forEach(function(productName, index) { %>
+                                    <tr>
+                                        <td>
+                                            <%= index + 1 %>
+                                        </td>
+                                        <td title="product._id : <%= productGroups[productName].productId._id %>">
+                                            <%= productName %>
+                                        </td>
+                                        <td title="cost._id : <%= productGroups[productName].costId %>">
+                                            <%= productGroups[productName].latestCost %>
+                                        </td>
+                                        <td>
+                                            <form id="editForm" action="/editCost" method="POST">
+                                                <input type="hidden" name="edit_id1" id="edit_id1" value="<%= productGroups[productName].productId._id %>">
+                                                <input type="hidden" name="edit_id2" id="edit_id2" value="<%= productName %>">
+                                                <input type="hidden" name="edit_id3" id="edit_id3" value="<%= productGroups[productName].costId %>">
+                                                <button type="submit" class="btn btn-primary">แก้ไข</button>
+                                            </form>
+                                        </td>
+                                        <td>
+                                            <form action="/deleteCostAll" method="POST" style="display: inline;">
+                                                <input type="hidden" name="delete_id" value="<%= productGroups[productName].productId._id %>">
+                                                <button type="submit" class="btn btn-danger ml-2"
+                                                    onclick="return confirm('ต้องการลบ cost ทั้งหมดออกจาก product นี้? ')">ลบ</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    <% }); %> -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+            <script src="script/costScript.js"></script>
+    </body>
+    </html>

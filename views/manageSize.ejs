@@ -1,0 +1,64 @@
+<%- include('head') %>
+</head>
+    <body>
+        <%- include('navbar') %>
+            <br>
+            <div class="w3-display-container">
+                <div align="center">
+                    <label>
+                        <b>จัดการไซส์สินค้า</b>
+                    </label>
+                </div>
+                <br>
+                <div class="row">
+                    <!-- ส่วนเมนู NAVBAR -->
+                    <div class="col-sm-1"></div>
+                    <!-- ส่วนซ้าย: ฟอร์ม -->
+                    <div class="col-sm-2">
+                        <form>
+                            <div class="form-group">
+                                <label for="grainID">เลือกประเภท</label>
+                                <select class="form-control" name="grainID" id="grainID" required
+                                    onchange="fetchSizes(this.value)">
+                                    <option value=""></option>
+                                    <% grains.forEach(function(grain) { %>
+                                        <option title="<%= grain._id %>" value="<%= grain._id %>">
+                                            <%= grain.grainName %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                            </div><br>
+                            <div>
+                                <Label for="sizeName">เพิ่มชื่อไซส์</Label>
+                                <input type="text" class="form-control" name="sizeName" id="sizeName" required>
+                            </div>
+                            <div align="center"><br>
+                                <button type="button" class="btn btn-success btn-lg" onclick="addSize()">เพิ่มขนาด</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- ส่วนขวา: ตารางแสดงข้อมูล -->
+                    <div class="col-sm-9">
+                        <table class="table" style="text-align: center;" id="tableSize">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ลำดับ</th>
+                                    <th scope="col">ประเภท</th>
+                                    <th scope="col">ชื่อไซส์</th>
+                                    <th scope="col">แก้ไข</th>
+                                    <th scope="col">ลบข้อมูล</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sizeTableBody">
+                               <!-- แสดงตารางเมื่อเลือก type และทำงานด้วย fetchSizes -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+    </body>
+
+    </html>
+    <script src="script/sizeScript.js"></script>

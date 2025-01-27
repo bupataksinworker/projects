@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ใบขาย : <%= sale?.customerID?.customerName %>
+    </title>
+    <link rel="stylesheet" href="/css/w3combined.css">
+    <link rel="stylesheet" href="/css/w3SaleEntry.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/fonts/fontawesome-free-6.5.2-web/css/all.min.css">
+    <script src="/js/jquery-3.7.1.min.js"></script>
+    <script src="/script/utilityScript.js"></script>
+</head>
+
+<body>
+    <div id="toper"></div>
+    <div class="top-section">
+        <form>
+            <table class="table table-borderless">
+                <tbody>
+                    <!-- Input fields -->
+                    <tr>
+                        <td class="no-wrap"><label for="typeSelect">เลือกประเภท:</label></td>
+                        <td class="no-wrap">
+                            <select class="form-control" id="typeSelect" name="type"
+                                onchange="filterSizeAndBatch(this.value);">
+                                <option value="">-- เลือกประเภท --</option>
+                                <% types.forEach(function(type) { %>
+                                    <option value="<%= type._id %>">
+                                        <%= type.typeName %>
+                                    </option>
+                                    <% }); %>
+                            </select>
+                        </td>
+                        <td class="no-wrap"><label for="sizeSelect">เลือกไซส์:</label></td>
+                        <td class="no-wrap">
+                            <select class="form-control" id="sizeSelect" name="size" onchange="filterProduct();">
+                                <option value="">-- เลือกไซส์ --</option>
+                            </select>
+                        </td>
+                        <!-- <td class="no-wrap"><label for="gradeSelect">เลือกเกรด:</label></td>
+                        <td class="no-wrap">
+                            <select class="form-control" id="gradeSelect" name="grade" onchange="filterProduct();">
+                                <option value="">-- เลือกเกรด --</option>
+                            </select>
+                        </td> -->
+                        <td class="no-wrap"><label for="productSelect">เลือกสินค้า:</label></td>
+                        <td class="no-wrap">
+                            <select class="form-control" id="productSelect" name="product" onchange="filterCost();">
+                                <option value="">-- เลือกสินค้า --</option>
+                            </select>
+                        </td>
+                        <td class="no-wrap"><label for="costSelect">เลือกราคาทุน:</label></td>
+                        <td class="no-wrap">
+                            <select class="form-control" id="costSelect" name="costSelect">
+                                <option value="">-- เลือกราคาทุน --</option>
+                            </select>
+                        </td>
+                        <td class="no-wrap"><label for="batchSelect">เลือกชุด:</label></td>
+                        <td class="no-wrap">
+                            <select class="form-control" id="batchSelect" name="batch">
+                                <option value="">-- เลือกชุด --</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="no-wrap"><label for="openWeight">ระบุน้ำหนัก<b>เปิด</b>:</label></td>
+                        <td class="no-wrap">
+                            <input type="number" class="form-control" id="openWeight" name="openWeight"
+                                placeholder="ระบุน้ำหนักเปิด (กะรัต)">
+                        </td>
+                        <td class="no-wrap"><label for="openPrice">ระบุราคา<b>เปิด</b>:</label></td>
+                        <td class="no-wrap">
+                            <input type="number" class="form-control" id="openPrice" name="openPrice"
+                                placeholder="ระบุราคาเปิด (บาท/กะรัต)">
+                        </td>
+
+                        <td class="no-wrap">
+                            <button type="button" class="btn btn-outline-success btn-sm"
+                                id="openCheckList">เลือกรูปร่าง</button>
+                            <div id="checkListPopup" class="card"
+                                style="display:none; position: absolute; z-index: 1000; padding: 20px; background-color: white; border: 1px solid #ccc;">
+                                <div class="checkbox-container">
+                                    <% sharps.forEach(function(sharp) { %>
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" name="shapeSelect[]"
+                                                value="<%= sharp.sharpName %>" id="sharp_<%= sharp.sharpName %>">
+                                            <label class="form-check-label no-wrap" for="sharp_<%= sharp.sharpName %>">
+                                                <%= sharp.sharpName %>
+                                            </label>
+                                        </div>
+                                        <% }); %>
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm" id="closePopup">เสร็จ</button>
+                            </div>
+                        </td>
+                        <td class="no-wrap">
+                            <textarea id="selectedShapes" class="form-control mt-2" placeholder="รายการที่เลือก..."
+                                rows="1" readonly></textarea>
+                        </td>
+                        <td class="no-wrap"><label for="note">หมายเหตุ:</label></td>
+                        <td class="no-wrap">
+                            <textarea class="form-control" id="note" name="note" rows="1"></textarea>
+                        </td>
+                        <td colspan="4" style="text-align: center;">
+                            <button type="reset" class="btn btn-outline-dark btn-sm" style="width: 40%;"
+                                onclick="resetFormCost()">ล้างข้อมูล</button>
+                            <button id="btnClick" type="reset" class="btn btn-outline-dark btn-sm" style="width: 40%;"
+                                onclick="clickToggleButton()">ปิด</button>
+                        </td>
+                        <!-- <td class="no-wrap"><label for="closeWeight">ระบุน้ำหนัก<b>ปิด</b>(ก.):</label></td>
+                        <td class="no-wrap">
+                            <input type="number" class="form-control" id="closeWeight" name="closeWeight"
+                                placeholder="ระบุน้ำหนักปิด">
+                        </td>
+                        <td class="no-wrap"><label for="closePrice">ระบุราคา<b>ปิด</b>(บาท/ก.):</label></td>
+                        <td class="no-wrap">
+                            <input type="number" class="form-control" id="closePrice" name="closePrice"
+                                placeholder="ระบุราคาปิด">
+                        </td> -->
+                    </tr>
+                    <tr>  
+                        <td colspan="10" style="text-align: center;">
+                            <input type="hidden" name="saleID" id="saleID" value="<%= sale._id %>">
+                            <input type="hidden" name="billStatus" id="billStatus" value="<%= sale.billStatus %>">
+                            <button id="id1" type="button" class="onProcess btn btn-success btn-sm" style="width: 50%;"
+                                onclick="addSaleEntry()">เพิ่มสินค้า</button>
+                        </td>
+                        
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+    <!-- -------------------------------------------------------------------------------------------------------->
+    <!-- <button id="toggle1" class="toggle-top-section" style="width: 100%;height: 20px;display: block;"></button> -->
+    <table id="salesEntryTableHead" class="sales-entry-table-head no-wrap"
+        style="border-bottom: 3px solid black;border-top: 3px solid black;">
+        <thead>
+            <tr>
+                <th id="homeIcon"><i class="fa-solid fa-house"></i></th>
+                <th><b>วันที่:</b>
+                    <%= new Date(sale.saleDate).toLocaleDateString('en-GB') %>
+                </th>
+                <th><b>ชื่อลูกค้า:</b>
+                    <%= sale?.customerID?.customerName %>
+                        <%= sale.subCustomerName ? `(${sale.subCustomerName})` : '' %>
+                </th>
+                <th><b>สถานะ:</b>
+                    <%= sale.billStatus %>
+                </th>
+                <th><b>ส่วนลด:</b>
+                    <%= sale.discount %>%
+                </th>
+                <th><b>จัดการใบขาย:</b>
+                    <button id="btnToggle" class="onProcess btn btn-outline-success btn-sm toggle-top-section"
+                        title="คลิกอีกครั้ง เพื่อซ่อนเมนูเพิ่มสินค้า"><b>เมนูเพิ่มสินค้า</b></button>
+                    <form action="/editSale" method="POST" style="display: inline;">
+                        <input type="hidden" name="edit_id" value="<%= sale._id %>">
+                        <button type="submit" class="onProcess btn btn-outline-primary btn-sm">แก้ไข</button>
+                    </form>
+                    <button type="button" class="onProcess btn btn-outline-danger btn-sm"
+                        onclick="deleteSale(`<%= sale._id %>`)">ลบ</button>
+                    <button id="openPrintPopup" title="คลิกเพื่อเปิดเมนูสั่งพิมพ์" class="btn btn-outline-dark btn-sm">
+                        <i class="fas fa-print"></i> <b>สั่งพิมพ์</b>
+                    </button>
+                </th>
+                <th><b>คำนวณ: </b>
+                    <button onclick='changePercen(1,`<%= sale._id %>`);' id='increasePercen'
+                        title='คลิกเพื่อคำนวณ ใช้ได้เฉพาะยังไม่มีการตกลงสินค้าใดใด'
+                        class='onProcess btn btn-outline-warning btn-sm'>เพิ่มราคาปิด</button>
+                    <button onclick='changePercen(2,`<%= sale._id %>`);' id='decreasePercen'
+                        title='คลิกเพื่อคำนวณ ใช้ได้เฉพาะยังไม่มีการตกลงสินค้าใดใด'
+                        class='onProcess btn btn-outline-warning btn-sm'>ลดราคาปิด</button>
+                    <input class="onProcess form-control-sm" type="number" id="inputPercen" value="0"
+                        style="width: 70px;display: inline;"> %
+                </th>
+                <th>
+                    <button onclick='okAllSaleEntry("<%= sale._id %>");' id='AcceptAll'
+                        title='ใช้ได้เฉพาะยังไม่มีการตกลงสินค้าใดใด'
+                        class='onProcess btn btn-outline-success btn-sm'>ตกลงทั้งหมด</button>
+                    <button onclick='closeBill("<%= sale._id %>");' id='closebill'
+                        title='คลิกเพื่อปิดบิล ไม่มีการแก้ไขเพิ่มเติม'
+                        class='onProcess btn btn-outline-danger btn-sm'>ปิดบิล</button>
+                </th>
+            </tr>
+        </thead>
+    </table>
+    <!-- -------------------------------------------------------------------------------------------------------->
+    <div class="main-section">
+
+        <table id="tableSaleEntry" class="no-wrap">
+            <thead>
+                <tr>
+                    <th class="setNumber">ลำดับ</th>
+                    <th class="setText">ชื่อสินค้า</th>
+                    <th class="setText">displayname</th>
+                    <th class="setText">ชุด</th>
+                    <th class="setNumber">ต้นทุน</th>
+                    <th class="setNumber">น้ำหนักเปิด (ก.)</th>
+                    <th class="setNumber">ราคาเปิด (บาท/ก.)</th>
+                    <th class="setNumber">รวมเปิด (บาท)</th>
+                    <th class="setNumber">น้ำหนักปิด (ก.)</th>
+                    <th class="setNumber">ราคาปิด (บาท/ก.)</th>
+                    <th class="setNumber">รวมปิด (บาท)</th>
+                    <th>สถานะ</th>
+                    <th>จัดการสินค้า</th>
+                </tr>
+            </thead>
+            <tbody id="salesEntryTableBody">
+                <!-- เรียกใช้ api ฟังก์ชั่นสำหรับข้อมูล real-time updateTable() -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th class="setNumber">ลำดับ</th>
+                    <th class="setText">ชื่อสินค้า</th>
+                    <th class="setText">displayname</th>
+                    <th class="setText">ชุด</th>
+                    <th class="setNumber">ต้นทุน</th>
+                    <th class="setNumber">น้ำหนักเปิด (ก.)</th>
+                    <th class="setNumber">ราคาเปิด (บาท/ก.)</th>
+                    <th class="setNumber">รวมเปิด (บาท)</th>
+                    <th class="setNumber">น้ำหนักปิด (ก.)</th>
+                    <th class="setNumber">ราคาปิด (บาท/ก.)</th>
+                    <th class="setNumber">รวมปิด (บาท)</th>
+                    <th>สถานะ</th>
+                    <th>จัดการสินค้า</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <table class="form-control" id="tableFootResult">
+        <!-- ทำงานด้วยฟังก์ชั่น updateTableFoot() -->
+        <!-- คลิกเพื่อเรียก popup batchResult  -->
+    </table>
+
+    <div id="popupBatchResultTable" class="popup">
+        <div id="popupContent" class="popup-content">
+            <span id="closeBtn" class="close">&times;</span>
+            <!-- Add your table content here -->
+            <table id="tableBatchResult" class="table table-bordered">
+                <!-- ทำงานด้วยฟังก์ชั่น updateTableBatch() -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <br><br><br>
+    <div id="footer"></div>
+    <button id="scroll-to-top-btn" class="btn btn-outline-primary" style="display: none;" onclick="scrollToTop()"><i
+            class="fas fa-arrow-up"></i></button>
+    <script src="/script/scroll.js"></script>
+
+<!----------------------- popup menu printing ----------------------------->
+    <div id="printOverlay"></div>
+
+    <div id="printPopup">
+        <div class="print-popup-content">
+            <div class="print-popup-header">
+                เลือกประเภทเอกสาร
+            </div>
+            <div class="print-popup-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="bg-secondary text-white"><b>สำหรับผู้ซื้อ</b></th>
+                            <th class="bg-secondary text-white"><b>สำหรับผู้ขาย</b></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td onclick="openWithParams('<%= sale._id %>', 1, this)"><span>ใบเสนอขาย O</span></td>
+                            <td onclick="openWithParams('<%= sale._id %>', 2, this)"><span>ใบเสนอขาย O</span></td>
+                        </tr>
+                        <tr>
+                            <td onclick="openWithParams('<%= sale._id %>', 3, this)"><span>ใบขาย C</span> (เฉพาะตลกง)</td>
+                            <td onclick="openWithParams('<%= sale._id %>', 4, this)"><span>ใบขาย C</span> (เฉพาะตลกง)</td>
+                        </tr>
+                        <tr>
+                            <td onclick="openWithParams('<%= sale._id %>', 5, this)"><span>ใบขาย F</span> (เปลี่ยนแปลง)</td>
+                            <td onclick="openWithParams('<%= sale._id %>', 6, this)"><span>ใบขาย F</span> (เปลี่ยนแปลง)</td>
+                        </tr>
+                        <tr>
+                            <td onclick="openWithParams('<%= sale._id %>', 7, this)"><span>ใบเสนอขาย PO</span> (เสนอขาย+แยกไซส์)</td>
+                            <td onclick="openWithParams('<%= sale._id %>', 8, this)"><span>ใบเสนอขาย PO</span> (เสนอขาย+แยกไซส์)</td>
+                        </tr>
+                        <tr>
+                            <td onclick="openWithParams('<%= sale._id %>', 9, this)"><span>ใบขาย PC</span> (เฉพาะตลกง+แยกไซส์)</td>
+                            <td onclick="openWithParams('<%= sale._id %>', 10, this)"><span>ใบขาย PC</span> (เฉพาะตกลง+แยกไซส์)</td>
+                        </tr>
+                        <tr>
+                            <td onclick="openWithParams('<%= sale._id %>', 11, this)"><span>ใบขาย PF</span> (เปลี่ยนแปลง+แยกไซส์)</td>
+                            <td onclick="openWithParams('<%= sale._id %>', 12, this)"><span>ใบขาย PF</span> (เปลี่ยนแปลง+แยกไซส์)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="print-popup-footer">
+                <button type="button" class="btn btn-secondary" id="closePrintPopup">ปิด</button>
+            </div>
+        </div>
+    </div>
+    <!----------------------- popup menu printing ----------------------------->
+
+</body>
+
+</html>
+<script src="/script/saleEntryScript.js"></script>
+<script src="/script/saleScript.js"></script>

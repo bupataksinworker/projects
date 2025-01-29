@@ -7,62 +7,84 @@ function closeModalCreateBill() {
 }
 
 function submitCreateBill() {
-  const customerID = document.getElementById('inputCustomerName').value;
-  const subCustomerName = document.getElementById('inputSubCustomerName').value;
+  const customerID = document.getElementById('inputCustomerName').value.trim();
+  const subCustomerID = document.getElementById('subCustomerDropdown').value.trim();
   const saleDate = document.getElementById('inputDate').value;
-  const discount = document.getElementById('inputDiscount').value;
+  let discount = document.getElementById('inputDiscount').value;
 
-  if (!customerID || customerID.trim() === '') {
-    alert('Customer name is required.');  // แสดง alert แจ้งเตือน
-    document.getElementById('inputCustomerName').focus(); // ให้โฟกัสไปที่อินพุต
+  // ✅ ตรวจสอบค่าและแก้ไขรูปแบบให้ถูกต้อง
+  if (!customerID) {
+    alert('กรุณาเลือกชื่อลูกค้า');
     return;
-  } else {
-    console.log('Customer ID is valid:', customerID);
+  }
 
+  if (!saleDate) {
+    alert('กรุณาเลือกวันที่ขาย');
+    return;
+  }
+
+  if (!discount) {
+    discount = 0;
+  } else {
+    discount = parseFloat(discount);
+    if (isNaN(discount)) {
+      alert('กรุณากรอกส่วนลดให้ถูกต้อง');
+      return;
+    }
   }
 
   const saleData = {
     customerID,
-    subCustomerName,
-    saleDate,
+    subCustomerID: subCustomerID ? subCustomerID : null, // ✅ ถ้าไม่ได้เลือก subCustomer ให้เป็น null
+    saleDate: new Date(saleDate), // ✅ แปลงเป็น Date
     discount
   };
 
+  console.log("🚀 Sending Sale Data:", saleData);
+
   fetch('/addSale', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(saleData)
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(saleData),
   })
-    .then(response => response.json())
-    .then(data => {
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((err) => Promise.reject(err));
+      }
+      return response.json();
+    })
+    .then((data) => {
       alert('บิลได้ถูกสร้างเรียบร้อยแล้ว');
-      closeModalCreateBill(); // ปิด modal หลังจากส่งข้อมูลสำเร็จ
+      closeModalCreateBill();
       location.reload();
     })
     .catch((error) => {
-      console.error('Error:', error);
-      alert('เกิดข้อผิดพลาดในการสร้างบิล');
+      console.error('❌ Error:', error);
+      alert(`เกิดข้อผิดพลาด: ${error.message || 'ไม่สามารถสร้างบิลได้'}`);
     });
 }
 
-function updateSubCustomerNames() {
-  const customerId = document.getElementById('inputCustomerName').value;
-  const subCustomerSelect = document.getElementById('inputSubCustomerName');
-  subCustomerSelect.innerHTML = ''; // Clear existing options
 
-  // เพิ่มตัวเลือกค่าว่างเป็นค่าแรก
-  subCustomerSelect.add(new Option('เลือกรายย่อย', '', true, true));
+function updateSubCustomerNames() { //หน้าสร้างบิล
+  const customerId = document.getElementById('inputCustomerName').value;
+  const subCustomerSelect = document.getElementById('subCustomerDropdown');
+
+  if (!subCustomerSelect) {
+    console.error('Element with id "subCustomerDropdown" not found.');
+    return;
+  }
+
+  subCustomerSelect.innerHTML = ''; // ล้าง dropdown
+  subCustomerSelect.add(new Option('เลือกรายย่อย', '', true, true)); // เพิ่มตัวเลือกเริ่มต้น
 
   if (customerId) {
     fetch(`/getSubCustomers/${customerId}`)
       .then(response => response.json())
       .then(data => {
-        if (data.subCustomerNames && data.subCustomerNames.length) {
-          subCustomerSelect.disabled = false; // Enable sub-customer dropdown
-          data.subCustomerNames.forEach(name => {
-            const option = new Option(name, name);
+        if (data.subCustomerNames && data.subCustomerNames.length > 0) {
+          subCustomerSelect.disabled = false;
+          data.subCustomerNames.forEach(sub => {
+            const option = new Option(sub.name, sub.id);
             subCustomerSelect.add(option);
           });
         } else {
@@ -76,62 +98,87 @@ function updateSubCustomerNames() {
   }
 }
 
+function getSubCustomerNames() { // หน้าแสดงรายการ
+  const customerId = document.getElementById('customerDropdown').value;
+  const subCustomerSelect = document.getElementById('subCustomerID');
+
+  if (!subCustomerSelect) {
+    console.error('Element with id "subCustomerID" not found.');
+    return;
+  }
+
+  subCustomerSelect.innerHTML = ''; // ล้าง dropdown
+  subCustomerSelect.add(new Option('เลือกรายย่อย', '', true, true));
+
+  if (customerId) {
+    fetch(`/getSubCustomers/${customerId}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.subCustomerNames && data.subCustomerNames.length > 0) {
+          subCustomerSelect.disabled = false;
+          data.subCustomerNames.forEach(sub => {
+            const option = new Option(sub.name, sub.id);
+            subCustomerSelect.add(option);
+          });
+        } else {
+          subCustomerSelect.add(new Option('ไม่มีรายย่อย', ''));
+          subCustomerSelect.disabled = true;
+        }
+      })
+      .catch(error => console.error('Error fetching sub customers:', error));
+  } else {
+    subCustomerSelect.disabled = true;
+  }
+}
+
+
 function openFile(saleId) {
-  // URL ที่จะเปิดขึ้นอยู่กับ _id ของการขาย
   const url = `/manageSaleEntry/${saleId}`;
-  // เปิด URL ในแท็บใหม่
   window.open(url, '_blank');
 }
 
-let currentPage = 1;  // Track the current page
-let totalSales = 0;  // Track the total number of entries
-const pageSize = 10;  // Define the page size
+let currentPage = 1;
+let totalSales = 0;
+const pageSize = 10;
 
 function loadSales(page = 1) {
   const customerID = document.getElementById('customerDropdown').value;
-  const subCustomerName = document.getElementById('subCustomerDropdown').value;
-  const inputDateStart = document.getElementById('inputDateStart').value;
-  const inputDateEnd = document.getElementById('inputDateEnd').value;
+  const subCustomerSelect = document.getElementById('subCustomerID');
 
-  const oneYearAgo = new Date();
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  if (!subCustomerSelect) {
+    console.error('Element with id "subCustomerID" not found.');
+    return;
+  }
 
-  const dateStart = inputDateStart || oneYearAgo.toISOString().split('T')[0];
-  const dateEnd = inputDateEnd || new Date().toISOString().split('T')[0];
+  const subCustomerID = subCustomerSelect.value;
+  const dateStart = document.getElementById('inputDateStart').value;
+  const dateEnd = document.getElementById('inputDateEnd').value;
 
   const query = new URLSearchParams({
     page,
     customerID,
-    subCustomerName,
+    subCustomerID,
     dateStart,
-    dateEnd
+    dateEnd,
   });
-
+  console.log("ค่าที่ส่งไป : "+query)
   fetch(`/fetchSales?${query.toString()}`)
     .then(response => response.json())
     .then(data => {
-      totalSales = data.totalSales;  // Update the total number of entries
-
       const tableBody = document.getElementById('salesTable').querySelector('tbody');
-      tableBody.innerHTML = ''; // Clear existing rows
+      tableBody.innerHTML = ''; // Clear table rows
       const indexOffset = (page - 1) * pageSize;
-
-      // Sort sales data
-      const sortedSales = data.sales.sort((a, b) => {
-        const dateComparison = new Date(b.saleDate) - new Date(a.saleDate);
-        return dateComparison !== 0 ? dateComparison : b.sorter - a.sorter;
-      });
-
-      // Generate new rows
-      const rowsHtml = sortedSales.map((sale, index) => `
+      console.log("ค่าที่รับกลับมา : ")
+      console.log(data)
+      const rowsHtml = data.sales.map((sale, index) => `
         <tr style="text-align: center;">
           <td>${indexOffset + index + 1}</td>
           <td>${new Date(sale.saleDate).toLocaleDateString('en-GB')}</td>
           <td>${sale.customerID.customerName}</td>
-          <td>${sale.subCustomerName || '-'}</td>
-          <td style="text-align: right;">${addCommas(sale.totalAmount)}</td>
+          <td>${sale.subCustomerID ? sale.subCustomerID.subCustomerName : '-'}</td>
+          <td style="text-align: right;">${sale.totalAmount.toLocaleString()}</td>
           <td style="text-align: right;">${sale.discount}%</td>
-          <td style="text-align: right;">${addCommas(sale.totalSaleAfterDC)}</td>
+          <td style="text-align: right;">${sale.totalSaleAfterDC.toLocaleString()}</td>
           <td>${sale.billStatus}</td>
           <td>
             <button class='btn btn-primary btn-sm' onclick='openFile("${sale._id}")'>เปิดไฟล์</button>
@@ -140,14 +187,11 @@ function loadSales(page = 1) {
       `).join('');
 
       tableBody.innerHTML = rowsHtml;
-
-      // Update pagination
-      renderPagination(totalSales, pageSize, page);
+      renderPagination(data.totalSales, pageSize, page);
     })
     .catch(error => console.error('Error loading sales:', error));
 }
 
-// Function to render pagination
 function renderPagination(totalSales, pageSize, currentPage) {
   const paginationContainer = document.querySelector('#pagination');
   paginationContainer.innerHTML = '';
@@ -162,159 +206,113 @@ function renderPagination(totalSales, pageSize, currentPage) {
     pageButton.className = 'btn btn-secondary btn-sm';
     pageButton.innerText = page;
     pageButton.disabled = (page === currentPage);
-    pageButton.style.marginLeft = '10px'; // เพิ่มช่องว่าง 1 tab (10px) ระหว่างปุ่ม
+    pageButton.style.marginLeft = '10px';
     pageButton.onclick = () => loadSales(page);
     paginationContainer.appendChild(pageButton);
   }
 }
 
-// Initial load
 document.addEventListener('DOMContentLoaded', () => {
   const currentPath = window.location.pathname;
 
-  // ตรวจสอบ URL ว่าเป็นหน้าที่ต้องการหรือไม่
   if (currentPath === '/manageSale') {
     loadSales(currentPage);
   }
 });
 
-
-function getSubCustomerNames() {  // Filter Report Sale
-  const customerId = document.getElementById('customerDropdown').value;
-  const subCustomerSelect = document.getElementById('subCustomerDropdown');
-  subCustomerSelect.innerHTML = ''; // Clear existing options
-
-  // เพิ่มตัวเลือกค่าว่างเป็นค่าแรก
-  subCustomerSelect.add(new Option('เลือกรายย่อย', '', true, true));
-
-  if (customerId) {
-    fetch(`/getSubCustomers/${customerId}`)
-      .then(response => response.json())
-      .then(data => {
-        if (data.subCustomerNames && data.subCustomerNames.length) {
-          subCustomerSelect.disabled = false; // Enable sub-customer dropdown
-          data.subCustomerNames.forEach(name => {
-            const option = new Option(name, name);
-            subCustomerSelect.add(option);
-          });
-        } else {
-          subCustomerSelect.add(new Option('ไม่มีรายย่อย', ''));
-          subCustomerSelect.disabled = true;
-        }
-      })
-      .catch(error => console.error('Error fetching sub customers:', error));
-  } else {
-    subCustomerSelect.disabled = true;
-  }
-}
-// --------------------------------- Go Down for editSale --------------------------------------------------------------------
-
-function updateSale(saleId) {
-  console.log("update SaleId : " + saleId);
-  // Prevent the default form submission behavior
-  event.preventDefault();
-
-  // Collect form data
-  const formData = {
-    saleID: document.getElementById('saleID').value,
-    customerID: document.getElementById('customerDropdown').value,
-    subCustomerName: document.getElementById('subCustomerDropdown').value,
-    billStatus: document.getElementById('billStatus').value,
-    discount: document.getElementById('discount').value,
-    saleDate: document.getElementById('saleDate').value
-  };
-
-  // Use fetch API to send the POST request
-  fetch('/updateSale', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(formData)
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok ' + response.statusText);
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Update successful:', data);
-      alert('อัพเดทสำเร็จ!');
-      // Optionally refresh the page or handle navigation
-      const url = `/manageSaleEntry/${saleId}`;
-      window.location.href = url;
-
-    })
-    .catch(error => {
-      console.error('Update failed:', error);
-      alert('Error updating sale. Please try again.');
-    });
-}
-
-function loadSubCustomers() {
-  var customerId = document.getElementById('customerDropdown').value;
-  var subCustomerDropdown = document.getElementById('subCustomerDropdown');
-  
-  // ล้างตัวเลือกเดิมใน dropdown
-  subCustomerDropdown.innerHTML = '';
-
-  // เพิ่มตัวเลือกแรกที่มีข้อความว่า "เลือกรายย่อย" และไม่มีค่า
-  let defaultOption = document.createElement('option');
-  defaultOption.textContent = 'เลือกรายย่อย';
-  defaultOption.value = '';
-  subCustomerDropdown.appendChild(defaultOption);
-
-  // ส่งคำขอไปยัง server ที่ endpoint เพื่อรับ subCustomerNames
-  fetch(`/getSubCustomers/${customerId}`)
-      .then(response => response.json())
-      .then(data => {
-          if (data && data.subCustomerNames && data.subCustomerNames.length > 0) {
-              data.subCustomerNames.forEach(subCustomer => {
-                  let option = document.createElement('option');
-                  option.value = subCustomer;
-                  option.textContent = subCustomer;
-                  subCustomerDropdown.appendChild(option);
-              });
-          } else {
-              let noOption = document.createElement('option');
-              noOption.textContent = 'ไม่มี Sub Customers';
-              noOption.value = '';
-              subCustomerDropdown.appendChild(noOption);
-          }
-      })
-      .catch(error => {
-          console.error('Error loading sub customers:', error);
-          let errorOption = document.createElement('option');
-          errorOption.textContent = 'Error loading sub customers';
-          errorOption.value = '';
-          subCustomerDropdown.appendChild(errorOption);
-      });
-}
-
-
-// --------------------------------- Go Down for deleteSale --------------------------------------------------------------------
-
 function deleteSale(deleteId) {
   if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?')) {
-      fetch('/deleteSale', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ delete_id: deleteId })
-      })
+    fetch('/deleteSale', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ delete_id: deleteId }),
+    })
       .then(response => response.json())
       .then(data => {
-          if (data.success) {
-              alert('ลบข้อมูลสำเร็จ');
-              // window.location.reload(); // รีเฟรชหน้าเว็บ
-              const url = `/manageSale`;
-              window.location.href = url;
-          } else {
-              alert('ไม่สามารถลบใบขายได้ หากยังมีสินค้าอยู่ในรายการ');
-          }
+        if (data.success) {
+          alert('ลบข้อมูลสำเร็จ');
+          window.location.href = '/manageSale';
+        } else {
+          alert('ไม่สามารถลบใบขายได้ หากยังมีสินค้าอยู่ในรายการ');
+        }
       })
       .catch(error => console.error('Error:', error));
   }
 }
+
+function submitEditSale() {
+  setTimeout(() => {
+    const saleIDElement = document.getElementById('saleID');
+    const customerDropdownElement = document.getElementById('customerDropdown');
+    const subCustomerDropdownElement = document.getElementById('subCustomerDropdown');
+    const billStatusElement = document.getElementById('billStatus');
+    const discountElement = document.getElementById('discount'); // ✅ เปลี่ยนจาก inputDiscount เป็น discount
+    const saleDateElement = document.getElementById('saleDate'); // ✅ เปลี่ยนจาก inputDate เป็น saleDate
+
+    console.log("✅ Checking Elements:", {
+      saleIDElement,
+      customerDropdownElement,
+      subCustomerDropdownElement,
+      billStatusElement,
+      discountElement,
+      saleDateElement
+    });
+
+    if (!saleIDElement || !customerDropdownElement || !billStatusElement || !discountElement || !saleDateElement) {
+      alert('เกิดข้อผิดพลาด: ไม่พบ Element บางตัวใน DOM');
+      return;
+    }
+
+    const saleID = saleIDElement.value;
+    const customerID = customerDropdownElement.value;
+    const subCustomerID = subCustomerDropdownElement ? subCustomerDropdownElement.value.trim() : null;
+    const billStatus = billStatusElement.value;
+    let discount = discountElement.value;
+    const saleDate = saleDateElement.value;
+
+    if (!saleID || !customerID) {
+      alert('กรุณาเลือกชื่อลูกค้า');
+      return;
+    }
+
+    if (!saleDate) {
+      alert('กรุณาเลือกวันที่ขาย');
+      return;
+    }
+
+    const saleData = {
+      saleID,
+      customerID,
+      subCustomerID: subCustomerID ? subCustomerID : null,
+      billStatus,
+      discount: parseFloat(discount) || 0,
+      saleDate: new Date(saleDate)
+    };
+
+    console.log("🚀 Sending Sale Data:", saleData);
+
+    fetch('/updateSale', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(saleData),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then((err) => Promise.reject(err));
+        }
+        return response.json();
+      })
+      .then((data) => {
+        alert('อัปเดตบิลสำเร็จ');
+        window.location.href = `/manageSaleEntry/${saleID}`;
+      })
+      .catch((error) => {
+        console.error('❌ Error:', error);
+        alert(`เกิดข้อผิดพลาด: ${error.message || 'ไม่สามารถอัปเดตบิลได้'}`);
+      });
+  }, 100);
+}
+
+

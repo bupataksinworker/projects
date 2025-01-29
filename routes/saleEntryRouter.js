@@ -33,7 +33,8 @@ router.get('/manageSaleEntry/:saleId', async (req, res) => {
 
     try {
         const sale = await Sale.findById(req.params.saleId)
-            .populate('customerID', 'customerName email phone');
+            .populate('customerID', 'customerName email phone')
+            .populate('subCustomerID', 'subCustomerName'); 
 
         if (!sale) {
             return res.status(404).send("Sale not found");
@@ -58,6 +59,7 @@ router.get('/manageSaleEntry/:saleId', async (req, res) => {
         const sizes = await Size.find();
         const grades = await Grade.find();
         const sharps = await Sharp.find();
+        console.log("Sale Data:", JSON.stringify(sale, null, 2));
 
         res.render('manageSaleEntry', {
             sale,
@@ -392,7 +394,7 @@ router.put('/cancelSaleEntry/:id', async (req, res) => {
 router.get('/printing/:saleId', async (req, res) => {
 
     try {
-        const sale = await Sale.findById(req.params.saleId).populate('customerID', 'customerName email phone');
+        const sale = await Sale.findById(req.params.saleId).populate('customerID', 'customerName email phone').populate('subCustomerID');
 
         if (!sale) {
             return res.status(404).send("Sale not found");
@@ -432,7 +434,7 @@ router.get('/printing/:saleId', async (req, res) => {
 router.get('/printingSize/:saleId', async (req, res) => {
 
     try {
-        const sale = await Sale.findById(req.params.saleId).populate('customerID', 'customerName email phone');
+        const sale = await Sale.findById(req.params.saleId).populate('customerID', 'customerName email phone').populate('subCustomerID');
 
         if (!sale) {
             return res.status(404).send("Sale not found");

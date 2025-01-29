@@ -104,7 +104,7 @@
                         <tr>
                             <th style="text-align: center;">${textTitle}</th>
                             <th style="text-align: center;">วันที่ : ${new Date(sale.saleDate).toLocaleDateString('en-GB')}</th>
-                            <th style="text-align: center;">คุณ : ${sale.customerID.customerName} ${sale.subCustomerName ? `(${sale.subCustomerName})` : ''}</th>
+                            <th style="text-align: center;">คุณ : ${sale.customerID.customerName} ${sale.subCustomerID.subCustomerName ? `(${sale.subCustomerID.subCustomerName})` : ''}</th>
                         </tr>
                     </thead>
                 </table><br>

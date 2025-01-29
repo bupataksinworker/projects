@@ -10,8 +10,10 @@ const saleSchema = new mongoose.Schema({
     required: true,
     autopopulate: true
   },
-  subCustomerName: {
-    type: String
+  subCustomerID: { // ✅ อ้างอิงไปยัง SubCustomer
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SubCustomer', 
+    autopopulate: true
   },
   billStatus: {
     type: String,
@@ -63,10 +65,12 @@ saleSchema.pre('save', async function (next) {
 saleSchema.methods.getTotalPreSaleSum = async function () {
   const saleEntries = await SaleEntry.aggregate([
     { $match: { saleID: this._id } },
-    { $group: {
-      _id: null,
-      total: { $sum: { $multiply: ['$openWeight', '$openPrice'] } }
-    }}
+    {
+      $group: {
+        _id: null,
+        total: { $sum: { $multiply: ['$openWeight', '$openPrice'] } }
+      }
+    }
   ]);
 
   return saleEntries.length > 0 ? saleEntries[0].total : 0;
@@ -76,10 +80,12 @@ saleSchema.methods.getTotalPreSaleSum = async function () {
 saleSchema.methods.getTotalSaleSum = async function () {
   const saleEntries = await SaleEntry.aggregate([
     { $match: { saleID: this._id } },
-    { $group: {
-      _id: null,
-      total: { $sum: { $multiply: ['$closeWeight', '$closePrice'] } }
-    }}
+    {
+      $group: {
+        _id: null,
+        total: { $sum: { $multiply: ['$closeWeight', '$closePrice'] } }
+      }
+    }
   ]);
 
   return saleEntries.length > 0 ? saleEntries[0].total : 0;
@@ -172,33 +178,35 @@ saleSchema.methods.getTotalSumByBatch = async function () {
       }
     },
     { $unwind: '$batchInfo' }, // แยก array batchInfo เพื่อเข้าถึง batchName
-    { $group: {
-      _id: '$batchID',
-      batchName: { $first: '$batchInfo.batchName' },
-      batchYear: { $first: '$batchInfo.batchYear' }, // เพิ่ม field batchYear
-      number: { $first: '$batchInfo.number' }, // เพิ่ม field number
-      sorter: { $first: '$batchInfo.sorter' }, // เพิ่ม field sorter
-      totalPreSumByBatch: { $sum: { $multiply: ['$openWeight', '$openPrice'] } }, // จากน้ำหนักเปิดและราคาเปิด
-      totalSumByBatch: { $sum: { $multiply: ['$closeWeight', '$closePrice'] } }, // จากน้ำหนักปิดและราคาปิด
-      totalPreCostByBatch: { 
-        $sum: { 
-          $cond: { 
-            if: { $gt: [{ $multiply: ['$openWeight', '$openPrice'] }, 0] }, 
-            then: { $multiply: ['$openWeight', '$cost'] },
-            else: 0 
+    {
+      $group: {
+        _id: '$batchID',
+        batchName: { $first: '$batchInfo.batchName' },
+        batchYear: { $first: '$batchInfo.batchYear' }, // เพิ่ม field batchYear
+        number: { $first: '$batchInfo.number' }, // เพิ่ม field number
+        sorter: { $first: '$batchInfo.sorter' }, // เพิ่ม field sorter
+        totalPreSumByBatch: { $sum: { $multiply: ['$openWeight', '$openPrice'] } }, // จากน้ำหนักเปิดและราคาเปิด
+        totalSumByBatch: { $sum: { $multiply: ['$closeWeight', '$closePrice'] } }, // จากน้ำหนักปิดและราคาปิด
+        totalPreCostByBatch: {
+          $sum: {
+            $cond: {
+              if: { $gt: [{ $multiply: ['$openWeight', '$openPrice'] }, 0] },
+              then: { $multiply: ['$openWeight', '$cost'] },
+              else: 0
+            }
           }
-        }
-      },
-      totalCostByBatch: { 
-        $sum: { 
-          $cond: { 
-            if: { $gt: [{ $multiply: ['$closeWeight', '$closePrice'] }, 0] }, 
-            then: { $multiply: ['$closeWeight', '$cost'] },
-            else: 0 
+        },
+        totalCostByBatch: {
+          $sum: {
+            $cond: {
+              if: { $gt: [{ $multiply: ['$closeWeight', '$closePrice'] }, 0] },
+              then: { $multiply: ['$closeWeight', '$cost'] },
+              else: 0
+            }
           }
         }
       }
-    }},
+    },
     {
       $project: {
         batchID: '$_id',
@@ -217,26 +225,28 @@ saleSchema.methods.getTotalSumByBatch = async function () {
       }
     },
     { $sort: { batchYear: -1, number: 1, sorter: 1 } }, // เรียงลำดับโดย batchYear จากมากไปน้อย, number จากน้อยไปมาก, sorter จากน้อยไปมาก
-    { $group: {
-      _id: null,
-      totals: { 
-        $push: {
-          batchID: '$batchID',
-          batchName: '$batchName',
-          batchYear: '$batchYear',
-          number: '$number',
-          sorter: '$sorter',
-          totalPreSumByBatch: '$totalPreSumByBatch',
-          totalPreAfterDcByBatch: '$totalPreAfterDcByBatch',
-          totalPreCostByBatch: '$totalPreCostByBatch',
-          totalPreProfitByBatch: '$totalPreProfitByBatch',
-          totalSumByBatch: '$totalSumByBatch',
-          totalAfterDcByBatch: '$totalAfterDcByBatch',
-          totalCostByBatch: '$totalCostByBatch',
-          totalProfitByBatch: '$totalProfitByBatch'
+    {
+      $group: {
+        _id: null,
+        totals: {
+          $push: {
+            batchID: '$batchID',
+            batchName: '$batchName',
+            batchYear: '$batchYear',
+            number: '$number',
+            sorter: '$sorter',
+            totalPreSumByBatch: '$totalPreSumByBatch',
+            totalPreAfterDcByBatch: '$totalPreAfterDcByBatch',
+            totalPreCostByBatch: '$totalPreCostByBatch',
+            totalPreProfitByBatch: '$totalPreProfitByBatch',
+            totalSumByBatch: '$totalSumByBatch',
+            totalAfterDcByBatch: '$totalAfterDcByBatch',
+            totalCostByBatch: '$totalCostByBatch',
+            totalProfitByBatch: '$totalProfitByBatch'
+          }
         }
       }
-    }}
+    }
   ]);
 
   return saleEntries.length > 0 ? saleEntries[0].totals : [];

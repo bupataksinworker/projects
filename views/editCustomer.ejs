@@ -1,85 +1,96 @@
 <%- include('head') %>
-</head>
-<body>
-    <%- include('navbar') %>
-    <br>
-    <div class="w3-display-container">
-        <div class="row">
-            <div class="col-md-6 offset-md-3">
-                <h2 class="text-center mb-4"><b>แก้ไขข้อมูลลูกค้า</b></h2>
+    </head>
 
-                <form id="updateCustomerForm">
-                    <input type="hidden" id="edit_id" name="edit_id" value="<%= customer._id %>">
-                    <div class="form-group">
-                        <label for="customerName">Customer Name:</label>
-                        <input type="text" id="customerName" name="customerName" class="form-control"
-                            value="<%= customer.customerName %>" required>
+    <body>
+        <%- include('navbar') %>
+            <br>
+            <div class="w3-display-container">
+                <div class="row">
+                    <div class="col-md-6 offset-md-3">
+                        <h2 class="text-center mb-4"><b>แก้ไขข้อมูลลูกค้า</b></h2>
+
+                        <form id="updateCustomerForm">
+                            <input type="hidden" id="edit_id" name="edit_id" value="<%= customer._id %>">
+                            <div class="form-group">
+                                <label for="customerName">Customer Name:</label>
+                                <input type="text" id="customerName" name="customerName" class="form-control"
+                                    value="<%= customer.customerName %>" required>
+                            </div>
+
+                            <!-- Sub-Customer Names Section -->
+                            <div class="form-group">
+                                <label>Sub-customer Names:</label>
+                                <div id="subCustomerNamesContainer">
+                                    <% if (subCustomers && subCustomers.length) { %>
+                                        <% subCustomers.forEach(function (subCustomer) { %>
+                                            <% if (subCustomer.subCustomerName && subCustomer._id) { %>
+                                                <div class="sub-customer-item d-flex align-items-center">
+                                                    <input type="text" name="subCustomerName[]"
+                                                        class="form-control mb-2 mr-2"
+                                                        value="<%= subCustomer.subCustomerName %>"
+                                                        data-id="<%= subCustomer._id %>">&nbsp;
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        onclick="removeSubCustomerField(this)">-</button>
+                                                </div>
+                                                <% } %>
+                                                    <% }); %>
+                                                        <% } %>
+                                </div>
+                                <button type="button" class="text-white btn btn-success btn-sm"
+                                    onclick="showAddSubCustomerPopup()">+</button>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" name="email" class="form-control"
+                                    value="<%= customer.email || '' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">Phone Number:</label>
+                                <input type="phone" id="phone" name="phone" class="form-control"
+                                    value="<%= customer.phone || '' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="address">Address:</label>
+                                <textarea id="address" name="address" class="form-control"
+                                    rows="3"><%= customer.address || '' %></textarea>
+                            </div>
+
+                            <br>
+                            <div class="text-center">
+                                <button type="button" class="btn btn-primary mr-2"
+                                    onclick="updateCustomer()">อัพเดท</button>
+                                ||
+                                <a class="btn btn-warning" href="javascript:void(0)" onclick="handleCancel()">ยกเลิก</a>
+                            </div>
+                        </form>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Sub-Customer Names Section -->
-                    <div class="form-group">
-                        <label>Sub-customer Names:</label>
-                        <div id="subCustomerNamesContainer">
-                            <% if (customer.subCustomerName && customer.subCustomerName.length) { %>
-                                <% customer.subCustomerName.forEach(function (name) { %>
-                                    <% if (name.trim() !== "") { %>
-                                        <div class="sub-customer-item d-flex align-items-center">
-                                            <input type="text" name="subCustomerName[]" class="form-control mb-2 mr-2"
-                                                value="<%= name %>" placeholder="Sub-customer Name">
-                                            <span class="text-danger" style="cursor: pointer; font-size: 1.5rem; margin-left: 10px;" onclick="removeSubCustomerField(this)">&times;</span>
-                                        </div>
-                                    <% } %>
-                                <% }); %>
-                            <% } %>
+            <!-- Popup Modal -->
+            <div class="modal" id="addSubCustomerModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add Sub-customer</h5>
                         </div>
-                        <button type="button" class="text-white btn btn-success btn-sm" onclick="showAddSubCustomerPopup()">+</button>
+                        <div class="modal-body">
+                            <label for="newSubCustomerName">Sub-customer Name:</label>
+                            <input type="text" id="newSubCustomerName" class="form-control">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" onclick="addNewSubCustomer()">Add</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="email">Email:</label>
-                        <input type="email" id="email" name="email" class="form-control" value="<%= customer.email || '' %>">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="phone">Phone Number:</label>
-                        <input type="phone" id="phone" name="phone" class="form-control" value="<%= customer.phone || '' %>">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="address">Address:</label>
-                        <textarea id="address" name="address" class="form-control" rows="3"><%= customer.address || '' %></textarea>
-                    </div>                    
-                    
-                    <br>
-                    <div class="text-center">
-                        <button type="button" class="btn btn-primary mr-2" onclick="updateCustomer()">อัพเดท</button>
-                        ||
-                        <a class="btn btn-warning" href="javascript:void(0)" onclick="handleCancel()">ยกเลิก</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Popup Modal -->
-    <div class="modal" id="addSubCustomerModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Sub-customer</h5>
-                </div>
-                <div class="modal-body">
-                    <label for="newSubCustomerName">Sub-customer Name:</label>
-                    <input type="text" id="newSubCustomerName" class="form-control">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="addNewSubCustomer()">Add</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <script src="script/customerScript.js"></script>
-</body>
-</html>
+            <script src="script/customerScript.js"></script>
+    </body>
+
+    </html>

@@ -145,9 +145,15 @@
                     <%= new Date(sale.saleDate).toLocaleDateString('en-GB') %>
                 </th>
                 <th><b>ชื่อลูกค้า:</b>
-                    <%= sale?.customerID?.customerName %>
-                        <%= sale.subCustomerName ? `(${sale.subCustomerName})` : '' %>
-                </th>
+                    <% if (sale && sale.customerID) { %>
+                        <%= sale.customerID.customerName %>
+                        <% if (sale.subCustomerID && sale.subCustomerID.subCustomerName) { %>
+                            (<%= sale.subCustomerID.subCustomerName %>) 
+                        <% } else { %>
+                            
+                        <% } %>
+                    <% } %>
+                </th>                                              
                 <th><b>สถานะ:</b>
                     <%= sale.billStatus %>
                 </th>

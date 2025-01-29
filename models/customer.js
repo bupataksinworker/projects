@@ -3,38 +3,36 @@ const mongoose = require('mongoose');
 const customerSchema = mongoose.Schema({
     customerName: {
         type: String,
-        required: [true, 'Customer name is required'],
-        trim: true
-    },
-    subCustomerName: [{
-        type: String,
+        required: true,
         trim: true,
-        default: '',
+    },
+    subCustomerIDs: [{ // ✅ เก็บ ObjectId ของ SubCustomer ที่ถูกต้อง
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SubCustomer', // ✅ เปลี่ยนเป็น 'SubCustomer'
     }],
     email: {
         type: String,
         unique: true,
-        sparse: true, // อนุญาตให้ null หรือค่าว่างซ้ำกันได้
+        sparse: true,
         trim: true,
         default: null,
-        match: /^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-    },    
+    },
     phone: {
         type: String,
         unique: true,
-        sparse: true, // อนุญาตให้ค่าว่างหรือ null ไม่ถือว่าซ้ำ
+        sparse: true,
         trim: true,
-        default: null
+        default: null,
     },
     address: {
         type: String,
         trim: true,
-        default: null // กำหนดให้ null แทนค่าว่าง
+        default: null,
     },
     sorter: {
         type: Number,
-        default: 0
-    }
+        default: 0,
+    },
 });
 
 customerSchema.pre('save', async function (next) {
@@ -49,5 +47,4 @@ customerSchema.set('toJSON', { getters: true });
 customerSchema.set('toObject', { getters: true });
 
 let Customer = mongoose.model('Customer', customerSchema, 'customers');
-
 module.exports = Customer;

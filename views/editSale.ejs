@@ -1,5 +1,6 @@
 <%- include('head') %>
-</head>
+    </head>
+
     <body>
         <%- include('navbar') %>
             <br>
@@ -8,57 +9,70 @@
                     <div class="col-md-6 offset-md-3">
                         <h2 class="text-center mb-4"><b>แก้ไขใบขาย</b></h2>
                         <form id="updateSaleForm" class="form">
+                            <!-- Hidden input for Sale ID -->
                             <input type="hidden" name="saleID" id="saleID" value="<%= sale._id %>">
+
+                            <!-- Customer Dropdown -->
                             <div class="form-group">
                                 <label for="customerDropdown">ชื่อลูกค้า:</label>
-                                <select class="form-control" id="customerDropdown" required onchange="loadSubCustomers();">
+                                <select class="form-control" id="customerDropdown" required
+                                    onchange="loadSubCustomers();">
                                     <% customers.forEach(function(customer) { %>
-                                        <option value="<%= customer._id %>"
-                                            <%=sale.customerID._id.toString()===customer._id.toString() ? 'selected'
-                                            : '' %>>
+                                        <option value="<%= customer._id %>" <%=sale.customerID &&
+                                            sale.customerID._id.toString()===customer._id.toString() ? 'selected' : ''
+                                            %>>
                                             <%= customer.customerName %>
                                         </option>
                                         <% }); %>
                                 </select>
-                            </div><br>
-
-                            <div class="form-group">
-                                <label for="subCustomerDropdown">ชื่อลูกค้า รายย่อย:</label>
-                                <select class="form-control" id="subCustomerDropdown" name="subCustomerName">
-                                    <option value="" <%= sale.subCustomerName === '' ? 'selected' : '' %>>  </option>
-                                    <% subCustomerNames.forEach(function(subCustomer) { %>
-                                        <option value="<%= subCustomer %>" <%= sale.subCustomerName === subCustomer ? 'selected' : '' %>>
-                                            <%= subCustomer %>
-                                        </option>
-                                    <% }); %>
-                                </select>
                             </div>
                             <br>
-                            
 
+                            <!-- Sub-Customer Dropdown -->
+                            <div class="form-group">
+                                <label for="subCustomerDropdown">ชื่อลูกค้า รายย่อย:</label>
+                                <select class="form-control" id="subCustomerDropdown" name="subCustomerID">
+                                    <option value="" <%=!sale.subCustomerID ? 'selected' : '' %>>เลือกรายย่อย</option>
+                                    <% subCustomers.forEach(function(subCustomer) { %>
+                                        <option value="<%= subCustomer._id %>" <%=sale.subCustomerID &&
+                                            String(sale.subCustomerID._id)===String(subCustomer._id) ? 'selected' : ''
+                                            %>>
+                                            <%= subCustomer.subCustomerName %>
+                                        </option>
+                                        <% }); %>
+                                </select>
+                            </div>
 
+                            <br>
+
+                            <!-- Bill Status Dropdown -->
                             <div class="form-group">
                                 <label for="billStatus">สถานะ:</label>
                                 <select name="billStatus" id="billStatus" class="form-control" required>
                                     <option value="เปิด" <%=sale.billStatus==='เปิด' ? 'selected' : '' %>>เปิด</option>
                                     <option value="ปิด" <%=sale.billStatus==='ปิด' ? 'selected' : '' %>>ปิด</option>
                                 </select>
-                            </div><br>
+                            </div>
+                            <br>
 
+                            <!-- Discount Input -->
                             <div class="form-group">
                                 <label for="discount">ส่วนลด:</label>
                                 <input type="number" name="discount" id="discount" class="form-control"
                                     value="<%= sale.discount %>" min="0">
-                            </div><br>
+                            </div>
+                            <br>
 
+                            <!-- Sale Date Input -->
                             <div class="form-group">
                                 <label for="saleDate">วันที่ขาย:</label>
                                 <input type="date" name="saleDate" id="saleDate" class="form-control"
                                     value="<%= sale.saleDate ? sale.saleDate.toISOString().slice(0, 10) : '' %>">
-                            </div><br>
+                            </div>
+                            <br>
 
-                            <button type="button" class="btn btn-primary"
-                                onclick="updateSale('<%= sale._id %>')">อัพเดท</button>
+                            <!-- Buttons -->
+                            <button type="button" class="btn btn-primary" onclick="submitEditSale()">อัพเดท</button>
                             <a class="btn btn-warning ml-3" href="javascript:void(0)"
                                 onclick="handleCancel()">ยกเลิก</a>
                         </form>

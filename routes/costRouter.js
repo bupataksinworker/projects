@@ -368,22 +368,6 @@ router.post('/deleteCostAll', async (req, res) => {
     }
 });
 
-// เส้นทางสำหรับลบข้อมูล
-// router.post('/deleteCostOne', async (req, res) => {
-//     try {
-//         const { delete_id } = req.body; // รับ _id ของข้อมูลที่ต้องการลบจาก body
-//         console.log(delete_id);
-//         // ค้นหาและลบข้อมูลจากฐานข้อมูล
-//         await Cost.findByIdAndDelete(delete_id);
-
-//         console.log('ลบข้อมูลเรียบร้อยแล้ว');
-//         res.redirect('/manageCost'); // หลังจากลบเสร็จสิ้น ให้ redirect กลับ
-//     } catch (error) {
-//         console.error('เกิดข้อผิดพลาดในการลบข้อมูล:', error);
-//         res.status(500).send('เกิดข้อผิดพลาดในการลบข้อมูล');
-//     }
-// });
-
 router.post('/deleteID', async (req, res) => {
     try {
         if (!req.body.delete_id) {

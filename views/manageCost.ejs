@@ -1,5 +1,6 @@
 <%- include('head') %>
-</head>
+    </head>
+
     <body>
         <%- include('navbar') %>
             <br>
@@ -30,7 +31,7 @@
                         <div class="form-group">
                             <label for="sizeID">เลือกไซส์</label>
                             <select class="form-control" name="sizeID" id="sizeID" required
-                                onchange="selectedProduct(document.getElementById('typeID').value,this.value,document.getElementById('gradeID').value),fetchProductGroups(document.getElementById('typeID').value,this.value,document.getElementById('gradeID').value)">
+                                onchange="resetSelectGradeToFirstOption(),selectedProduct(document.getElementById('typeID').value,this.value,document.getElementById('gradeID').value),fetchProductGroups(document.getElementById('typeID').value,this.value,document.getElementById('gradeID').value)">
                                 <option value=""></option>
                             </select>
                         </div><br>
@@ -55,18 +56,19 @@
                         <hr>
                         <form id="addCostForm">
                             <div class="form-group">
-                              <label for="productID">เลือกสินค้า</label>
-                              <select class="form-control" name="productID" id="productID" required>
-                                <option value=""></option>
+                                <label for="productID">เลือกสินค้า</label>
+                                <select class="form-control" name="productID" id="productID" required>
+                                    <option value=""></option>
                                 </select>
                             </div><br>
                             <div class="form-group">
-                              <label for="costOfProduct">เพิ่มราคาต้นทุนสินค้า</label>
-                              <input type="number" class="form-control" id="costOfProduct" name="costOfProduct"
-                                value="" required>
+                                <label for="costOfProduct">เพิ่มราคาต้นทุนสินค้า</label>
+                                <input type="number" class="form-control" id="costOfProduct" name="costOfProduct"
+                                    value="" required>
                             </div><br>
-                            <button type="button" class="btn btn-success btn-lg" onclick="addCost()">เพิ่มข้อมูล</button>
-                          </form>
+                            <button type="button" class="btn btn-success btn-lg"
+                                onclick="addCost()">เพิ่มข้อมูล</button>
+                        </form>
                     </div>
 
                     <!-- ส่วนขวา: ตารางแสดงข้อมูล -->
@@ -118,4 +120,5 @@
             </div>
             <script src="script/costScript.js"></script>
     </body>
+
     </html>

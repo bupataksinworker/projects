@@ -1,21 +1,34 @@
+function clearCostOfProduct() {
+    document.getElementById('productID').value = '';
+    document.getElementById('costOfProduct').value = '';
+}
+
+function resetSelectGradeToFirstOption() {
+    document.getElementById('gradeID').selectedIndex = 0;
+}
+
 function selectedType(typeID, selectedSizeID = '', selectedGradeID = '') {
-        // ล้าง HTML ของตาราง
-        document.getElementById('tableProductGroups').innerHTML = '';
-        document.getElementById('sizeID').innerHTML = '';
-        document.getElementById('gradeID').innerHTML = '';
+    // ล้าง HTML ของตาราง
+    document.getElementById('tableProductGroups').innerHTML = '';
+    document.getElementById('sizeID').innerHTML = '';
+    document.getElementById('gradeID').innerHTML = '';
+    
+    // ล้างข้อมูลในช่องต้นทุนสินค้า
+    clearCostOfProduct();
+
     // ส่งค่า typeID ไปยัง router โดยใช้ Fetch API
     fetch(`/selectedType?typeID=${typeID}`)
         .then(response => response.json())
         .then(data => {
-            // เข้าถึงข้อมูล ที่ส่งมาภายใน JSON object
             const sizes = data.sizes;
             const grades = data.grades;
 
-            // สร้าง HTML สำหรับข้อมูลใน dropdown ของ size
+            // สร้าง HTML สำหรับ dropdown size
             let sizeDropdownHTML = '<option value=""></option>';
             sizes.forEach(function (size) {
                 sizeDropdownHTML += `<option value="${size._id}">${size.sizeName}</option>`;
             });
+
             // เปลี่ยน HTML ใน dropdown ของ sizeID และตั้งค่าที่เลือกเริ่มต้น
             const sizeDropdown = document.getElementById('sizeID');
             sizeDropdown.innerHTML = sizeDropdownHTML;
@@ -26,12 +39,13 @@ function selectedType(typeID, selectedSizeID = '', selectedGradeID = '') {
                 }
             }
 
-            // สร้าง HTML สำหรับข้อมูลใน dropdown ของ grade
+            // สร้าง HTML สำหรับ dropdown grade
             let gradeDropdownHTML = '<option value=""></option>';
             grades.forEach(function (grade) {
                 gradeDropdownHTML += `<option value="${grade._id}">${grade.gradeName}</option>`;
             });
-            // เปลี่ยน HTML ใน dropdown ของ gradeID และตั้งค่าที่เลือกเริ่มต้น
+
+            // เปลี่ยน HTML ใน dropdown ของ gradeID
             const gradeDropdown = document.getElementById('gradeID');
             gradeDropdown.innerHTML = gradeDropdownHTML;
             for (let i = 0; i < gradeDropdown.options.length; i++) {
@@ -46,55 +60,54 @@ function selectedType(typeID, selectedSizeID = '', selectedGradeID = '') {
 }
 
 function selectedProduct(typeID, sizeID, gradeID) {
-    // ส่งค่า typeID และ sizeID ไปยัง router โดยใช้ Fetch API
+    // ล้างข้อมูลในช่องต้นทุนสินค้า
+    clearCostOfProduct();
+
+    // ส่งค่า typeID, sizeID, gradeID ไปยัง router โดยใช้ Fetch API
     fetch(`/selectedProduct?typeID=${typeID}&sizeID=${sizeID}&gradeID=${gradeID}`)
         .then(response => response.json())
         .then(data => {
-            // เข้าถึงข้อมูล ที่ส่งมาภายใน JSON object
-            var products = data.products;
+            const products = data.products;
 
             // สร้าง HTML สำหรับข้อมูลใน dropdown
-            var productDropdownHTML = '<option value=""></option>';
+            let productDropdownHTML = '<option value=""></option>';
             products.forEach(function (product) {
                 productDropdownHTML += `<option value="${product._id}">${product.productName}</option>`;
             });
-            // เปลี่ยน HTML ใน dropdowb ของ productID
-            $('#productID').html(productDropdownHTML);
 
-            // สร้าง HTML สำหรับข้อมูลใน tableProduct
-            var tableHTML = '';
+            // เปลี่ยน HTML ใน dropdown ของ productID
+            document.getElementById('productID').innerHTML = productDropdownHTML;
+
+            // สร้าง HTML สำหรับแสดงในตาราง
+            let tableHTML = '';
             products.forEach(function (product, index) {
                 tableHTML += '<tr>';
                 tableHTML += '<td>' + (index + 1) + '</td>';
-                if (product.ber == null) {
-                    tableHTML += '<td>' + product.productName + '</td>';
-                } else {
-                    tableHTML += '<td>' + product.ber + ' ' + product.productName + '</td>';
-                }
-                tableHTML += '<td>' + product.ber + '</td>';
+                tableHTML += '<td>' + (product.ber || '') + ' ' + product.productName + '</td>';
+                tableHTML += '<td>' + (product.ber || '') + '</td>';
                 tableHTML += '<td>' + product.displayName + '</td>';
                 tableHTML += '<td>' + product.sizeID.sizeName + '</td>';
                 tableHTML += '<td>' + product.typeID.typeName + '</td>';
                 tableHTML += '<td>' + product.gradeID.gradeName + '</td>';
                 tableHTML += '<td>' +
                     '<form id="editForm" action="/editProduct" method="POST">' +
-                    '<input type="hidden" name="edit_id" id="edit_id" value="' + product._id + '">' +
+                    '<input type="hidden" name="edit_id" value="' + product._id + '">' +
                     '<button type="submit" class="btn btn-primary">แก้ไข</button>' +
                     '</form>' +
                     '</td>';
                 tableHTML += '<td>' +
-                    '<form action="/deleteProduct" method="POST" style="display: inline;">' +
+                    '<form action="/deleteProduct" method="POST">' +
                     '<input type="hidden" name="delete_id" value="' + product._id + '">' +
-                    '<button type="submit" class="btn btn-danger ml-2" onclick="return confirm(\'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้? \')">ลบ</button>' +
+                    '<button type="submit" class="btn btn-danger ml-2" onclick="return confirm(\'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?\')">ลบ</button>' +
                     '</form>' +
                     '</td>';
                 tableHTML += '</tr>';
             });
 
-            // แทรก HTML ลงใน tableCost
-            // $('#tableProductGroups').html(tableHTML);
+            // แทรก HTML ลงในตาราง
+            document.getElementById('tableProductGroups').innerHTML = tableHTML;
         })
-        .catch(error => console.error('Error fetching data:', error))
+        .catch(error => console.error('Error fetching data:', error));
 }
 
 function fetchProductGroups(typeID, sizeID, gradeID) {
@@ -235,7 +248,6 @@ function addNewCost() {
         })
         .catch(error => console.error('Error fetching addNewCost:', error));
 }
-
 
 // รับพารามิเตอร์กลับมาจากหน้า edit 
 if (typeof window !== 'undefined') {

@@ -4,19 +4,25 @@ async function updateSubCustomers() {
 
     try {
         const response = await fetch(`/api/subCustomers?customerId=${customerId}`);
-        const subCustomers = await response.json();
+        const result = await response.json();
+
+        if (!result.success) {
+            console.error('Error fetching subCustomers:', result.message);
+            return;
+        }
 
         subCustomerDropdown.innerHTML = '<option value="">เลือก</option>';
-        subCustomers.forEach(subCustomer => {
+        result.subCustomers.forEach(subCustomer => {
             const option = document.createElement('option');
-            option.value = subCustomer;
-            option.text = subCustomer;
+            option.value = subCustomer._id;
+            option.text = subCustomer.subCustomerName;
             subCustomerDropdown.add(option);
         });
     } catch (error) {
         console.error('Error fetching subCustomers:', error);
     }
 }
+
 
 async function updateSizes() {
     const selectedGrains = Array.from(document.querySelectorAll('input[name="grain"]:checked')).map(cb => cb.value);

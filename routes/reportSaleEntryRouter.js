@@ -48,12 +48,21 @@ router.get('/reportSaleEntry', async (req, res) => {
 router.get('/api/subCustomers', async (req, res) => {
     const { customerId } = req.query;
     try {
-        const customer = await Customer.findById(customerId).exec();
-        res.json(customer.subCustomerName);
+        // ดึงข้อมูล Customer พร้อมข้อมูล SubCustomer ที่ populate มา
+        const customer = await Customer.findById(customerId).populate('subCustomerIDs').exec();
+
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'ไม่พบข้อมูลลูกค้า' });
+        }
+
+        // ส่งข้อมูล subCustomers กลับไปยัง client
+        res.json({ success: true, subCustomers: customer.subCustomerIDs });
     } catch (err) {
-        res.status(500).send(err.message);
+        console.error('Error fetching subCustomers:', err);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการดึงข้อมูล Sub-customer', error: err.message });
     }
 });
+
 
 // API สำหรับดึงข้อมูล size ตาม grainID
 router.get('/api/sizes', async (req, res) => {

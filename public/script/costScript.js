@@ -92,13 +92,13 @@ function selectedProduct(typeID, sizeID, gradeID) {
                 tableHTML += '<td>' +
                     '<form id="editForm" action="/editProduct" method="POST">' +
                     '<input type="hidden" name="edit_id" value="' + product._id + '">' +
-                    '<button type="submit" class="btn btn-primary">แก้ไข</button>' +
+                    '<button type="submit" class="btn btn-primary btn-sm">แก้ไข</button>' +
                     '</form>' +
                     '</td>';
                 tableHTML += '<td>' +
                     '<form action="/deleteProduct" method="POST">' +
                     '<input type="hidden" name="delete_id" value="' + product._id + '">' +
-                    '<button type="submit" class="btn btn-danger ml-2" onclick="return confirm(\'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?\')">ลบ</button>' +
+                    '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้?\')">ลบ</button>' +
                     '</form>' +
                     '</td>';
                 tableHTML += '</tr>';
@@ -151,7 +151,7 @@ function fetchProductGroups(typeID, sizeID, gradeID) {
                         '<input type="hidden" name="edit_id1" value="' + productGroups[productName].productId._id + '">' +
                         '<input type="hidden" name="edit_id2" value="' + productName + '">' +
                         '<input type="hidden" name="edit_id3" value="' + productGroups[productName].costId + '">' +
-                        '<button type="submit" class="btn btn-primary">แก้ไข</button>' +
+                        '<button type="submit" class="btn btn-primary btn-sm">แก้ไข</button>' +
                         '</form>' +
                         '</td>';
                         tableHTML += `<td>

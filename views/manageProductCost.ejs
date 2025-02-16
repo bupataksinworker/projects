@@ -1,0 +1,203 @@
+<%- include('head') %>
+    </head>
+
+    <body>
+        <%- include('navbar') %>
+            <div id="popup">
+                <br>
+                <div class="w3-display-container">
+                    <div align="center">
+                        <h3><b>จัดการข้อมูลสินค้าและต้นทุน</b></h3>
+                    </div>
+                    <br>
+                    <div class="row">
+                        <!-- ส่วนซ้าย: ฟอร์มสินค้าและต้นทุน -->
+                        <div class="col-sm-3">
+                            <form id="productCostForm">
+                                <div class="form-group">
+                                    <label for="typeIDCost">เลือกประเภท</label>
+                                    <select class="form-control" name="typeIDCost" id="typeIDCost" required
+                                        onchange="selectedTypeCost(this.value)">
+                                        <option value=""></option>
+                                        <% types.forEach(function(type) { %>
+                                            <option value="<%= type._id %>" <%=selectedTypeID===type._id.toString()
+                                                ? 'selected' : '' %>><%= type.typeName %>
+                                            </option>
+                                            <% }); %>
+                                    </select>
+                                </div><br>
+
+                                <div class="form-group">
+                                    <label for="sizeIDCost">เลือกไซส์</label>
+                                    <select class="form-control" name="sizeIDCost" id="sizeIDCost" required
+                                        onchange="selectedSizeCost()">
+                                        <option value=""></option>
+                                        <% sizes.forEach(function(size) { %>
+                                            <option value="<%= size._id %>" <%=selectedSizeID===size._id.toString()
+                                                ? 'selected' : '' %>><%= size.sizeName %>
+                                            </option>
+                                            <% }); %>
+                                    </select>
+                                </div><br>
+
+                                <div class="form-group">
+                                    <label for="gradeIDCost">เลือกเกรด</label>
+                                    <select class="form-control" name="gradeIDCost" id="gradeIDCost" required
+                                        onchange="selectedGradeCost()">
+                                        <option value=""></option>
+                                        <% grades.forEach(function(grade) { %>
+                                            <option value="<%= grade._id %>" <%=selectedGradeID===grade._id.toString()
+                                                ? 'selected' : '' %>><%= grade.gradeName %>
+                                            </option>
+                                            <% }); %>
+                                    </select>
+                                </div><br>
+
+                                <div class="form-group">
+                                    <label for="costOfProductCost">เพิ่มราคาต้นทุนสินค้า</label>
+                                    <input type="number" class="form-control" id="costOfProductCost"
+                                        name="costOfProductCost" required>
+                                </div><br>
+
+                                <button type="button" class="btn btn-success btn-lg"
+                                    onclick="addCostProduct()">บันทึก</button>
+                            </form>
+                        </div>
+
+                        <!-- ส่วนขวา: ตารางแสดงข้อมูลสินค้าและต้นทุนในตารางเดียว -->
+                        <div class="col-sm-9">
+                            <table class="table" style="text-align: center;">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>ลำดับ</th>
+                                        <th>ชื่อสินค้า</th>
+                                        <th>เบอร์</th>
+                                        <th>DisplayName</th>
+                                        <th>ไซส์</th>
+                                        <th>ประเภท</th>
+                                        <th>เกรด</th>
+                                        <th>ราคาล่าสุด</th>
+                                        <th>แก้ไข</th>
+                                        <th>ลบข้อมูล</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableProductCostData">
+                                    <!-- selectedProductCost จะเติมข้อมูลสินค้า และ fetchProductGroupsCost จะเติมข้อมูลราคาล่าสุด -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal แก้ไขข้อมูลสินค้าและต้นทุน -->
+            <div class="modal fade" id="modal_editProductCost" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">แก้ไขข้อมูลสินค้าและต้นทุน</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- ✅ ใช้แค่ input เดียว ไม่ซ้ำ -->
+                            <input type="hidden" id="modal_edit_id" value="<%= selectedProduct && selectedProduct._id ? selectedProduct._id : '' %>">
+            
+                            <form>
+                                <div class="form-group">
+                                    <label for="modal_ber">เลือกเบอร์</label>
+                                    <select class="form-control" name="modal_ber" id="modal_ber">
+                                        <option value="<%= selectedProduct ? selectedProduct.ber : '' %>" selected>
+                                            <%= selectedProduct ? selectedProduct.ber : '' %>
+                                        </option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                    </select>
+                                </div><br>
+            
+                                <div class="form-group">
+                                    <label for="modal_sizeID">เลือกไซส์</label>
+                                    <select class="form-control" name="modal_sizeID" id="modal_sizeID">
+                                        <% sizes.forEach(function(size) { %>
+                                            <option value="<%= size._id %>" <%=selectedProduct && selectedProduct.sizeID
+                                                && size._id.toString() === selectedProduct.sizeID._id.toString()
+                                                ? 'selected' : '' %>>
+                                                <%= size.sizeName %>
+                                            </option>
+                                        <% }); %>
+                                    </select>
+                                </div><br>
+            
+                                <div class="form-group">
+                                    <label for="modal_typeID">เลือกประเภท</label>
+                                    <select class="form-control" name="modal_typeID" id="modal_typeID">
+                                        <% types.forEach(function(type) { %>
+                                            <option value="<%= type._id %>" <%=selectedProduct && selectedProduct.typeID
+                                                && type._id.toString() === selectedProduct.typeID._id.toString()
+                                                ? 'selected' : '' %>>
+                                                <%= type.typeName %>
+                                            </option>
+                                        <% }); %>
+                                    </select>
+                                </div><br>
+            
+                                <div class="form-group">
+                                    <label for="modal_gradeID">เลือกเกรด</label>
+                                    <select class="form-control" name="modal_gradeID" id="modal_gradeID">
+                                        <% grades.forEach(function(grade) { %>
+                                            <option value="<%= grade._id %>" <%=selectedProduct &&
+                                                selectedProduct.gradeID &&
+                                                grade._id.toString() === selectedProduct.gradeID._id.toString()
+                                                ? 'selected' : '' %>>
+                                                <%= grade.gradeName %>
+                                            </option>
+                                        <% }); %>
+                                    </select>
+                                </div><br>
+            
+                                <div class="form-group">
+                                    <label for="modal_displayName">DisplayName</label>
+                                    <input class="form-control" type="text" name="modal_displayName"
+                                        id="modal_displayName"
+                                        value="<%= selectedProduct ? selectedProduct.displayName : '' %>">
+                                </div><br>
+                            </form>
+            
+                            <hr>
+            
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ลำดับ</th>
+                                        <th>วันที่</th>
+                                        <th>ราคาสินค้า</th>
+                                        <th>ลบข้อมูล</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="costTableBody">
+                                    <!-- ✅ ข้อมูล `costs` จะถูกเติมโดย `openEditProductCostModal()` -->
+                                </tbody>
+                            </table>
+            
+                            <div class="form-group">
+                                <label for="modal_newCostOfProduct">เพิ่มราคาต้นทุนใหม่</label>
+                                <input type="number" class="form-control" id="modal_newCostOfProduct" placeholder="เพิ่มราคาต้นทุนใหม่">
+                            </div><br>
+            
+                            <button type="button" class="btn btn-success" onclick="addNewProductCost()">เพิ่ม</button>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                            <button type="button" class="btn btn-primary"
+                                onclick="updateProductAndCost()">อัพเดท</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+            <script src="script/productCostScript.js"></script>
+    </body>
+
+    </html>

@@ -6,7 +6,7 @@ const batchSchema = new mongoose.Schema({
     batchYear: {
         type: Number,
         required: true,
-        enum: [67, 68, 69] // ใช้เป็นปี พ.ศ. สามารถเพิ่มหรือลบปีได้ตามต้องการ
+        enum: [68, 69, 70] // ใช้เป็นปี พ.ศ. สามารถเพิ่มหรือลบปีได้ตามต้องการ
     },
     number: {
         type: Number,

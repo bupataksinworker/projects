@@ -8,7 +8,7 @@
                 <div class="w3-display-container">
                     <div align="center">
                         <label>
-                            <b>จัดการชุด</b>
+                            <h3><b>จัดการชุด</b></h3>
                         </label>
                     </div>
 
@@ -24,7 +24,7 @@
                                         onchange="batchForm()">
                                         <option value=""></option>
                                         <% batchYears.forEach(function(year) { %>
-                                            <option value="<%= year %>%>">
+                                            <option value="<%= year %>">
                                                 <%= year %>
                                             </option>
                                             <% }); %>
@@ -34,7 +34,7 @@
                                         onchange="batchForm()">
                                         <option value=""></option>
                                         <% numbers.forEach(function(num) { %>
-                                            <option value="<%= num %>%>">
+                                            <option value="<%= num %>">
                                                 <%= num %>
                                             </option>
                                             <% }); %>
@@ -49,14 +49,6 @@
                                             </option>
                                             <% }); %>
                                     </select>
-                                    <!-- <% types.forEach(function(type) { %>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="typeID" value="<%= type._id %>" id="type_<%= type._id %>">
-                                        <label class="form-check-label" for="type_<%= type._id %>">
-                                            <%= type.typeName %>
-                                        </label>
-                                    </div>
-                                <% }); %> -->
                                 </div><br>
                                 <div class="form-group">
                                     <label for="batchName">ชื่อชุด</label>
@@ -100,15 +92,99 @@
                                         <th scope="col">ลบ</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tableBatch">
-
-                                </tbody>
+                                <tbody id="tableBatch"></tbody>
                             </table>
                         </div>
 
                     </div>
                 </div>
+
+
+                <!-- Modal แก้ไขข้อมูล -->
+                <div class="modal fade" id="editBatchModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">แก้ไขข้อมูลสินค้า</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="updateBatchForm">
+                                    <input type="hidden" name="modal_edit_id" id="modal_edit_id">
+                                    <div class="form-group">
+                                        <label for="modal_batchYear">เลือกปี</label>
+                                        <select class="form-control" name="modal_batchYear" id="modal_batchYear"
+                                            required>
+                                            <option value=""></option>
+                                            <% batchYears.forEach(function(year) { %>
+                                                <option value="<%= year %>">
+                                                    <%= year %>
+                                                </option>
+                                                <% }); %>
+                                        </select>
+                                    </div><br>
+                                    <div class="form-group">
+                                        <label for="modal_number">เลือกเลขชุด</label>
+                                        <select class="form-control" name="modal_number" id="modal_number" required>
+                                            <option value=""></option>
+                                            <% numbers.forEach(function(num) { %>
+                                                <option value="<%= num %>">
+                                                    <%= num %>
+                                                </option>
+                                                <% }); %>
+                                        </select>
+                                    </div><br>
+                                    <div class="form-group">
+                                        <label for="modal_typeID">เลือกประเภท</label>
+                                        <% types.forEach(function(type) { %>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="modal_typeID"
+                                                    value="<%= type._id %>" id="modal_type_<%= type._id %>">
+                                                <label class="form-check-label" for="modal_type_<%= type._id %>">
+                                                    <%= type.typeName %>
+                                                </label>
+                                            </div>
+                                            <% }); %>
+                                    </div><br>
+                                    <div class="form-group">
+                                        <label for="modal_batchName">ชื่อชุด</label>
+                                        <input class="form-control" type="text" name="modal_batchName"
+                                            id="modal_batchName" required>
+                                    </div><br>
+                                    <div class="form-group">
+                                        <label for="modal_costOfBatch">ทุนตั้งต้น</label>
+                                        <input class="form-control" type="number" name="modal_costOfBatch"
+                                            id="modal_costOfBatch" required disabled>
+                                    </div><br>
+                                    <div class="form-group">
+                                        <label for="modal_costOfBatchBefore">ทุนชุดก่อนหน้า</label>
+                                        <input class="form-control" type="number" name="modal_costOfBatchBefore"
+                                            id="modal_costOfBatchBefore" required>
+                                    </div><br>
+                                    <div class="form-group">
+                                        <label for="modal_costOfBatchNew">ทุนของใหม่</label>
+                                        <input class="form-control" type="number" name="modal_costOfBatchNew"
+                                            id="modal_costOfBatchNew" required>
+                                    </div><br>
+                                    <div class="form-group">
+                                        <label for="modal_costOfBatchLabor">ทุนค่าแรง</label>
+                                        <input class="form-control" type="number" name="modal_costOfBatchLabor"
+                                            id="modal_costOfBatchLabor" required>
+                                    </div><br>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                <button type="button" class="btn btn-primary"
+                                    onclick="submitEditBatch()">อัพเดท</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ปิด modal -->
             </div>
             <script src="script/batchScript.js"></script>
     </body>
+
     </html>

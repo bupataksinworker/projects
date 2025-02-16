@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="/fonts/fontawesome-free-6.5.2-web/css/all.min.css">
     <script src="/js/jquery-3.7.1.min.js"></script>
     <script src="/script/utilityScript.js"></script>
+    <link rel="stylesheet" href="/css/popupModalStyle.css">
+
 </head>
 
 <body>
@@ -22,7 +24,7 @@
                 <tbody>
                     <!-- Input fields -->
                     <tr>
-                        <td class="no-wrap"><label for="typeSelect">เลือกประเภท:</label></td>
+                        <td class="no-wrap"><label for="typeSelect">ประเภท:</label></td>
                         <td class="no-wrap">
                             <select class="form-control" id="typeSelect" name="type"
                                 onchange="filterSizeAndBatch(this.value);">
@@ -34,7 +36,7 @@
                                     <% }); %>
                             </select>
                         </td>
-                        <td class="no-wrap"><label for="sizeSelect">เลือกไซส์:</label></td>
+                        <td class="no-wrap"><label for="sizeSelect">ไซส์:</label></td>
                         <td class="no-wrap">
                             <select class="form-control" id="sizeSelect" name="size" onchange="filterProduct();">
                                 <option value="">-- เลือกไซส์ --</option>
@@ -46,19 +48,28 @@
                                 <option value="">-- เลือกเกรด --</option>
                             </select>
                         </td> -->
-                        <td class="no-wrap"><label for="productSelect">เลือกสินค้า:</label></td>
+                        <td class="no-wrap">
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                id="openProductMenu" title="คลิกเพื่อจัดการสินค้า">สินค้า</button>
+                        </td>
                         <td class="no-wrap">
                             <select class="form-control" id="productSelect" name="product" onchange="filterCost();">
                                 <option value="">-- เลือกสินค้า --</option>
                             </select>
                         </td>
-                        <td class="no-wrap"><label for="costSelect">เลือกราคาทุน:</label></td>
+                        <td class="no-wrap">
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                id="openCostMenu" title="คลิกเพื่อจัดการราคาทุน">ราคาทุน</button>
+                        </td>
                         <td class="no-wrap">
                             <select class="form-control" id="costSelect" name="costSelect">
                                 <option value="">-- เลือกราคาทุน --</option>
                             </select>
                         </td>
-                        <td class="no-wrap"><label for="batchSelect">เลือกชุด:</label></td>
+                        <td class="no-wrap">
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                id="openBatchMenu" title="คลิกเพื่อจัดการชุด">ชุด</button>
+                        </td>
                         <td class="no-wrap">
                             <select class="form-control" id="batchSelect" name="batch">
                                 <option value="">-- เลือกชุด --</option>
@@ -145,9 +156,15 @@
                     <%= new Date(sale.saleDate).toLocaleDateString('en-GB') %>
                 </th>
                 <th><b>ชื่อลูกค้า:</b>
-                    <%= sale?.customerID?.customerName %>
-                        <%= sale.subCustomerName ? `(${sale.subCustomerName})` : '' %>
-                </th>
+                    <% if (sale && sale.customerID) { %>
+                        <%= sale.customerID.customerName %>
+                        <% if (sale.subCustomerID && sale.subCustomerID.subCustomerName) { %>
+                            (<%= sale.subCustomerID.subCustomerName %>) 
+                        <% } else { %>
+                            
+                        <% } %>
+                    <% } %>
+                </th>                                              
                 <th><b>สถานะ:</b>
                     <%= sale.billStatus %>
                 </th>
@@ -309,4 +326,6 @@
 
 </html>
 <script src="/script/saleEntryScript.js"></script>
+<script src="/script/saleEntryScriptModalProductCost.js"></script>
+<script src="/script/saleEntryScriptModalBatch.js"></script>
 <script src="/script/saleScript.js"></script>

@@ -8,86 +8,75 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    background: rgba(0, 0, 0, 0.5);
     z-index: 9999;
 }
 
-/* Modal Product และ Cost */
-.product-modal, .cost-modal, .batch-modal {
-    background: rgba(0, 0, 0, 0.5);
-}
-
-/* Content สำหรับแต่ละ modal */
-.product-modal .modal-content, 
-.cost-modal .modal-content, 
-.batch-modal .modal-content {
+/* Modal content */
+.modal-content {
     background: white;
-    width: 90%;
-    height: 100%;
-    max-width: 100%;
+    width: 100%;
+    height: 90%;
+    max-width: 90%;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     padding: 0;
+    overflow: hidden;
 }
 
-/* Header ของแต่ละ modal */
-.product-modal .modal-header, 
-.cost-modal .modal-header {
+/* Modal header */
+.modal-header {
     display: flex;
     justify-content: center;
-    background-color: #f1f1f1;
-    padding: 0px;
-    border-bottom: 1px solid #ccc;
-}
-
-.batch-modal .modal-header {
-    display: flex;
-    justify-content: center;
-    background-color: #f1f1f1;
-    padding: 5px;
-    border-bottom: 1px solid #ccc;
-}
-
-/* ปุ่มใน modal header */
-.modal-header button {
-    flex: 1;
-    padding: 5px;
-    margin: 0;
-    background-color: #ccc;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s;
-}
-
-.modal-header button.active-tab {
+    align-items: center;
     background-color: #007bff;
     color: white;
+    padding: 15px;
+    font-size: 10px;
+    font-weight: bold;
+    border-bottom: 2px solid #0056b3;
 }
 
 /* Modal body */
 .modal-body {
     flex: 1;
-    display: flex;
-    padding: 5px;
-    overflow: hidden;
-}
-
-/* Tab content */
-.tab-content {
-    width: 100%;
+    padding: 20px;
     overflow-y: auto;
-    display: none;
-}
-
-.tab-content.active-content {
-    display: block;
+    background-color: #f9f9f9;
 }
 
 /* Modal footer */
 .modal-footer {
     display: flex;
     justify-content: flex-end;
-    padding: 10px;
+    padding: 10px 20px;
+    background-color: #f1f1f1;
     border-top: 1px solid #ccc;
+}
+
+/* ปุ่มใน Modal */
+.modal-footer button {
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.modal-footer button:hover {
+    background-color: #0056b3;
+}
+
+/* พื้นที่แสดงเนื้อหา */
+.content-area {
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
 }

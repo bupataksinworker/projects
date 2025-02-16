@@ -22,6 +22,7 @@ const homeRouter = require('./routes/homeRouter');
 const stockRouter = require('./routes/stockRouter');
 const reportTransactionRouter = require('./routes/reportTransactionRouter');
 const gradeDetailsRouter = require('./routes/gradeDetailsRouter');
+const productCostRouter = require('./routes/productCostRouter');
 
 
 const passport = require('passport');
@@ -141,6 +142,7 @@ app.use(homeRouter);
 app.use(stockRouter);
 app.use(reportTransactionRouter);
 app.use(gradeDetailsRouter);
+app.use(productCostRouter);
 
 app.listen(3000, () => {
   console.log('Start server port 3000');

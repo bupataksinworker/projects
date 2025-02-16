@@ -1,0 +1,132 @@
+<%- include('head') %>
+</head>
+<body>
+    <%- include('navbar') %>
+    <br>
+    <div class="w3-display-container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h2 class="text-center mb-4"><b>แก้ไขข้อมูลสินค้าและต้นทุน</b></h2>
+
+                <form>
+                    <input type="hidden" name="edit_id" id="edit_id" value="<%= product._id %>">
+                
+                    <!-- เลือกเบอร์ -->
+                    <div class="form-group">
+                        <label for="ber">เลือกเบอร์</label>
+                        <select class="form-control" name="ber" id="ber" required>
+                            <option value="<%= selectedValues.ber %>" selected><%= selectedValues.ber %></option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </div><br>
+                
+                    <!-- เลือกไซส์ -->
+                    <div class="form-group">
+                        <label for="sizeID">เลือกไซส์</label>
+                        <select class="form-control" name="sizeID" id="sizeID" required>
+                            <% sizes.forEach(function(size) { %>
+                                <option value="<%= size._id %>" <% if (size._id.toString() === selectedValues.sizeID.toString()) { %> selected <% } %>>
+                                    <%= size.sizeName %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div><br>
+                
+                    <!-- เลือกประเภท -->
+                    <div class="form-group">
+                        <label for="typeID">เลือกประเภท</label>
+                        <select class="form-control" name="typeID" id="typeID" required>
+                            <% types.forEach(function(type) { %>
+                                <option value="<%= type._id %>" <% if (type._id.toString() === selectedValues.typeID.toString()) { %> selected <% } %>>
+                                    <%= type.typeName %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div><br>
+                
+                    <!-- เลือกเกรด -->
+                    <div class="form-group">
+                        <label for="gradeID">เลือกเกรด</label>
+                        <select class="form-control" name="gradeID" id="gradeID" required>
+                            <% grades.forEach(function(grade) { %>
+                                <option value="<%= grade._id %>" <% if (grade._id.toString() === selectedValues.gradeID.toString()) { %> selected <% } %>>
+                                    <%= grade.gradeName %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div><br>
+                
+                    <!-- DisplayName -->
+                    <div class="form-group">
+                        <label for="displayName">DisplayName</label>
+                        <input class="form-control" type="text" name="displayName" id="displayName" value="<%= selectedValues.displayName %>">
+                    </div><br>
+                </form>
+                
+                <!-- ฟอร์มต้นทุน -->
+                <form>
+                    <input type="hidden" id="productID" name="productID" value="<%= product._id %>">
+                    <input type="hidden" id="costIdOld" name="costIdOld" value="<%= selectedValues.costID %>">
+                
+                    <div class="form-group">
+                        <label for="costID">ราคาสินค้า</label>
+                        <select class="form-control" id="costID" name="costID" required>
+                            <% costs.forEach(function(cost) { %>
+                                <option value="<%= cost._id %>" <% if (cost._id.toString() === selectedValues.costID.toString()) { %> selected <% } %>>
+                                    <%= cost.costOfProduct %>
+                                </option>
+                            <% }); %>
+                        </select>
+                    </div><br>
+                </form>
+                
+
+                <hr>
+
+                <!-- ตารางแสดงต้นทุนสินค้า -->
+                <table class="table" style="text-align: center;">
+                    <thead>
+                        <tr>
+                            <th scope="col">ลำดับ</th>
+                            <th scope="col">วันที่</th>
+                            <th scope="col">ราคาสินค้า</th>
+                            <th scope="col">ลบข้อมูล</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% const sortedCosts = costs.sort((a, b) => b.costOfProduct - a.costOfProduct);
+                           sortedCosts.forEach(function(cost, index) { %>
+                            <tr>
+                                <td><%= index + 1 %></td>
+                                <td><%= cost.costDate %></td>
+                                <td><%= cost.costOfProduct %></td>
+                                <td>
+                                    <button class="btn btn-danger" onclick="deleteProductCostOne('<%= cost._id %>')">ลบ</button>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+
+                <table class="table" style="text-align: center;">
+                    <tr>
+                        <td>
+                            <input class="form-control" type="number" id="newCostOfProduct" name="newCostOfProduct" placeholder="add new cost">
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-success" onclick="addNewProductCost()">เพิ่ม</button>
+                        </td>
+                    </tr>
+                </table>
+                <div class="text-center">
+                    <button type="button" class="btn btn-primary" onclick="updateProductAndCost()">อัพเดท</button>
+                    <button type="button" class="btn btn-secondary" onclick="goBackToManage()">ยกเลิก</button>
+                </div>                
+            </div>
+        </div>
+    </div>
+</body>
+<script src="script/productCostScript.js"></script>

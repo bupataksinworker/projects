@@ -257,6 +257,9 @@ async function deleteProductCost(id) {
 
 function deleteProductCostOne(costID) {
     const result = confirm('ต้องการลบราคาสินค้านี้? ' + costID);
+    const productIDInput = document.getElementById('modal_edit_id');
+    const productID = productIDInput.value;
+    
     if (result) {
         fetch('/deleteID', {
             method: 'POST',
@@ -268,7 +271,14 @@ function deleteProductCostOne(costID) {
             .then(response => {
                 if (response.ok) {
                     console.log('ลบข้อมูลถูกสำเร็จ!');
-                    window.location.reload(); // รีเฟรชหน้าเว็บ
+                    // window.location.reload(); // รีเฟรชหน้าเว็บ
+
+                    // ✅ อัปเดตตารางข้อมูลโดยไม่ต้องรีโหลดหน้า
+                    updateTableProductCost();
+
+                    // ✅ อัปเดตตารางข้อมูลต้นทุนทันทีหลังจากเพิ่ม
+                    updateCostTable(productID);
+
                 } else {
                     console.error('เกิดข้อผิดพลาด: ', response.status);
                 }

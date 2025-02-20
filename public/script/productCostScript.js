@@ -109,6 +109,12 @@ async function addCostProduct() {
         const result = await response.json();
         alert(result.message);
         updateTableProductCost();
+
+        // ✅ ถ้ามีฟังก์ชัน `updateDropdownSaleEntry()` ให้เรียกใช้งาน สำหรับ popup หน้า manageSaleEntry
+        if (typeof updateDropdownSaleEntry === 'function') {
+            updateDropdownSaleEntry(result.product);
+        }
+
     } catch (error) {
         console.error('Error adding product cost:', error);
     }

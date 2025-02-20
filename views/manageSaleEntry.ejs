@@ -42,12 +42,6 @@
                                 <option value="">-- เลือกไซส์ --</option>
                             </select>
                         </td>
-                        <!-- <td class="no-wrap"><label for="gradeSelect">เลือกเกรด:</label></td>
-                        <td class="no-wrap">
-                            <select class="form-control" id="gradeSelect" name="grade" onchange="filterProduct();">
-                                <option value="">-- เลือกเกรด --</option>
-                            </select>
-                        </td> -->
                         <td class="no-wrap">
                             <button type="button" class="btn btn-outline-secondary btn-sm"
                                 id="openProductMenu" title="คลิกเพื่อจัดการสินค้า">สินค้า</button>
@@ -58,9 +52,9 @@
                             </select>
                         </td>
                         <td class="no-wrap">
-                            <!-- <button type="button" class="btn btn-outline-secondary btn-sm"
-                                id="openCostMenu" title="คลิกเพื่อจัดการราคาทุน">ราคาทุน</button> -->
-                                <label for="costSelect">ราคาทุน:</label>
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                id="openCostMenu" title="คลิกเพื่อจัดการราคาทุน">ราคาทุน</button>
+                                <!-- <label for="costSelect">ราคาทุน:</label> -->
                         </td>
                         <td class="no-wrap">
                             <select class="form-control" id="costSelect" name="costSelect">
@@ -116,29 +110,21 @@
                         <td class="no-wrap">
                             <textarea class="form-control" id="note" name="note" rows="1"></textarea>
                         </td>
-                        <td colspan="4" style="text-align: center;">
+                        <!-- <td colspan="4" style="text-align: center;">
                             <button type="reset" class="btn btn-outline-dark btn-sm" style="width: 40%;"
                                 onclick="resetFormCost()">ล้างข้อมูล</button>
                             <button id="btnClick" type="reset" class="btn btn-outline-dark btn-sm" style="width: 40%;"
                                 onclick="clickToggleButton()">ปิด</button>
-                        </td>
-                        <!-- <td class="no-wrap"><label for="closeWeight">ระบุน้ำหนัก<b>ปิด</b>(ก.):</label></td>
-                        <td class="no-wrap">
-                            <input type="number" class="form-control" id="closeWeight" name="closeWeight"
-                                placeholder="ระบุน้ำหนักปิด">
-                        </td>
-                        <td class="no-wrap"><label for="closePrice">ระบุราคา<b>ปิด</b>(บาท/ก.):</label></td>
-                        <td class="no-wrap">
-                            <input type="number" class="form-control" id="closePrice" name="closePrice"
-                                placeholder="ระบุราคาปิด">
                         </td> -->
-                    </tr>
-                    <tr>  
+                    <!-- </tr>
+                    <tr>   -->
                         <td colspan="10" style="text-align: center;">
                             <input type="hidden" name="saleID" id="saleID" value="<%= sale._id %>">
                             <input type="hidden" name="billStatus" id="billStatus" value="<%= sale.billStatus %>">
                             <button id="id1" type="button" class="onProcess btn btn-success btn-sm" style="width: 50%;"
                                 onclick="addSaleEntry()">เพิ่มสินค้า</button>
+                            <button id="btnClick" type="reset" class="btn btn-outline-dark btn-sm" style="width: 40%;"
+                                onclick="clickToggleButton()">ปิดเมนู</button>
                         </td>
                         
                     </tr>

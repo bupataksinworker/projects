@@ -101,111 +101,98 @@ router.get('/selectedType', async (req, res) => {
 });
 
 // ค้นหาข้อมูลเมื่อเลือก ตัวอื่นนอกจาก Type
+// router.get('/selectedProduct', async (req, res) => {
+//     try {
+//         // ตรวจสอบว่ามีผู้ใช้ล็อกอินหรือไม่
+//         if (!checkLoggedIn(req)) {
+//             // ถ้าไม่มีผู้ใช้ล็อกอิน ให้ redirect ไปยังหน้า login
+//             return res.redirect('/login');
+//         }
+
+//         // ดึงค่า sizeID gradeID typeID ที่ส่งมาจากหน้า manageSize.ejs
+//         const selectedTypeID = req.query.typeID;
+//         // console.log("selectedTypeID : " + req.query.typeID)
+//         const selectedSizeID = req.query.sizeID;
+//         // console.log("selectedSizeID : " + req.query.sizeID)
+//         const selectedGradeID = req.query.gradeID;
+//         // console.log("selectedGradeID : " + req.query.gradeID)
+
+//         // หาขนาดที่มี typeID ตรงกับที่เลือก (หรือข้ามหากไม่มีหรือมีค่าเป็นค่าว่างหรือ undefined)
+//         let products;
+//         if (selectedTypeID && selectedSizeID && selectedGradeID) {
+//             console.log("Condition Code 4");
+//             products = await Product.find({ typeID: selectedTypeID, sizeID: selectedSizeID, gradeID: selectedGradeID }).populate('sizeID').populate('typeID').populate('gradeID');
+//         } else if (selectedTypeID && selectedSizeID && selectedGradeID) {
+//             console.log("Condition Code 3-1");
+//             products = await Product.find({ typeID: selectedTypeID, sizeID: selectedSizeID, gradeID: selectedGradeID }).populate('sizeID').populate('typeID').populate('gradeID');
+//         } else if (selectedTypeID && selectedSizeID) {
+//             console.log("Condition Code 3-2");
+//             products = await Product.find({ typeID: selectedTypeID, sizeID: selectedSizeID }).populate('sizeID').populate('typeID').populate('gradeID');
+//         } else if (selectedTypeID && selectedSizeID) {
+//             console.log("Condition Code 2");
+//             products = await Product.find({ typeID: selectedTypeID, sizeID: selectedSizeID }).populate('sizeID').populate('typeID').populate('gradeID');
+//         } else if (selectedTypeID) {
+//             console.log("Condition Code 1");
+//             products = await Product.find({ typeID: selectedTypeID }).populate('sizeID').populate('typeID').populate('gradeID');
+//         }
+
+//         let sizes;
+//         if (selectedTypeID) {
+//             sizes = await Size.find({ typeID: selectedTypeID }).populate('typeID');
+//         } else {
+//             sizes = await Size.find().populate('typeID');
+//         }
+
+//         const types = await Type.find();
+//         const grades = await Grade.find();
+//         let costProduct = products;
+//         // ส่งข้อมูลขนาดเฉพาะเป็น JSON กลับไปที่หน้า manageProduct.ejs
+//         res.json({ products, types, sizes, grades, costProduct });
+
+//     } catch (error) {
+//         console.error('Error fetching data:', error);
+//         res.status(500).send('Internal Server Error');
+//     }
+// });
+
 router.get('/selectedProduct', async (req, res) => {
     try {
-        // ตรวจสอบว่ามีผู้ใช้ล็อกอินหรือไม่
         if (!checkLoggedIn(req)) {
-            // ถ้าไม่มีผู้ใช้ล็อกอิน ให้ redirect ไปยังหน้า login
             return res.redirect('/login');
         }
 
-        // ดึงค่า sizeID gradeID typeID ที่ส่งมาจากหน้า manageSize.ejs
         const selectedTypeID = req.query.typeID;
-        console.log("selectedTypeID : " + req.query.typeID)
         const selectedSizeID = req.query.sizeID;
-        console.log("selectedSizeID : " + req.query.sizeID)
-        const selectedGradeID = req.query.gradeID;
-        console.log("selectedGradeID : " + req.query.gradeID)
 
-        // หาขนาดที่มี typeID ตรงกับที่เลือก (หรือข้ามหากไม่มีหรือมีค่าเป็นค่าว่างหรือ undefined)
         let products;
-        if (selectedTypeID && selectedSizeID && selectedGradeID) {
-            console.log("Condition Code 4");
-            products = await Product.find({ typeID: selectedTypeID, sizeID: selectedSizeID, gradeID: selectedGradeID }).populate('sizeID').populate('typeID').populate('gradeID');
-        } else if (selectedTypeID && selectedSizeID && selectedGradeID) {
-            console.log("Condition Code 3-1");
-            products = await Product.find({ typeID: selectedTypeID, sizeID: selectedSizeID, gradeID: selectedGradeID }).populate('sizeID').populate('typeID').populate('gradeID');
-        } else if (selectedTypeID && selectedSizeID) {
-            console.log("Condition Code 3-2");
-            products = await Product.find({ typeID: selectedTypeID, sizeID: selectedSizeID }).populate('sizeID').populate('typeID').populate('gradeID');
-        } else if (selectedTypeID && selectedSizeID) {
-            console.log("Condition Code 2");
-            products = await Product.find({ typeID: selectedTypeID, sizeID: selectedSizeID }).populate('sizeID').populate('typeID').populate('gradeID');
+        if (selectedTypeID && selectedSizeID) {
+            products = await Product.find({ typeID: selectedTypeID, sizeID: selectedSizeID })
+                .populate('sizeID')
+                .populate('typeID')
+                .populate('gradeID'); // ✅ เพิ่ม `gradeID` มาให้ product
         } else if (selectedTypeID) {
-            console.log("Condition Code 1");
-            products = await Product.find({ typeID: selectedTypeID }).populate('sizeID').populate('typeID').populate('gradeID');
-        }
-
-        let sizes;
-        if (selectedTypeID) {
-            sizes = await Size.find({ typeID: selectedTypeID }).populate('typeID');
+            products = await Product.find({ typeID: selectedTypeID })
+                .populate('sizeID')
+                .populate('typeID')
+                .populate('gradeID');
         } else {
-            sizes = await Size.find().populate('typeID');
+            products = await Product.find()
+                .populate('sizeID')
+                .populate('typeID')
+                .populate('gradeID');
         }
 
+        let sizes = selectedTypeID ? await Size.find({ typeID: selectedTypeID }).populate('typeID') : await Size.find().populate('typeID');
         const types = await Type.find();
         const grades = await Grade.find();
-        let costProduct = products;
-        // ส่งข้อมูลขนาดเฉพาะเป็น JSON กลับไปที่หน้า manageProduct.ejs
-        res.json({ products, types, sizes, grades, costProduct });
 
+        res.json({ products, types, sizes, grades });
     } catch (error) {
         console.error('Error fetching data:', error);
         res.status(500).send('Internal Server Error');
     }
 });
 
-
-// เส้นทางสำหรับการเพิ่มสินค้า
-// router.get('/addProduct', async (req, res) => {
-//     try {
-//         // รับข้อมูลจาก form addProduct
-//         const { ber, sizeID, typeID, gradeID } = req.query;
-
-//         // ค้นหาข้อมูลของ size จาก sizeID ที่รับมาจาก form
-//         const size = await Size.findById(sizeID);
-
-//         // ตรวจสอบว่าพบข้อมูล size หรือไม่
-//         let displayName;
-//         if (size) {
-//             // หากพบข้อมูล size กำหนด displayName เป็น sizeName
-//             displayName = size.sizeName;
-//             console.log('Size Name:', displayName);
-//         } else {
-//             // หากไม่พบข้อมูล size กำหนด displayName เป็น 'N/A' หรือค่าที่ต้องการ
-//             displayName = 'N/A';
-//             console.log('Size Name not found. Set default value:', displayName);
-//         }
-
-//         // ค้นหาข้อมูลที่มีเงื่อนไขตามที่กำหนดไว้
-//         const existingProduct = await Product.findOne({ ber, sizeID, typeID, gradeID, displayName });
-
-//         // ตรวจสอบว่ามีข้อมูลที่ซ้ำกันหรือไม่
-//         if (existingProduct) {
-//             // ถ้าพบข้อมูลที่ซ้ำกัน ส่งคำตอบกลับไปยัง client ด้วยสถานะ 400 (Bad Request) และข้อความแจ้งเตือน
-//             return res.status(400).send('ข้อมูลที่เพิ่มมีการซ้ำกันในระบบ');
-//         }
-
-//         // สร้างเอกสารใหม่จากข้อมูลที่รับมาจาก form
-//         const newProduct = new Product({
-//             ber,
-//             sizeID,
-//             typeID,
-//             gradeID,
-//             displayName
-//         });
-
-//         // บันทึกเอกสารใหม่ลงในฐานข้อมูล
-//         await newProduct.save();
-
-//         console.log('บันทึกข้อมูลเรียบร้อยแล้ว:', newProduct);
-//         res.redirect('/manageProduct'); // เมื่อบันทึกสำเร็จ ให้ redirect กลับ
-//         // res.json({ success: true });
-//     } catch (error) {
-//         console.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล:', error);
-//         res.status(500).send('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-//     }
-// });
 
 // เส้นทางการเพิ่ม product
 router.post('/addProduct', async (req, res) => {

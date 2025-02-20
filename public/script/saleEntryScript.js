@@ -70,36 +70,40 @@ function filterSizeAndBatch(typeID) {
         } else {
           console.error('Error fetching size data:', sizeResponse.statusText);
         }
-        // Fetch ข้อมูลสำหรับ grade --------------------------------------------------------------
-        // const gradeResponse = await fetch(`/selectedType?typeID=${typeID}`);
-        // if (gradeResponse.ok) {
-        //   const gradeData = await gradeResponse.json();
-        //   const grades = gradeData.grades;
-
-        //   // สร้าง HTML สำหรับ dropdown ของ grade
-        //   var gradeDropdownHTML = '<option value="">-- เลือกเกรด --</option>';
-        //   grades.forEach(function (grade) {
-        //     gradeDropdownHTML += `<option value="${grade._id}">${grade.gradeName}</option>`;
-        //   });
-        //   $('#gradeSelect').html(gradeDropdownHTML);
-        // } else {
-        //   console.error('Error fetching grade data:', gradeResponse.statusText);
-        // }
+    
         // Fetch ข้อมูลสำหรับ batch --------------------------------------------------------------
         const batchResponse = await fetch(`/batchForm?typeID=${typeID}`);
         if (batchResponse.ok) {
           const batchData = await batchResponse.json();
           const batchs = batchData.batchs;
 
-          // สร้าง HTML สำหรับ dropdown ของ batch
+          if (batchs.length === 0) {
+            $('#batchSelect').html('<option value="">-- ไม่มีชุดที่ใช้ได้ --</option>');
+            return;
+          }
+
+          // ✅ เรียง `batchs` ตาม `batchYear` มากไปน้อย และ `number` มากไปน้อย
+          batchs.sort((a, b) => {
+            if (b.batchYear !== a.batchYear) {
+              return b.batchYear - a.batchYear; // ปีมาก่อน
+            }
+            return b.number - a.number; // sorter มากไปน้อย
+          });
+
+          // ✅ เลือก `batch` ล่าสุดโดยอัตโนมัติ
+          const latestBatchID = batchs[0]._id;
+
+          // ✅ สร้าง HTML สำหรับ dropdown
           var batchDropdownHTML = '<option value="">-- เลือกชุด --</option>';
           batchs.forEach(function (batch) {
-            batchDropdownHTML += `<option value="${batch._id}">${batch.batchName}</option>`;
+            batchDropdownHTML += `<option value="${batch._id}" ${batch._id === latestBatchID ? 'selected' : ''}>${batch.batchName}</option>`;
           });
+
           $('#batchSelect').html(batchDropdownHTML);
         } else {
           console.error('Error fetching batch data:', batchResponse.statusText);
         }
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -107,27 +111,52 @@ function filterSizeAndBatch(typeID) {
   }
 }
 
+// async function filterProduct() {
+//   resetFormCost();
+//   var typeID = document.getElementById('typeSelect').value;
+//   var sizeID = document.getElementById('sizeSelect').value;
+//   // var gradeID = document.getElementById('gradeSelect').value;
+//   // ส่งค่า typeID และ sizeID ไปยัง router โดยใช้ Fetch API
+//   const productResponse = await fetch(`/selectedProduct?typeID=${typeID}&sizeID=${sizeID}`);
+//   if (productResponse.ok) {
+//     const productData = await productResponse.json();
+//     const products = productData.products;
+
+//     // สร้าง HTML สำหรับ dropdown ของ product
+//     var productDropdownHTML = '<option value="">-- เลือกสินค้า --</option>';
+//     products.forEach(function (product) {
+//       productDropdownHTML += `<option value="${product._id}">${product.productName}</option>`;
+//     });
+//     $('#productSelect').html(productDropdownHTML);
+//   } else {
+//     console.error('Error fetching product data:', productResponse.statusText);
+//   }
+// }
+
 async function filterProduct() {
   resetFormCost();
   var typeID = document.getElementById('typeSelect').value;
   var sizeID = document.getElementById('sizeSelect').value;
-  // var gradeID = document.getElementById('gradeSelect').value;
-  // ส่งค่า typeID และ sizeID ไปยัง router โดยใช้ Fetch API
+
   const productResponse = await fetch(`/selectedProduct?typeID=${typeID}&sizeID=${sizeID}`);
   if (productResponse.ok) {
-    const productData = await productResponse.json();
-    const products = productData.products;
+      const productData = await productResponse.json();
+      const products = productData.products;
 
-    // สร้าง HTML สำหรับ dropdown ของ product
-    var productDropdownHTML = '<option value="">-- เลือกสินค้า --</option>';
-    products.forEach(function (product) {
-      productDropdownHTML += `<option value="${product._id}">${product.productName}</option>`;
-    });
-    $('#productSelect').html(productDropdownHTML);
+      // ✅ สร้าง dropdown product โดยเพิ่ม `data-gradeid`
+      var productDropdownHTML = '<option value="">-- เลือกสินค้า --</option>';
+      products.forEach(function (product) {
+          productDropdownHTML += `
+              <option value="${product._id}" data-gradeid="${product.gradeID ? product.gradeID._id : ''}">
+                  ${product.productName}
+              </option>`;
+      });
+      $('#productSelect').html(productDropdownHTML);
   } else {
-    console.error('Error fetching product data:', productResponse.statusText);
+      console.error('Error fetching product data:', productResponse.statusText);
   }
 }
+
 
 async function filterCost() {
   var productID = document.getElementById('productSelect').value;
@@ -228,7 +257,17 @@ async function addSaleEntry() {
 
     if (entryResponse.ok) {
       const entryData = await entryResponse.json();
-      // alert('เพิ่มสำเร็จ');
+
+      // ✅ รีเซ็ตค่า input ให้กลับไปเป็นค่าเริ่มต้น
+      document.getElementById('openWeight').value = '';
+      document.getElementById('openPrice').value = '';
+      document.getElementById('note').value = '';
+      document.getElementById('selectedShapes').value = '';
+      document.getElementsByName('shapeSelect[]').value = '';
+
+      // ✅ เคลียร์ checkbox รูปร่างที่เลือก
+      document.querySelectorAll('input[name="shapeSelect[]"]:checked').forEach(checkbox => checkbox.checked = false);
+
       updateTable();
       document.getElementById('footer').scrollIntoView();
     } else {
@@ -675,7 +714,7 @@ async function okAllSaleEntry(saleID) {
           console.error('Error: Missing onclick attribute');
         }
       }
-      
+
       // ค้นหาปุ่มทั้งหมดในตารางที่มีสถานะเป็น N
       const buttons = document.querySelectorAll('#tableSaleEntry .btn-saleEntry.btn-success');
       if (buttons.length === 0) {

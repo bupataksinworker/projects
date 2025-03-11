@@ -1,4 +1,0 @@
-
-> sv@1.0.0 backup
-> node backup.js
-

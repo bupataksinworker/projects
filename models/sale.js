@@ -152,8 +152,8 @@ saleSchema.methods.totalSaleCost = async function () {
 // เพิ่ม instance method เพื่อคำนวณ totalPreSaleProfit
 saleSchema.methods.totalPreSaleProfit = async function () {
   const totalPreSaleAfterDC = await this.totalPreSaleAfterDC();
-  const totalSaleCost = await this.totalSaleCost();
-  return totalPreSaleAfterDC - totalSaleCost;
+  const totalPreSaleCost = await this.totalPreSaleCost();
+  return totalPreSaleAfterDC - totalPreSaleCost;
 };
 
 // เพิ่ม instance method เพื่อคำนวณ totalSaleProfit

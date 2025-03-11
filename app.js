@@ -1,9 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
-const { fullBackup } = require('./backup'); // นำเข้า fullBackup
 const router = express.Router();
 const session = require('express-session');
+const { exec } = require('child_process');
 
 const userRouter = require('./routes/userRouter');
 const logoutRouter = require('./routes/logoutRouter');
@@ -24,7 +24,6 @@ const reportTransactionRouter = require('./routes/reportTransactionRouter');
 const gradeDetailsRouter = require('./routes/gradeDetailsRouter');
 const productCostRouter = require('./routes/productCostRouter');
 
-
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('./models/user');
@@ -35,22 +34,30 @@ app.use(express.static('public'));
 
 const { checkLoggedIn } = require('./db/authUtils');
 const dbUrl = require('./db/db');
-// console.log(dbUrl);
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(dbUrl); // ตัวเลือกไม่จำเป็นใน MongoDB Driver เวอร์ชันใหม่
-
+    await mongoose.connect(dbUrl);
     console.log('✅ Connected to MongoDB successfully!');
 
-    // เรียกใช้ Backup หลังจาก MongoDB เชื่อมต่อเสร็จ
-    // fullBackup();
+    // เรียก backup หลังเชื่อมต่อสำเร็จ
+    exec('node ./backupSystem/backupScript.js', (error, stdout, stderr) => {
+      if (error) {
+        console.error(`❌ Backup failed: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        console.error(`⚠️ Backup stderr: ${stderr}`);
+        return;
+      }
+      console.log(`🎉 Backup completed successfully:\n${stdout}`);
+    });
+
   } catch (error) {
     console.error('❌ Error connecting to MongoDB:', error.message);
-    process.exit(1); // ปิดแอปพลิเคชันหากเชื่อมต่อไม่ได้
+    process.exit(1);
   }
 
-  // ตรวจสอบสถานะการเชื่อมต่อ
   mongoose.connection.on('connected', () => {
     console.log('✅ MongoDB connection is active');
   });
@@ -64,21 +71,13 @@ const connectDB = async () => {
   });
 };
 
-// เรียกใช้งานฟังก์ชันเชื่อมต่อ
 connectDB();
-
-const db = mongoose.connection;
-
-db.on('connected', () => console.log('MongoDB connection established'));
-db.on('error', err => console.error('MongoDB connection error:', err.message));
-db.on('disconnected', () => console.warn('MongoDB connection lost'));
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// app.use(express.urlencoded({ extended: false }));
-app.use(express.urlencoded({ extended: true })); // สำหรับ parsing application/x-www-form-urlencoded
-app.use(express.json()); // สำหรับ parsing application/json
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 app.use(session({
   secret: 'your-secret-key',
@@ -89,44 +88,30 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.use(new LocalStrategy(
-  function (username, password, done) {
-    User.findOne({ username: username }, function (err, user) {
-      if (err) { return done(err); }
-      if (!user) {
-        return done(null, false, { message: 'Incorrect username.' });
-      }
-      if (!bcrypt.compareSync(password, user.password)) {
-        return done(null, false, { message: 'Incorrect password.' });
-      }
-      return done(null, user);
-    });
-  }
-));
+passport.use(new LocalStrategy((username, password, done) => {
+  User.findOne({ username: username }, (err, user) => {
+    if (err) return done(err);
+    if (!user) return done(null, false, { message: 'Incorrect username.' });
+    if (!bcrypt.compareSync(password, user.password)) return done(null, false, { message: 'Incorrect password.' });
+    return done(null, user);
+  });
+}));
 
-passport.serializeUser(function (user, done) {
+passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser(function (id, done) {
-  User.findById(id, function (err, user) {
-    done(err, user);
-  });
+passport.deserializeUser((id, done) => {
+  User.findById(id, (err, user) => done(err, user));
 });
 
-// index form login
 app.use('/', router);
 router.get('/', (req, res) => {
-  // console.log(req.session)
   res.render('login', { data: 'This is data from server', session: req.session });
 });
 
-// เส้นทางการ login ของ user
 app.use(userRouter);
-
-// เส้นทางสำหรับการ logout
 app.use('/logout', logoutRouter);
-
 app.use(productRouter);
 app.use(typeRouter);
 app.use(sizeRouter);
@@ -145,5 +130,5 @@ app.use(gradeDetailsRouter);
 app.use(productCostRouter);
 
 app.listen(3000, () => {
-  console.log('Start server port 3000');
+  console.log('🚀 Server running on port 3000');
 });

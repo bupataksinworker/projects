@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <!-- extraParam จาก URL -->
+    </title>
+    <style>
+        @page {
+            size: 175mm 175mm;
+            margin: 20px 20px 0px 20px;
+        }
+
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                -moz-print-color-adjust: exact;
+            }
+
+            tr:hover {
+                background-color: transparent !important;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        .page {
+            width: 100%;
+            margin: 5px 0;
+            page-break-after: always;
+            font-size: small;
+        }
+
+        .header,
+        .footer {
+            width: 100%;
+            text-align: right;
+        }
+
+        table {
+            width: 80%;
+            padding-left: 10%;
+            border-collapse: collapse;
+            font-size: small;
+        }
+
+        thead,
+        tfoot {
+            font-weight: bold;
+            background-color: #b5d2e9;
+        }
+
+        th,
+        td {
+            padding: 0px;
+            text-align: right;
+            border-bottom: 1px solid rgb(212, 212, 212);
+        }
+
+        tfoot td {
+            text-align: right;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="controls" class="no-print">
+        รายการต่อหน้า : <input id="perPage" class="form-control" style="width: 50px;" type="number" value="25">
+        <button onclick="changeEntriesPerPage();">เปลี่ยน</button>
+    </div>
+
+    <div id="dataContainer" data-entries="<%= encodeURIComponent(JSON.stringify(entries)) %>"
+        data-sale="<%= encodeURIComponent(JSON.stringify(sale)) %>"
+        data-totalValues="<%= encodeURIComponent(JSON.stringify(totalValues)) %>"></div>
+
+    <script>
+        let isOnePage = false;
+
+        function addCommas(n) {
+            return parseFloat(n).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function formatNumber(n) {
+            return parseFloat(n).toFixed(2);
+        }
+
+        function createPageHeader(pageNum, totalPages, sale, textTitle, showPageNumber = true) {
+            return `
+                <div class="header">
+                    <span>${showPageNumber ? `หน้าที่ ${pageNum}/${totalPages}` : ''}</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align: center;">${textTitle}</th>
+                            <th style="text-align: center;">วันที่ : ${new Date(sale.saleDate).toLocaleDateString('en-GB')}</th>
+                            <th style="text-align: center;">คุณ : ${sale.customerID.customerName} ${sale.subCustomerID.subCustomerName ? `(${sale.subCustomerID.subCustomerName})` : ''}</th>
+                        </tr>
+                    </thead>
+                </table><br>
+            `;
+        }
+
+        function createEntriesTable(entries, code) {
+            let lastBatchID = null;
+            let callHeadColumn = '';
+            let totalSales = 0;
+            let lastCodeName = '';
+
+            if (code % 2 === 0) {
+                callHeadColumn = `
+                    <th style="text-align: left;">ชื่อไซส์</th>
+                    <th style="text-align: left;">เกรด</th>
+                    <th>ต้นทุน</th>
+                `;
+            } else {
+                callHeadColumn = `
+                    <th style="text-align: left;">ชื่อไซส์</th>
+                    <th style="text-align: left;"></th>
+                    <th></th>
+                `;
+            }
+
+            let rows = entries.filter(entry => {
+                if ((code === '3' || code === '4') && entry.entryStatus !== 'Y') {
+                    return false;
+                }
+                return true;
+            }).map(entry => {
+                let borderStyle = '';
+                if (entry.batchID._id !== lastBatchID) {
+                    if (lastBatchID !== null && code % 2 === 0) {
+                        borderStyle = 'border-top: double 1px black;';
+                    }
+                    lastBatchID = entry.batchID._id;
+                }
+
+                let callWeight = '';
+                let callPrice = '';
+                let callName = '';
+                let callTotal = '';
+                let originCode = entry.productID.typeID.originID.originCode;
+                let heatCode = entry.productID.typeID.heatID.heatCode;
+                let codeName = originCode + ' ' + heatCode;
+
+                if (codeName === lastCodeName) {
+                    codeName = '"';
+                } else {
+                    lastCodeName = codeName;
+                }
+
+                if (code === '1' || code === '2') {
+                    callName = code === '1'
+                        ? `<td style="text-align: left;">${entry.displayName} ${codeName}</td>
+                           <td style="text-align: left;"></td>
+                           <td></td>`
+                        : `<td style="text-align: left;">${entry.productID.ber} ${entry.displayName} ${codeName}</td>
+                           <td style="text-align: left;">${entry.productID.gradeID.gradeName}</td>
+                           <td>${addCommas(entry.cost)}</td>`;
+
+                    callWeight = entry.openWeight > 0
+                        ? `<td style="text-align: right;">${addCommas(entry.openWeight)}</td>`
+                        : `<td style="text-align: right;">0</td>`;
+
+                    callPrice = entry.openPrice > 0
+                        ? `<td style="text-align: right;">${addCommas(entry.openPrice)}</td>`
+                        : `<td style="text-align: right;">0</td>`;
+
+                    callTotal = `<td>${addCommas(entry.totalPreSale)}</td>`;
+                    totalSales += entry.totalPreSale;
+
+                } else if (code === '3' || code === '4') {
+                    callName = code % 2 === 0
+                        ? `<td style="text-align: left;">${entry.productID.ber} ${entry.displayName} ${codeName}</td>
+                           <td style="text-align: left;">${entry.productID.gradeID.gradeName}</td>
+                           <td>${addCommas(entry.cost)}</td>`
+                        : `<td style="text-align: left;">${entry.displayName} ${codeName}</td>
+                           <td style="text-align: left;"></td>
+                           <td></td>`;
+
+                    if (entry.closeWeight > 0) {
+                        callWeight = `<td style="text-align: right;">${addCommas(entry.closeWeight)}</td>`;
+                    } else {
+                        callWeight = `<td style="text-align: right;">0</td>`;
+                    }
+
+                    if (entry.closePrice > 0) {
+                        callPrice = `<td style="text-align: right;">${addCommas(entry.closePrice)}</td>`;
+                    } else {
+                        callPrice = `<td style="text-align: right;">0</td>`;
+                    }
+
+                    callTotal = `<td>${addCommas(entry.totalSale)}</td>`;
+                    totalSales += entry.totalSale;
+
+                } else if (code === '5' || code === '6') {
+                    callName = code % 2 === 0
+                        ? `<td style="text-align: left;">${entry.productID.ber} ${entry.displayName} ${codeName}</td>
+                           <td style="text-align: left;">${entry.productID.gradeID.gradeName}</td>
+                           <td>${addCommas(entry.cost)}</td>`
+                        : `<td style="text-align: left;">${entry.displayName} ${codeName}</td>
+                           <td style="text-align: left;"></td>
+                           <td></td>`;
+
+                    callWeight = entry.openWeight !== entry.closeWeight
+                        ? `<td style="text-align: right;"><sub style="text-decoration: line-through; color: red;">${addCommas(entry.openWeight)}</sub> ${addCommas(entry.closeWeight)}</td>`
+                        : `<td style="text-align: right;">${addCommas(entry.closeWeight)}</td>`;
+
+                    callPrice = entry.openPrice !== entry.closePrice
+                        ? `<td style="text-align: right;"><sub style="text-decoration: line-through; color: red;">${addCommas(entry.openPrice)}</sub> ${addCommas(entry.closePrice)}</td>`
+                        : `<td style="text-align: right;">${addCommas(entry.closePrice)}</td>`;
+
+                    if (entry.entryStatus !== 'Y') {
+                        callTotal = `<td>${addCommas(entry.totalSale)} ${entry.entryStatus} </td>`;
+                    } else {
+                        callTotal = `<td> ${addCommas(entry.totalSale)}</td>`;
+                    }
+                    totalSales += entry.totalSale;
+                }
+
+                return `
+                    <tr style="${borderStyle}">
+                        ${callName}
+                        ${callWeight}
+                        <td style="text-align: center;">x</td>
+                        ${callPrice}
+                        <td style="text-align: center;">=</td>
+                        ${callTotal} 
+                    </tr>
+                `;
+            }).join('');
+
+            if (rows.length === 0) {
+                return ''; // ถ้าไม่มี rows ให้ return ค่าว่าง
+            }
+
+            let totalItems = entries.length;
+
+            return `
+                <table>
+                    <thead>
+                        <tr>
+                            ${callHeadColumn}
+                            <th>น้ำหนัก(ก.)</th>
+                            <th style="text-align: center;">x</th>
+                            <th>ราคา(บาท)</th>
+                            <th style="text-align: center;">=</th>
+                            <th>รวม(บาท)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="7" style="text-align: left;">รวม ${totalItems} รายการ</td>
+                            <td>${addCommas(formatNumber(totalSales))}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+        }
+
+        function createSummaryTable(pagesSummary, sale, code) {
+            let filteredSummary = pagesSummary;
+
+            if (code === '3' || code === '4') {
+                filteredSummary = pagesSummary.filter(summary => summary.entries.some(entry => entry.entryStatus === 'Y'));
+            }
+
+            let grandTotalItems = filteredSummary.reduce((sum, summary) => sum + summary.totalItems, 0);
+            let grandTotalSale = filteredSummary.reduce((sum, summary) => sum + summary.totalSale, 0);
+
+            let discountAmount = code % 2 === 0 ? grandTotalSale * (sale.discount / 100) : 0;
+            let finalAmount = grandTotalSale - discountAmount;
+
+            let rows = filteredSummary.map((summary, index) => `
+                <tr>
+                    <td style="text-align: center;">${index + 1}</td>
+                    <td style="text-align: center;">${summary.totalItems}</td>
+                    <td>${addCommas(formatNumber(summary.totalSale))}</td>
+                </tr>
+            `).join('');
+
+            let showDiscount = code % 2 === 0 ? `
+                <tr>
+                    <td colspan="2" style="text-align: left;background-color: white;">หัก ${sale.discount}% เป็นเงิน ${addCommas(formatNumber(discountAmount))} บาท</td>
+                    <td style="background-color: white;">เหลือเงิน ${addCommas(formatNumber(finalAmount))} บาท</td>
+                </tr>` : '';
+
+            return `
+                <table>
+                    <thead>
+                        <tr>
+                            <td style="text-align: center;">หน้า</td>
+                            <td style="text-align: center;">จำนวนรายการ</td>
+                            <td>รวมราคา</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" style="text-align: left;">ทั้งหมด ${filteredSummary.length} หน้า จำนวน ${grandTotalItems} รายการ</td>
+                            <td>${addCommas(formatNumber(grandTotalSale))}</td>
+                        </tr>
+                        ${showDiscount}
+                    </tfoot>
+                </table>
+            `;
+        }
+
+        function createBatchSummaryTable(totalValues, sale, code) {
+            let rows = '';
+            let summaryRow = '';
+
+            if (code === '1' || code === '2') {
+                rows = totalValues.getTotalSumByBatch.map(batch => `
+                    <tr>
+                        <td style="text-align: left;">${batch.batchName}</td>
+                        <td>${addCommas(formatNumber(batch.totalPreSumByBatch))}</td>
+                        <td>${addCommas(formatNumber(batch.totalPreAfterDcByBatch))}</td>
+                        <td>${addCommas(formatNumber(batch.totalPreCostByBatch))}</td>
+                        <td>${addCommas(formatNumber(batch.totalPreProfitByBatch))}</td>
+                    </tr>
+                `).join('');
+
+                summaryRow = `
+                    <tr>
+                        <td style="text-align: left;">รวม</td>
+                        <td>${addCommas(totalValues.totalPreSaleSum)}</td>
+                        <td>${addCommas(totalValues.totalPreSaleAfterDC)}</td>
+                        <td>${addCommas(totalValues.totalPreSaleCost)}</td>
+                        <td>${addCommas(totalValues.totalPreSaleProfit)}</td>
+                    </tr>
+                `;
+            } else {
+                rows = totalValues.getTotalSumByBatch.map(batch => `
+                    <tr>
+                        <td style="text-align: left;">${batch.batchName}</td>
+                        <td>${addCommas(formatNumber(batch.totalSumByBatch))}</td>
+                        <td>${addCommas(formatNumber(batch.totalAfterDcByBatch))}</td>
+                        <td>${addCommas(formatNumber(batch.totalCostByBatch))}</td>
+                        <td>${addCommas(formatNumber(batch.totalProfitByBatch))}</td>
+                    </tr>
+                `).join('');
+
+                summaryRow = `
+                    <tr>
+                        <td style="text-align: left;">รวม</td>
+                        <td>${addCommas(totalValues.totalSaleSum)}</td>
+                        <td>${addCommas(totalValues.totalSaleAfterDC)}</td>
+                        <td>${addCommas(totalValues.totalSaleCost)}</td>
+                        <td>${addCommas(totalValues.totalSaleProfit)}</td>
+                    </tr>
+                `;
+            }
+
+            return `
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">ชุด</th>
+                            <th>รวมขายได้(บาท)</th>
+                            <th>หัก ${sale.discount}% เหลือ(บาท)</th>
+                            <th>ต้นทุน(บาท)</th>
+                            <th>กำไร(บาท)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                    <tfoot>
+                        ${summaryRow}
+                    </tfoot>
+                </table>
+            `;
+        }
+
+        function renderReceipts(entries, sale, totalValues, textTitle, code, entriesPerPage) {
+            let container = document.getElementById('dataContainer');
+            container.innerHTML = '';
+            entriesPerPage = entriesPerPage || 25;
+            let totalPages = Math.ceil(entries.length / entriesPerPage);
+            let pagesSummary = [];
+
+            for (let i = 0; i < totalPages; i++) {
+                let pageEntries = entries.slice(i * entriesPerPage, (i + 1) * entriesPerPage);
+                let pageSummary = {
+                    totalItems: pageEntries.length,
+                    totalSale: (code === '1' || code === '2')
+                        ? pageEntries.reduce((sum, entry) => sum + entry.totalPreSale, 0)
+                        : pageEntries.reduce((sum, entry) => sum + entry.totalSale, 0),
+                    entries: pageEntries
+                };
+                pagesSummary.push(pageSummary);
+            }
+
+            let summaryContent = `<div class="summary page">
+                ${createPageHeader(0, 0, sale, textTitle, false)}
+                ${createSummaryTable(pagesSummary, sale, code)}
+                ${code % 2 === 0 ? `<br>${createBatchSummaryTable(totalValues, sale, code)}` : ''}
+            </div>`;
+
+            container.insertAdjacentHTML('beforeend', summaryContent);
+
+            for (let i = 0; i < totalPages; i++) {
+                let pageEntries = entries.slice(i * entriesPerPage, (i + 1) * entriesPerPage);
+                let entriesTable = createEntriesTable(pageEntries, code);
+                if (entriesTable) {
+                    let pageContent = `
+                        <div class="page">
+                            ${createPageHeader(i + 1, totalPages, sale, textTitle)}
+                            ${entriesTable}
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', pageContent);
+                }
+            }
+        }
+
+        function changeEntriesPerPage() {
+            let entriesPerPage = parseInt(document.getElementById('perPage').value, 10);
+            let dataContainer = document.getElementById('dataContainer');
+            let entries = JSON.parse(decodeURIComponent(dataContainer.getAttribute('data-entries')));
+            let sale = JSON.parse(decodeURIComponent(dataContainer.getAttribute('data-sale')));
+            let totalValues = JSON.parse(decodeURIComponent(dataContainer.getAttribute('data-totalValues')));
+            let textTitle = document.title;
+            let code = getQueryParam('code');
+
+            renderReceipts(entries, sale, totalValues, textTitle, code, entriesPerPage);
+        }
+
+        function changeOnePage() {
+            if (isOnePage) {
+                location.reload(); // รีเฟรชหน้าเมื่อคลิกอีกครั้ง
+            } else {
+                let dataContainer = document.getElementById('dataContainer');
+                let entries = JSON.parse(decodeURIComponent(dataContainer.getAttribute('data-entries')));
+                let sale = JSON.parse(decodeURIComponent(dataContainer.getAttribute('data-sale')));
+                let totalValues = JSON.parse(decodeURIComponent(dataContainer.getAttribute('data-totalValues')));
+                let textTitle = document.title;
+                let code = getQueryParam('code');
+
+                if ([1, 3, 5].includes(parseInt(code)) && entries.length <= 25) {
+                    let container = document.getElementById('dataContainer');
+                    container.innerHTML = '';
+
+                    let entriesTable = createEntriesTable(entries, code);
+                    let pagesSummary = [{
+                        totalItems: entries.length,
+                        totalSale: (code === '1' || code === '2')
+                            ? entries.reduce((sum, entry) => sum + entry.totalPreSale, 0)
+                            : entries.reduce((sum, entry) => sum + entry.totalSale, 0),
+                        entries: entries
+                    }];
+
+                    let summaryContent = `
+                    <br>
+                        ${createSummaryTable2(pagesSummary, sale, code)}
+                        ${code % 2 === 0 ? `<br>${createBatchSummaryTable(totalValues, sale, code)}` : ''}
+                    `;
+
+                    let pageContent = `
+                        <div class="page">
+                            ${createPageHeader(0, 0, sale, textTitle, false)}
+                            ${entriesTable}
+                            ${summaryContent}
+                        </div>
+                    `;
+
+                    container.insertAdjacentHTML('beforeend', pageContent);
+                }
+                isOnePage = true; // ตั้งค่าสถานะการคลิกเป็น true
+            }
+        }
+
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let dataContainer = document.getElementById('dataContainer');
+            let entries = JSON.parse(decodeURIComponent(dataContainer.getAttribute('data-entries')));
+            let sale = JSON.parse(decodeURIComponent(dataContainer.getAttribute('data-sale')));
+            let totalValues = JSON.parse(decodeURIComponent(dataContainer.getAttribute('data-totalValues')));
+
+            let saleID = getQueryParam('id');
+            let code = getQueryParam('code');
+            let extraParam = getQueryParam('extraParam');
+            let textTitle = '';
+
+            if (extraParam) {
+                if (code % 2 === 0) {
+                    textTitle = `${extraParam} (สำหรับเรา)`;
+                } else {
+                    textTitle = `${extraParam}`;
+                }
+                document.title = textTitle;
+            }
+
+            let controls = document.getElementById('controls');
+            if ([1, 3, 5].includes(parseInt(code))) {
+                let onePageButton = document.createElement('button');
+                onePageButton.textContent = 'หน้าเดียว';
+                onePageButton.onclick = changeOnePage;
+                controls.appendChild(onePageButton);
+            }
+
+            renderReceipts(entries, sale, totalValues, textTitle, code, 25);
+        });
+
+        function createSummaryTable2(pagesSummary, sale, code) {
+            let filteredSummary = pagesSummary;
+
+            if (code === '3' || code === '4') {
+                filteredSummary = pagesSummary.filter(summary => summary.entries.some(entry => entry.entryStatus === 'Y'));
+            }
+
+            let grandTotalItems = filteredSummary.reduce((sum, summary) => sum + summary.totalItems, 0);
+            let grandTotalSale = filteredSummary.reduce((sum, summary) => sum + summary.totalSale, 0);
+
+            let discountAmount = code % 2 === 0 ? grandTotalSale * (sale.discount / 100) : 0;
+            let finalAmount = grandTotalSale - discountAmount;
+
+            let rows = filteredSummary.map((summary, index) => `
+                <tr>
+                    <td style="text-align: center;">${index + 1}</td>
+                    <td style="text-align: center;">${summary.totalItems}</td>
+                    <td>${addCommas(formatNumber(summary.totalSale))}</td>
+                </tr>
+            `).join('');
+
+            let showDiscount = code % 2 === 0 ? `
+                <tr>
+                    <td colspan="2" style="text-align: left;background-color: white;">หัก ${sale.discount}% เป็นเงิน ${addCommas(formatNumber(discountAmount))} บาท</td>
+                    <td style="background-color: white;">เหลือเงิน ${addCommas(formatNumber(finalAmount))} บาท</td>
+                </tr>` : '';
+
+            return `
+                <table>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" style="text-align: left;">จำนวนทั้งหมด ${grandTotalItems} รายการ</td>
+                            <td>${addCommas(formatNumber(grandTotalSale))} บาท</td>
+                        </tr>
+                        ${showDiscount}
+                    </tfoot>
+                </table>
+            `;
+        }
+    </script>
+</body>
+
+</html>

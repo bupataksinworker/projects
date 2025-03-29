@@ -2,7 +2,7 @@ function updateTableGrade(batchID, typeID, sizeID) {
     fetch(`/api/getGradeBySize/${batchID}/${typeID}/${sizeID}`)
         .then(response => response.json())
         .then(data => {
-            const { grades, saleEntries, stockEntries } = data; // Extract grades, saleEntries, and stockEntries from response
+            const { grades, saleEntries, stockEntries, products } = data; // Extract grades, saleEntries, and stockEntries from response
 
             const gradeDetailsBody = document.querySelector('#gradeDetails tbody');
             const gradeDetailsDropdown = document.getElementById('gradeDetails_dropdown');
@@ -15,7 +15,7 @@ function updateTableGrade(batchID, typeID, sizeID) {
             defaultOption.text = 'เลือกเกรด'; // ข้อความที่แสดงใน dropdown
             defaultOption.disabled = true; // ปิดการใช้งานตัวเลือกนี้
             defaultOption.selected = true; // ตั้งค่าให้เป็นค่า default ที่ถูกเลือก
-            gradeDetailsDropdown.appendChild(defaultOption);
+            // gradeDetailsDropdown.appendChild(defaultOption);
 
             grades.forEach((grade) => {
                 // Filter saleEntries ที่ตรงกับ grade ปัจจุบัน
@@ -61,10 +61,13 @@ function updateTableGrade(batchID, typeID, sizeID) {
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // Add option to dropdown
-                const option = document.createElement('option');
-                option.value = grade._id;
-                option.text = grade.gradeName;
-                gradeDetailsDropdown.appendChild(option);
+                const matchingProduct = products.find(product => product.gradeID._id === grade._id);
+                if (matchingProduct) { // Only add sizes that match products.sizeID._id
+                    const option = document.createElement('option');
+                    option.value = grade._id;
+                    option.text = grade.gradeName;
+                    gradeDetailsDropdown.appendChild(option);
+                }
 
                 // Only display rows where readyForSale, waitingForSale, sold, or total are not zero
                 if (readyForSale !== 0 || waitingForSale !== 0 || sold !== 0 || total !== 0) {

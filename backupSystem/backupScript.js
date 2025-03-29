@@ -1,7 +1,7 @@
 const { MongoClient } = require("mongodb");
 const fs = require("fs");
 
-const uri = "mongodb://admin:admin@localhost:27017"; // เปลี่ยน URI ตามการตั้งค่า
+const uri = "mongodb://127.0.0.1:27017"; // เปลี่ยน URI ตามการตั้งค่า
 const dbName = "bupataksin"; // ชื่อฐานข้อมูล
 
 // ฟังก์ชันสร้างชื่อโฟลเดอร์ตามวันที่และเวลา

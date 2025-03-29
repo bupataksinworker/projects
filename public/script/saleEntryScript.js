@@ -140,20 +140,27 @@ async function filterProduct() {
 
   const productResponse = await fetch(`/selectedProduct?typeID=${typeID}&sizeID=${sizeID}`);
   if (productResponse.ok) {
-      const productData = await productResponse.json();
-      const products = productData.products;
+    const productData = await productResponse.json();
+    const products = productData.products;
 
-      // ✅ สร้าง dropdown product โดยเพิ่ม `data-gradeid`
-      var productDropdownHTML = '<option value="">-- เลือกสินค้า --</option>';
-      products.forEach(function (product) {
-          productDropdownHTML += `
-              <option value="${product._id}" data-gradeid="${product.gradeID ? product.gradeID._id : ''}">
-                  ${product.productName}
-              </option>`;
-      });
-      $('#productSelect').html(productDropdownHTML);
+    // ✅ เรียง products ตามค่า product.gradeID.sorter จากน้อยไปมาก
+    products.sort((a, b) => {
+      const sorterA = a.gradeID ? a.gradeID.sorter : 0;
+      const sorterB = b.gradeID ? b.gradeID.sorter : 0;
+      return sorterA - sorterB; // เรียงจากน้อยไปมาก
+    });
+
+    // ✅ สร้าง dropdown product โดยเพิ่ม `data-gradeid`
+    var productDropdownHTML = '<option value="">-- เลือกสินค้า --</option>';
+    products.forEach(function (product) {
+      productDropdownHTML += `
+        <option value="${product._id}" data-gradeid="${product.gradeID ? product.gradeID._id : ''}">
+          ${product.productName}
+        </option>`;
+    });
+    $('#productSelect').html(productDropdownHTML);
   } else {
-      console.error('Error fetching product data:', productResponse.statusText);
+    console.error('Error fetching product data:', productResponse.statusText);
   }
 }
 

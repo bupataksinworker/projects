@@ -57,12 +57,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     // เข้าถึงข้อมูล ที่ส่งมาภายใน JSON object
                     const sizes = data.sizes;
                     const grades = data.grades;
+                    const products = data.products;
+                    // กรองข้อมูล grades โดยใช้ products
+                    const filteredGrades = grades.filter(grade => 
+                        products.some(product => 
+                            product.gradeID._id === grade._id && product.sizeID._id === selectedSize
+                        )
+                    );
+                    console.log('Filtered grades:', filteredGrades);
 
                     // ล้างข้อมูลเดิมใน gradeDetailsDropdown
                     gradeDetailsDropdown.innerHTML = '<option value="">เลือกเกรด</option>';
 
                     // เพิ่มข้อมูลใหม่จาก server
-                    grades.forEach(grade => {
+                    filteredGrades.forEach(grade => {
                         const option = document.createElement('option');
                         option.value = grade._id;
                         option.textContent = grade.gradeName;

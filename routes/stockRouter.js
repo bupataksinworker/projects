@@ -390,8 +390,15 @@ router.get('/api/getSizesByGrain/:batchID/:typeID/:grainID', async (req, res) =>
         //     return res.status(404).json({ message: 'No sale entries or stock entries found for the given criteria' });
         // }
 
+        let products;
+        if (typeID) {
+            products = await Product.find({ typeID });
+        } else {
+            products = '';
+        }
+
         // ส่งข้อมูล sizes, saleEntries, และ stockEntries กลับไปในรูปแบบ JSON
-        res.json({ sizes, saleEntries, stockEntries });
+        res.json({ sizes, saleEntries, stockEntries, products });
 
     } catch (error) {
         console.error(error);
@@ -462,8 +469,16 @@ router.get('/api/getGradeBySize/:batchID/:typeID/:sizeID', async (req, res) => {
             $or: stockFilters
         }).populate('typeID').populate('sizeID').populate('gradeID');
 
+        
+        let products;
+        if (typeID) {
+            products = await Product.find({ typeID, sizeID });
+        } else {
+            products = '';
+        }
+
         // Send grades, saleEntries, and stockEntries as JSON response
-        res.json({ grades, saleEntries, stockEntries });
+        res.json({ grades, saleEntries, stockEntries, products });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error retrieving grades, sale entries, and stock entries' });

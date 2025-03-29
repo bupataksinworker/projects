@@ -3,7 +3,7 @@ function updateTableSize(batchID, typeID, grainID) {
     fetch(`/api/getSizesByGrain/${batchID}/${typeID}/${grainID}`)
         .then(response => response.json())
         .then(data => {
-            const { sizes, saleEntries, stockEntries } = data; // Extract sizes, saleEntries, and stockEntries from response
+            const { sizes, saleEntries, stockEntries, products } = data; // Extract sizes, saleEntries, and stockEntries from response
             console.log(data)
             const sizeDetailsBody = document.querySelector('#sizeDetails tbody');
             const sizeDetailsDropdown = document.getElementById('sizeDetails_dropdown');
@@ -16,7 +16,7 @@ function updateTableSize(batchID, typeID, grainID) {
             defaultOption.text = 'เลือกไซส์'; // ข้อความที่แสดงใน dropdown
             defaultOption.disabled = true; // ปิดการใช้งานตัวเลือกนี้
             defaultOption.selected = true; // ตั้งค่าให้เป็นค่า default ที่ถูกเลือก
-            sizeDetailsDropdown.appendChild(defaultOption);
+            // sizeDetailsDropdown.appendChild(defaultOption);
 
 
             sizes.forEach((size) => {
@@ -58,10 +58,13 @@ function updateTableSize(batchID, typeID, grainID) {
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 // Add option to dropdown
-                const option = document.createElement('option');
-                option.value = size._id;
-                option.text = size.sizeName;
-                sizeDetailsDropdown.appendChild(option);
+                const matchingProduct = products.find(product => product.sizeID._id === size._id);
+                if (matchingProduct) { // Only add sizes that match products.sizeID._id
+                    const option = document.createElement('option');
+                    option.value = size._id;
+                    option.text = size.sizeName;
+                    sizeDetailsDropdown.appendChild(option);
+                }
 
                 // Only display rows where readyForSale, waitingForSale, sold, or total are not zero
                 if (readyForSale !== 0 || waitingForSale !== 0 || sold !== 0 || total !== 0) {

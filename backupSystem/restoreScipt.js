@@ -2,7 +2,7 @@ const { MongoClient, ObjectId } = require("mongodb");
 const fs = require("fs");
 const path = require("path");
 
-const uri = "mongodb://admin:admin@localhost:27017";
+const uri = "mongodb://127.0.0.1:27017";
 const dbName = "bupataksin";
 const backupBaseDir = "/backupSystem/backup";
 
@@ -25,7 +25,11 @@ function restoreFieldTypes(obj) {
         return obj.map(restoreFieldTypes);
     } else if (typeof obj === 'object' && obj !== null) {
         for (let key in obj) {
-            obj[key] = restoreFieldTypes(obj[key]);
+            if (/Name$/i.test(key)) { // Fix: fields ending with 'Name' always string
+                obj[key] = String(obj[key]);
+            } else {
+                obj[key] = restoreFieldTypes(obj[key]);
+            }
         }
     }
     return obj;
@@ -41,7 +45,7 @@ async function restoreDatabase() {
     const client = new MongoClient(uri);
     try {
         await client.connect();
-        const db = client.db(dbName);
+        const db = client.db(dbName); // Ensure database is created
         const files = fs.readdirSync(latestBackupFolder);
 
         for (let file of files) {
@@ -55,8 +59,9 @@ async function restoreDatabase() {
                 }
 
                 const convertedData = data.map(doc => restoreFieldTypes(doc));
-                await db.collection(collName).deleteMany({});
-                await db.collection(collName).insertMany(convertedData);
+                const collection = db.collection(collName); // Ensure collection is created
+                await collection.deleteMany({});
+                await collection.insertMany(convertedData);
                 console.log(`✅ Restored: ${collName}`);
             }
         }

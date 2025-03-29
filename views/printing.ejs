@@ -322,6 +322,13 @@
         }
 
         function createBatchSummaryTable(totalValues, sale, code) {
+            // เรียงข้อมูล batch ตาม batchName
+            totalValues.getTotalSumByBatch.sort((a, b) => {
+                const batchA = a.batchName.toLowerCase();
+                const batchB = b.batchName.toLowerCase();
+                return batchA.localeCompare(batchB);
+            });
+
             let rows = '';
             let summaryRow = '';
 
@@ -392,6 +399,14 @@
             let container = document.getElementById('dataContainer');
             container.innerHTML = '';
             entriesPerPage = entriesPerPage || 25;
+
+            // เรียงข้อมูล entries ตาม batchID ก่อน
+            entries.sort((a, b) => {
+                const batchA = a.batchID.batchName.toLowerCase();
+                const batchB = b.batchID.batchName.toLowerCase();
+                return batchA.localeCompare(batchB);
+            });
+
             let totalPages = Math.ceil(entries.length / entriesPerPage);
             let pagesSummary = [];
 
@@ -453,6 +468,13 @@
                 let textTitle = document.title;
                 let code = getQueryParam('code');
 
+                // เรียงข้อมูล entries ตาม batchID ก่อน
+                entries.sort((a, b) => {
+                    const batchA = a.batchID.batchName.toLowerCase();
+                    const batchB = b.batchID.batchName.toLowerCase();
+                    return batchA.localeCompare(batchB);
+                });
+
                 if ([1, 3, 5].includes(parseInt(code)) && entries.length <= 25) {
                     let container = document.getElementById('dataContainer');
                     container.innerHTML = '';
@@ -482,6 +504,37 @@
 
                     container.insertAdjacentHTML('beforeend', pageContent);
                 }
+
+                if ([2, 4, 6].includes(parseInt(code)) && entries.length <= 25) {
+                    let container = document.getElementById('dataContainer');
+                    container.innerHTML = '';
+
+                    let entriesTable = createEntriesTable(entries, code);
+                    let pagesSummary = [{
+                        totalItems: entries.length,
+                        totalSale: (code === '1' || code === '2')
+                            ? entries.reduce((sum, entry) => sum + entry.totalPreSale, 0)
+                            : entries.reduce((sum, entry) => sum + entry.totalSale, 0),
+                        entries: entries
+                    }];
+
+                    let summaryContent = `
+                    <br>
+                        ${createSummaryTable2(pagesSummary, sale, code)}
+                        ${code % 2 === 0 ? `<br>${createBatchSummaryTable(totalValues, sale, code)}` : ''}
+                    `;
+
+                    let pageContent = `
+                        <div class="page">
+                            ${createPageHeader(0, 0, sale, textTitle, false)}
+                            ${entriesTable}
+                            ${summaryContent}
+                        </div>
+                    `;
+
+                    container.insertAdjacentHTML('beforeend', pageContent);
+                }
+
                 isOnePage = true; // ตั้งค่าสถานะการคลิกเป็น true
             }
         }
@@ -513,6 +566,12 @@
 
             let controls = document.getElementById('controls');
             if ([1, 3, 5].includes(parseInt(code))) {
+                let onePageButton = document.createElement('button');
+                onePageButton.textContent = 'หน้าเดียว';
+                onePageButton.onclick = changeOnePage;
+                controls.appendChild(onePageButton);
+            }
+            if ([2, 4, 6].includes(parseInt(code))) {
                 let onePageButton = document.createElement('button');
                 onePageButton.textContent = 'หน้าเดียว';
                 onePageButton.onclick = changeOnePage;

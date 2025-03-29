@@ -367,13 +367,6 @@
         }
 
         function createBatchSummaryTable(totalValues, sale, code) {
-            // เรียงข้อมูล batch ตาม batchName
-            totalValues.getTotalSumByBatch.sort((a, b) => {
-                const batchA = a.batchName.toLowerCase();
-                const batchB = b.batchName.toLowerCase();
-                return batchA.localeCompare(batchB);
-            });
-
             let rows = '';
             let summaryRow = '';
 
@@ -444,19 +437,17 @@
             let container = document.getElementById('dataContainer');
             container.innerHTML = '';
             entriesPerPage = entriesPerPage || 25;
+            let filteredEntries = entries;
 
-            // เรียงข้อมูล entries ตาม batchID ก่อน
-            entries.sort((a, b) => {
-                const batchA = a.batchID.batchName.toLowerCase();
-                const batchB = b.batchID.batchName.toLowerCase();
-                return batchA.localeCompare(batchB);
-            });
+            if (code === '9' || code === '10') {
+                filteredEntries = entries.filter(entry => entry.entryStatus === 'Y');
+            }
 
-            let totalPages = Math.ceil(entries.length / entriesPerPage);
+            let totalPages = Math.ceil(filteredEntries.length / entriesPerPage);
             let pagesSummary = [];
 
             // สร้างหน้าสรุปก่อน
-            let sizeSummaryContent = createSizeSummaryTable(entries, sale, code);
+            let sizeSummaryContent = createSizeSummaryTable(filteredEntries, sale, code);
             let batchSummaryContent = (code % 2 === 0) ? `<br>${createBatchSummaryTable(totalValues, sale, code)}` : '';
             if (sizeSummaryContent || batchSummaryContent) {
                 let summaryContent = `
@@ -471,7 +462,7 @@
 
             // สร้างหน้าตารางข้อมูล
             for (let i = 0; i < totalPages; i++) {
-                let pageEntries = entries.slice(i * entriesPerPage, (i + 1) * entriesPerPage);
+                let pageEntries = filteredEntries.slice(i * entriesPerPage, (i + 1) * entriesPerPage);
                 if (pageEntries.length > 0) {
                     let pageSummary = {
                         totalItems: pageEntries.length,

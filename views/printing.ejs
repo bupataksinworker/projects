@@ -326,7 +326,7 @@
             totalValues.getTotalSumByBatch.sort((a, b) => {
                 const batchA = a.batchName.toLowerCase();
                 const batchB = b.batchName.toLowerCase();
-                return batchA.localeCompare(batchB);
+                return batchB.localeCompare(batchA);
             });
 
             let rows = '';
@@ -404,7 +404,7 @@
             entries.sort((a, b) => {
                 const batchA = a.batchID.batchName.toLowerCase();
                 const batchB = b.batchID.batchName.toLowerCase();
-                return batchA.localeCompare(batchB);
+                return batchB.localeCompare(batchA);
             });
 
             let totalPages = Math.ceil(entries.length / entriesPerPage);
@@ -472,7 +472,7 @@
                 entries.sort((a, b) => {
                     const batchA = a.batchID.batchName.toLowerCase();
                     const batchB = b.batchID.batchName.toLowerCase();
-                    return batchA.localeCompare(batchB);
+                    return batchB.localeCompare(batchA);
                 });
 
                 if ([1, 3, 5].includes(parseInt(code)) && entries.length <= 25) {

@@ -26,7 +26,7 @@ router.get('/manageSize', async (req, res) => {
         }
 
         // ดึงข้อมูลทั้งหมดจาก MongoDB
-        const sizes = await Size.find().populate('grainID');
+        const sizes = await Size.find().populate('grainID').sort({ sorter: 1 });
         const grains = await Grain.find();
 
 
@@ -58,7 +58,7 @@ router.get('/sizeTableBody', async (req, res) => {
             sizes = await Size.find({ grainID: selectedGrainID }).populate('grainID');
             // console.log(sizes)
         } else {
-            sizes = await Size.find().populate('grainID');
+            sizes = await Size.find().populate('grainID').sort({ sorter: 1 });
         }
 
         // ส่งข้อมูลขนาดเฉพาะเป็น JSON กลับไปที่หน้า manageSize.ejs

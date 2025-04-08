@@ -37,8 +37,8 @@ router.get('/manageProductCost', async (req, res) => {
             });
 
         const types = await Type.find();
-        const sizes = await Size.find();
-        const grades = await Grade.find();
+        const sizes = await Size.find().populate('grainID').sort({ sorter: 1 });
+        const grades = await Grade.find().sort({ sorter: 1 });
 
         // ✅ ตรวจสอบ product ที่ต้องแก้ไข (ใช้ใน Modal)
         let selectedProduct = null;
@@ -75,7 +75,7 @@ router.get('/manageProductCost', async (req, res) => {
 router.get('/api/getGradesBySize', async (req, res) => {
     try {
         const { sizeID } = req.query;
-        const grades = await Grade.find(); // ไม่ใช้ sizeID เนื่องจากไม่มีใน model
+        const grades = await Grade.find().sort({ sorter: 1 }); // ไม่ใช้ sizeID เนื่องจากไม่มีใน model
         res.json(grades);
     } catch (error) {
         console.error('Error fetching grades:', error);

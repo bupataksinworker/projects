@@ -56,8 +56,8 @@ router.get('/manageSaleEntry/:saleId', async (req, res) => {
         const products = await Product.find().populate('sizeID').populate('typeID').populate('gradeID');
         const costs = await Cost.find();
         const types = await Type.find();
-        const sizes = await Size.find();
-        const grades = await Grade.find();
+        const sizes = await Size.find().populate('grainID').sort({ sorter: 1 });
+        const grades = await Grade.find().sort({ sorter: 1 });
         const sharps = await Sharp.find();
         console.log("Sale Data:", JSON.stringify(sale, null, 2));
 
@@ -169,7 +169,7 @@ router.post('/editSaleEntry', async (req, res) => {
             return res.status(404).send('This Grade Not Found');
         }
         const types = await Type.find();
-        const sizes = await Size.find();
+        const sizes = await Size.find().populate('grainID').sort({ sorter: 1 });
         const sharps = await Sharp.find();
         res.render('editSaleEntry', { entry, types, sizes, sharps });
     } catch (error) {

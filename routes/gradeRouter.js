@@ -25,7 +25,7 @@ router.get('/manageGrade', async (req, res) => {
         }
 
         // ดึงข้อมูลทั้งหมดจาก MongoDB
-        const grades = await Grade.find();
+        const grades = await Grade.find().sort({ sorter: 1 }); // เรียงจากน้อยไปมาก
         console.log(grades);
 
         // ส่งข้อมูลไปยังหน้า manageGrade.ejs

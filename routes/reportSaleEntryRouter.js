@@ -34,7 +34,7 @@ router.get('/reportSaleEntry', async (req, res) => {
         const origins = await Origin.find();
         const heats = await Heat.find();
         const sharps = await Sharp.find();
-        const grades = await Grade.find();
+        const grades = await Grade.find().sort({ sorter: 1 });
 
         // ส่งข้อมูลกลับไปยังไคลเอ็นต์
         res.render('reportSaleEntry', { customers, grains, origins, heats, sharps, grades });

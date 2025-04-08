@@ -412,7 +412,7 @@ router.get('/api/getGradeBySize/:batchID/:typeID/:sizeID', async (req, res) => {
 
     try {
         // Fetch all grades
-        const grades = await Grade.find();
+        const grades = await Grade.find().sort({ sorter: 1 });
 
         if (!grades.length) {
             return res.status(404).json({ message: 'No grades found' });

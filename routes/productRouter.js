@@ -45,8 +45,8 @@ router.get('/manageProduct', async (req, res) => {
 
         // ส่งไปเพื่อใช้ในฟอร์ม addProduct
         const types = await Type.find().populate('grainID').populate('originID').populate('heatID');
-        const sizes = await Size.find().populate('grainID');
-        const grades = await Grade.find();
+        const sizes = await Size.find().populate('grainID').sort({ sorter: 1 });
+        const grades = await Grade.find().sort({ sorter: 1 });
 
         // ส่งข้อมูลไปยังหน้า manageProduct.ejs
         res.render('manageProduct', { products, types, sizes, grades });
@@ -85,11 +85,11 @@ router.get('/selectedType', async (req, res) => {
         if (grainID) {
             sizes = await Size.find({ grainID: grainID });
         } else {
-            sizes = await Size.find();
+            sizes = await Size.find().populate('grainID').sort({ sorter: 1 });
         }
 
         const types = await Type.find();
-        const grades = await Grade.find();
+        const grades = await Grade.find().sort({ sorter: 1 });
 
         // ส่งข้อมูลขนาดเฉพาะเป็น JSON กลับไปที่หน้า manageProduct.ejs
         res.json({ products, types, sizes, grades });
@@ -144,7 +144,7 @@ router.get('/selectedType', async (req, res) => {
 //         }
 
 //         const types = await Type.find();
-//         const grades = await Grade.find();
+//         const grades = await Grade.find().sort({ sorter: 1 });
 //         let costProduct = products;
 //         // ส่งข้อมูลขนาดเฉพาะเป็น JSON กลับไปที่หน้า manageProduct.ejs
 //         res.json({ products, types, sizes, grades, costProduct });
@@ -184,7 +184,7 @@ router.get('/selectedProduct', async (req, res) => {
 
         let sizes = selectedTypeID ? await Size.find({ typeID: selectedTypeID }).populate('typeID') : await Size.find().populate('typeID');
         const types = await Type.find();
-        const grades = await Grade.find();
+        const grades = await Grade.find().sort({ sorter: 1 });
 
         res.json({ products, types, sizes, grades });
     } catch (error) {
@@ -293,9 +293,9 @@ router.post('/editProduct', async (req, res) => {
         .then(async doc => {
             if (doc) {
                 // ถ้าพบข้อมูลสินค้า นำข้อมูลไปแสดงในแบบฟอร์มเพื่อแก้ไข
-                const sizes = await Size.find();
+                const sizes = await Size.find().populate('grainID').sort({ sorter: 1 });
                 const types = await Type.find();
-                const grades = await Grade.find();
+                const grades = await Grade.find().sort({ sorter: 1 });
                 res.render('editProduct', { product: doc, sizes, types, grades });
             } else {
                 // ถ้าไม่พบข้อมูลสินค้า

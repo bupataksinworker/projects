@@ -407,6 +407,22 @@
                 return batchB.localeCompare(batchA);
             });
 
+            // เรียงข้อมูลในแต่ละ batch ด้วย productID.sizeID.sorter จากน้อยไปมาก
+            entries.sort((a, b) => {
+                if (a.batchID.batchName === b.batchID.batchName) {
+                    return a.productID.sizeID.sorter - b.productID.sizeID.sorter;
+                }
+                return 0; // ไม่เปลี่ยนลำดับถ้า batch ต่างกัน
+            });
+
+            // เรียงข้อมูลในแต่ละ size ด้วย productID.gradeID.sorter จากน้อยไปมาก
+            entries.sort((a, b) => {
+                if (a.batchID.batchName === b.batchID.batchName && a.productID.sizeID.sorter === b.productID.sizeID.sorter) {
+                    return a.productID.gradeID.sorter - b.productID.gradeID.sorter;
+                }
+                return 0; // ไม่เปลี่ยนลำดับถ้า batch หรือ size ต่างกัน
+            });
+
             let totalPages = Math.ceil(entries.length / entriesPerPage);
             let pagesSummary = [];
 
@@ -473,6 +489,22 @@
                     const batchA = a.batchID.batchName.toLowerCase();
                     const batchB = b.batchID.batchName.toLowerCase();
                     return batchB.localeCompare(batchA);
+                });
+
+                // เรียงข้อมูลในแต่ละ batch ด้วย productID.sizeID.sorter จากน้อยไปมาก
+                entries.sort((a, b) => {
+                    if (a.batchID.batchName === b.batchID.batchName) {
+                        return a.productID.sizeID.sorter - b.productID.sizeID.sorter;
+                    }
+                    return 0; // ไม่เปลี่ยนลำดับถ้า batch ต่างกัน
+                });
+
+                // เรียงข้อมูลในแต่ละ size ด้วย productID.gradeID.sorter จากน้อยไปมาก
+                entries.sort((a, b) => {
+                    if (a.batchID.batchName === b.batchID.batchName && a.productID.sizeID.sorter === b.productID.sizeID.sorter) {
+                        return a.productID.gradeID.sorter - b.productID.gradeID.sorter;
+                    }
+                    return 0; // ไม่เปลี่ยนลำดับถ้า batch หรือ size ต่างกัน
                 });
 
                 if ([1, 3, 5].includes(parseInt(code)) && entries.length <= 25) {

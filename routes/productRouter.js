@@ -83,7 +83,7 @@ router.get('/selectedType', async (req, res) => {
 
         let sizes;
         if (grainID) {
-            sizes = await Size.find({ grainID: grainID });
+            sizes = await Size.find({ grainID: grainID }).sort({ sorter: 1 });
         } else {
             sizes = await Size.find().populate('grainID').sort({ sorter: 1 });
         }
@@ -182,7 +182,7 @@ router.get('/selectedProduct', async (req, res) => {
                 .populate('gradeID');
         }
 
-        let sizes = selectedTypeID ? await Size.find({ typeID: selectedTypeID }).populate('typeID') : await Size.find().populate('typeID');
+        let sizes = selectedTypeID ? await Size.find({ typeID: selectedTypeID }).populate('typeID').sort({ sorter: 1 }) : await Size.find().populate('typeID').sort({ sorter: 1 });
         const types = await Type.find();
         const grades = await Grade.find().sort({ sorter: 1 });
 

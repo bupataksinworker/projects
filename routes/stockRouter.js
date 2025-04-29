@@ -331,7 +331,7 @@ router.get('/api/getSizesByGrain/:batchID/:typeID/:grainID', async (req, res) =>
 
     try {
         // ค้นหาข้อมูล size ที่เกี่ยวข้องกับ grainID
-        const sizes = await Size.find({ grainID });
+        const sizes = await Size.find({ grainID }).sort({ sorter: 1 });
         // console.log("grainID :" + grainID)
         if (!sizes.length) {
             return res.status(404).json({ message: 'No sizes found for the given grainID' });

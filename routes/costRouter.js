@@ -55,8 +55,8 @@ router.get('/manageCost', async (req, res) => {
             ]
         }).populate('sizeID').populate('gradeID');
         const types = await Type.find().populate('grainID').populate('originID').populate('heatID');
-        const sizes = await Size.find();
-        const grades = await Grade.find();
+        const sizes = await Size.find().sort({ sorter: 1 });
+        const grades = await Grade.find().sort({ sorter: 1 });
 
         // สร้างตัวแปรเก็บข้อมูลสินค้า
         const productGroups = {}; // สร้างออบเจ็กต์เพื่อจัดกลุ่มข้อมูลสินค้า
@@ -151,13 +151,13 @@ router.get('/productGroup', async (req, res) => {
 
         let sizes;
         if (selectedTypeID) {
-            sizes = await Size.find({ typeID: selectedTypeID }).populate('typeID');
+            sizes = await Size.find({ typeID: selectedTypeID }).populate('typeID').sort({ sorter: 1 });
         } else {
-            sizes = await Size.find().populate('typeID');
+            sizes = await Size.find().populate('typeID').sort({ sorter: 1 });
         }
 
         const types = await Type.find();
-        const grades = await Grade.find();
+        const grades = await Grade.find().sort({ sorter: 1 });
 
         // สร้างตัวแปรเก็บข้อมูลสินค้า
         const productGroups = {}; // สร้างออบเจ็กต์เพื่อจัดกลุ่มข้อมูลสินค้า

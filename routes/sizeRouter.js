@@ -55,7 +55,7 @@ router.get('/sizeTableBody', async (req, res) => {
         // หาขนาดที่มี grainID ตรงกับที่เลือก (หรือข้ามหากไม่มีหรือมีค่าเป็นค่าว่างหรือ undefined)
         let sizes;
         if (selectedGrainID) {
-            sizes = await Size.find({ grainID: selectedGrainID }).populate('grainID');
+            sizes = await Size.find({ grainID: selectedGrainID }).populate('grainID').sort({ sorter: 1 });
             // console.log(sizes)
         } else {
             sizes = await Size.find().populate('grainID').sort({ sorter: 1 });

@@ -76,14 +76,49 @@ function loadBatchContent() {
 }
 
 
-function closeBatchModal(event) {
+async function closeBatchModal(event) {
     if (!event || event.target.id === 'batchModal') {
         document.getElementById('batchModal')?.remove();
 
-        // เรียกใช้งาน filterSizeAndBatch(typeID) หลังจากปิดโมเดล
-        const typeID = document.getElementById('typeSelect').value; // ดึง typeID จาก dropdown
+        // ดึง typeID จาก dropdown
+        const typeID = document.getElementById('typeSelect').value;
         if (typeID) {
-            filterSizeAndBatch(typeID); // เรียกใช้งานฟังก์ชันใน saleEntryScript.js
+            try {
+                // Fetch ข้อมูลสำหรับ batch
+                const batchResponse = await fetch(`/batchForm?typeID=${typeID}`);
+                if (batchResponse.ok) {
+                    const batchData = await batchResponse.json();
+                    const batchs = batchData.batchs;
+
+                    if (batchs.length === 0) {
+                        $('#batchSelect').html('<option value="">-- ไม่มีชุดที่ใช้ได้ --</option>');
+                        return;
+                    }
+
+                    // เรียง `batchs` ตาม `batchYear` มากไปน้อย และ `number` มากไปน้อย
+                    batchs.sort((a, b) => {
+                        if (b.batchYear !== a.batchYear) {
+                            return b.batchYear - a.batchYear; // ปีมาก่อน
+                        }
+                        return b.number - a.number; // sorter มากไปน้อย
+                    });
+
+                    // เลือก `batch` ล่าสุดโดยอัตโนมัติ
+                    const latestBatchID = batchs[0]._id;
+
+                    // สร้าง HTML สำหรับ dropdown
+                    var batchDropdownHTML = '<option value="">-- เลือกชุด --</option>';
+                    batchs.forEach(function (batch) {
+                        batchDropdownHTML += `<option value="${batch._id}" ${batch._id === latestBatchID ? 'selected' : ''}>${batch.batchName}</option>`;
+                    });
+
+                    $('#batchSelect').html(batchDropdownHTML);
+                } else {
+                    console.error('Error fetching batch data:', batchResponse.statusText);
+                }
+            } catch (error) {
+                console.error('Error loading batch content:', error);
+            }
         }
     }
 }

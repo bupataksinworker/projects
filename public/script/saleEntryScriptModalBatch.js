@@ -70,6 +70,7 @@ function loadBatchContent() {
             const script = document.createElement('script');
             script.src = '/script/batchScript.js';
             document.body.appendChild(script);
+
         })
         .catch(error => console.error('Error loading batch content:', error));
 }
@@ -78,5 +79,11 @@ function loadBatchContent() {
 function closeBatchModal(event) {
     if (!event || event.target.id === 'batchModal') {
         document.getElementById('batchModal')?.remove();
+
+        // เรียกใช้งาน filterSizeAndBatch(typeID) หลังจากปิดโมเดล
+        const typeID = document.getElementById('typeSelect').value; // ดึง typeID จาก dropdown
+        if (typeID) {
+            filterSizeAndBatch(typeID); // เรียกใช้งานฟังก์ชันใน saleEntryScript.js
+        }
     }
 }

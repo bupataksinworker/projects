@@ -147,16 +147,26 @@ router.get('/api/updateTableProductCost', async (req, res) => {
             // Suggestion: Cache this query or use lean() for better performance with large data sets.
             const latestCost = await Cost.findOne({ productID: product._id }).sort({ sorter: -1 });
             return {
-                id: product._id,
-                productName: product.productName,
-                ber: product.ber,
-                displayName: product.displayName,
-                sizeName: product.sizeID.sizeName,
-                typeName: product.typeID.typeName,
-                gradeName: product.gradeID.gradeName,
-                latestCost: latestCost ? latestCost.costOfProduct : null
+            id: product._id,
+            productName: product.productName,
+            ber: product.ber,
+            displayName: product.displayName,
+            sizeName: product.sizeID.sizeName,
+            typeName: product.typeID.typeName,
+            gradeName: product.gradeID.gradeName,
+            latestCost: latestCost ? latestCost.costOfProduct : null,
+            sizeSorter: product.sizeID.sorter,
+            gradeSorter: product.gradeID.sorter
             };
         }));
+
+        // Sort productData by sizeSorter and gradeSorter
+        productData.sort((a, b) => {
+            if (a.sizeSorter !== b.sizeSorter) {
+            return a.sizeSorter - b.sizeSorter;
+            }
+            return a.gradeSorter - b.gradeSorter;
+        });
 
         res.json(productData);
     } catch (error) {

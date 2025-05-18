@@ -1,20 +1,22 @@
 <%- include('head') %>
-<!-- สำหรับหน้า chart -->
-<script src="js/chart.js"></script>
-<script src="js/moment.min.js"></script>
-<script src="js/chartjs-adapter-moment"></script>
+    <!-- สำหรับหน้า chart -->
+    <script src="js/chart.js"></script>
+    <script src="js/moment.min.js"></script>
+    <script src="js/chartjs-adapter-moment"></script>
     <style>
         .full-height {
             display: flex;
             flex-direction: column;
             height: 100vh;
         }
+
         .half-height {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+
         .chart-container {
             display: flex;
             flex-direction: column;
@@ -23,54 +25,271 @@
             width: 100%;
             height: 100%;
         }
+
         #salesChartContainer,
         #customerPieChartContainer,
         #batchBarChartContainer {
             width: 100%;
             height: 100%;
         }
+
         .split-chart-container {
             display: flex;
             justify-content: space-between;
             width: 100%;
             height: 100%;
         }
+
         .split-chart {
             width: 50%;
             height: 100%;
         }
+
         canvas {
             max-width: 100%;
-            max-height: 40vh;
+            max-height: 200vh;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            height: fit-content;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #333;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+            transition: background-color 0.3s ease;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 5px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        td {
+            vertical-align: middle;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .side-menu {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: none;
+            border-radius: 12px;
+            box-shadow: none;
+            padding: 18px 12px;
+            border: none;
+        }
+        .side-menu button {
+            padding: 10px 18px;
+            background: #5bb6f7;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            transition: background 0.2s;
+        }
+        .side-menu button:hover {
+            background: #3498db;
+        }
+
+        .section-content {
+            display: none;
+        }
+        .section-content.active {
+            display: block;
+        }
+        /* สำหรับกราฟที่ใช้ flex ให้ใช้ important เพื่อ override */
+        .section-content.flex-section {
+            display: none !important;
+        }
+        .section-content.flex-section.active {
+            display: flex !important;
+        }
+        .w3-display-container.full-height {
+            max-width: 100%;
+            margin-left: 100px;
+            margin-right: 100px;
+            padding-left: 0;
+        }
+        @media (max-width: 1800px) {
+            .w3-display-container.full-height {
+                max-width: 98vw;
+                margin-left: 20px;
+                margin-right: 20px;
+            }
+        }
+        @media (max-width: 900px) {
+            .w3-display-container.full-height {
+                margin-left: 0;
+                margin-right: 0;
+                padding-left: 0;
+            }
+        }
+        .section-content {
+            min-height: 400px;
+            max-height: 80vh;
+            overflow: auto;
+            margin-bottom: 32px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 24px 16px 16px 16px;
+            /* กำหนดให้ใช้ความกว้างเต็ม container ไม่เปลี่ยนขอบซ้ายขวา */
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .section-content.flex-section {
+            align-items: center;
+            justify-content: center;
+        }
+        table {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        canvas {
+            max-width: 100% !important;
+            max-height: 60vh !important;
+        }
+        @media (max-width: 900px) {
+            .w3-display-container.full-height {
+                padding-left: 0;
+            }
+            .side-menu {
+                right: 5px;
+                top: 60px;
+                padding: 8px 4px;
+            }
+            .section-content {
+                padding: 10px 2px 8px 2px;
+            }
         }
     </style>
-</head>
-<body>
-    <%- include('navbar') %>
+    </head>
 
-    <div id="dataContainer" data-json='<%= data %>'></div>
+    <body>
+        <%- include('navbar') %>
 
-    <div class="w3-display-container full-height" style="padding-left: 15%;">
-        <div class="row half-height" id="salesChartContainer">
-            <div class="col-sm-12">
-                <select id="yearSelector" class="form-select" aria-label="Select Year"></select>
+            <div id="dataContainer" data-json='<%= data %>'></div>
+
+            <div class="side-menu">
+                <button onclick="scrollToSection('batchProfitOriginTable')">ตารางกำไรชุด</button>
+                <button onclick="scrollToSection('salesChart')">กราฟยอดขาย</button>
+                <button onclick="scrollToSection('batchBarChart')">กราฟชุด</button>
+                <button onclick="scrollToSection('customerPieChart')">กราฟลูกค้า</button>
+            </div>
+
+            <div class="w3-display-container full-height" style="padding-left: 15%;">
                 <br>
-                <canvas id="salesChart"></canvas>
-            </div>
-        </div>
-        <br>
-        <div class="row half-height">
-            <div class="split-chart-container">
-                <div class="split-chart" id="customerPieChartContainer">
-                    <canvas id="customerPieChart"></canvas>
+                <div class="row" style="flex: 0 0 auto;">
+                    <div class="col-sm-12">
+                        <select id="yearSelector" class="form-select" aria-label="Select Year"></select>
+                    </div>
                 </div>
-                <div class="split-chart" id="batchBarChartContainer">
-                    <canvas id="batchBarChart"></canvas>
+                <br>
+                <div class="row section-content active" id="section-batchProfitOriginTable" style="flex: 1 1 25%;">
+                    <div class="col-sm-12">
+                        <div class="ms-3"> <b>ชุด :</b>
+                            <input type="checkbox" name="set" value="1" class="me-1"> 1 ,
+                            <input type="checkbox" name="set" value="2" class="me-1"> 2 ,
+                            <input type="checkbox" name="set" value="3" class="me-1"> 3 ,
+                            <input type="checkbox" name="set" value="4" class="me-1"> 4 ,
+                            <input type="checkbox" name="set" value="5" class="me-1"> 5 ,
+                            <input type="checkbox" name="set" value="6" class="me-1"> 6 ,
+                            <input type="checkbox" name="set" value="7" class="me-1"> 7
+                        </div>
+                        <table id="batchProfitOriginTable">
+                            <thead>
+                                <tr>
+                                    <th class="setCenter">ชุดที่</th>
+                                    <th class="setCenter">พม่า/โมซัมบิก</th>
+                                    <th class="setCenter">ทุน</th>
+                                    <th class="setCenter">พลอยชั่งได้ (ทั้งหมด)</th>
+                                    <th class="setCenter">ขายได้ (พร้อมขาย)</th>
+                                    <th class="setCenter">ทุนที่ขาย (ขายแล้ว)</th>
+                                    <th class="setCenter">กำไรชั่ง</th>
+                                    <th class="setCenter">กำไรขาย</th>
+                                    <th class="setCenter">กำไรรวม</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batchProfitOriginTableBody">
+                                <!-- ตารางจะถูกเติมเต็มจากโค้ดฝั่งไคลเอนต์ -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row section-content flex-section" id="section-salesChart" style="flex: 1 1 25%;">
+                    <div class="col-sm-12">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+                <div class="row section-content flex-section" id="section-batchBarChart" style="flex: 1 1 25%;">
+                    <div class="col-sm-12">
+                        <canvas id="batchBarChart"></canvas>
+                    </div>
+                </div>
+                <div class="row section-content flex-section" id="section-customerPieChart" style="flex: 1 1 25%;">
+                    <div class="col-sm-12">
+                        <canvas id="customerPieChart"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <script src="/script/homeScript.js"></script>
-    </div>
-</body>
-</html>
+
+            <script src="/script/homeScript.js"></script>
+            <script src="/script/homeScript2.js"></script>
+            <script>
+                function scrollToSection(id) {
+                    // Hide all sections
+                    document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
+                    // Show the selected section
+                    if (id === 'batchProfitOriginTable') {
+                        document.getElementById('section-batchProfitOriginTable').classList.add('active');
+                    } else if (id === 'salesChart') {
+                        document.getElementById('section-salesChart').classList.add('active');
+                    } else if (id === 'batchBarChart') {
+                        document.getElementById('section-batchBarChart').classList.add('active');
+                    } else if (id === 'customerPieChart') {
+                        document.getElementById('section-customerPieChart').classList.add('active');
+                    }
+                    // Scroll to the section
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+                // Show only the first section on load
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.querySelectorAll('.section-content').forEach((el, idx) => {
+                        if(idx === 0) el.classList.add('active');
+                        else el.classList.remove('active');
+                    });
+                });
+            </script>
+    </body>
+
+    </html>

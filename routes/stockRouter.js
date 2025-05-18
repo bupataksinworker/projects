@@ -34,7 +34,9 @@ router.get('/manageStockDetails', (req, res) => {
 // API route Table Batch
 router.get('/api/manageStock', async (req, res) => {
     try {
-        const { year, origins, batchID } = req.query;
+        const { year, origins, batchID, setNumber: rawSetNumber } = req.query;
+        const setNumber = rawSetNumber || 0;
+        console.log("setNumber : " + setNumber)
         const filters = [];
 
         // Filter by year
@@ -106,6 +108,12 @@ router.get('/api/manageStock', async (req, res) => {
         if (origins) {
             const originsArray = origins.split(',');
             filters.push({ 'product.type.origin.originCode': { $in: originsArray } });
+        }
+
+        // Filter by setNumber
+        if (setNumber) {
+            const setNumberArray = setNumber.split(',').map(Number); // แปลงเป็นตัวเลข
+            filters.push({ 'batch.number': { $in: setNumberArray } });
         }
 
         // Apply filters to pipeline

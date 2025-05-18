@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     for (let year = startYear; year <= currentYear; year++) {
         const option = document.createElement('option');
         option.value = year;
-        option.text = 'ข้อมูลปี ' + year;
+        option.text = 'ข้อมูลปี ' + year; // ใช้ <b> เพื่อทำให้ตัวอักษรหนา
         yearSelector.appendChild(option);
     }
 
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('findStockButton').addEventListener('click', findStock);
 
     // โหลดข้อมูลเริ่มต้น
-    findStock(); // โหลดข้อมูลทันทีเมื่อเปิดหน้า
+    // findStock(); // โหลดข้อมูลทันทีเมื่อเปิดหน้า
 });
 
 function addRowClickListeners() {
@@ -56,9 +56,20 @@ async function fetchAndDisplayStockData(year, origins, batchID) {
         if (origins && origins.length > 0) params.append('origins', origins.join(','));
         if (batchID) params.append('batchID', batchID);
 
+        // ดึงค่า sets ที่ถูกเลือก
+        const sets = document.querySelectorAll('input[name="set"]:checked');
+        const setNumber = sets.length > 0 ? Array.from(sets).map(set => set.value) : [];
+        if (setNumber.length > 0) params.append('setNumber', setNumber.join(','));
+
+
         // Fetch ข้อมูลจาก API
         const response = await fetch(`/api/manageStock?${params.toString()}`);
         const { saleEntries, stockEntries } = await response.json();
+
+        if (!saleEntries || !Array.isArray(saleEntries)) {
+            console.error('Invalid saleEntries data:', saleEntries);
+            return;
+        }
 
         // ล้างข้อมูลเก่าจากตาราง
         const tableBody = document.querySelector('#stockTableBody');

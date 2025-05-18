@@ -85,17 +85,17 @@ function updateChartCustomer(year) {
     const customerLabels = Object.keys(customerSalesData);
     const customerData = customerLabels.map(label => customerSalesData[label]);
 
-    customerBarChart.data.labels = customerLabels;
-    customerBarChart.data.datasets[0].data = customerData;
-    customerBarChart.data.datasets[0].label = `ยอดขายรวมของลูกค้าในปี ${year}`;
-    customerBarChart.data.datasets[0].backgroundColor = customerLabels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.2)`);
-    customerBarChart.data.datasets[0].borderColor = customerLabels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`);
-    customerBarChart.update();
+    customerPieChart.data.labels = customerLabels;
+    customerPieChart.data.datasets[0].data = customerData;
+    customerPieChart.data.datasets[0].label = `ยอดขายรวมของลูกค้าในปี ${year}`;
+    customerPieChart.data.datasets[0].backgroundColor = customerLabels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.2)`);
+    customerPieChart.data.datasets[0].borderColor = customerLabels.map(() => `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`);
+    customerPieChart.update();
 }
 
-const customerBarCtx = document.getElementById('customerPieChart').getContext('2d');
-const customerBarChart = new Chart(customerBarCtx, {
-    type: 'bar',
+const pieCtx = document.getElementById('customerPieChart').getContext('2d');
+const customerPieChart = new Chart(pieCtx, {
+    type: 'pie',
     data: {
         labels: [],
         datasets: [{
@@ -108,12 +108,7 @@ const customerBarChart = new Chart(customerBarCtx, {
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
+        maintainAspectRatio: false
     }
 });
 

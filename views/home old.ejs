@@ -1,0 +1,81 @@
+<%- include('head') %>
+<!-- สำหรับหน้า chart -->
+<script src="js/chart.js"></script>
+<script src="js/moment.min.js"></script>
+<script src="js/chartjs-adapter-moment"></script>
+    <style>
+        .full-height {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .half-height {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        #salesChartContainer,
+        #customerPieChartContainer,
+        #batchBarChartContainer {
+            width: 100%;
+            height: 100%;
+        }
+        .split-chart-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            height: 100%;
+        }
+        .split-chart {
+            width: 50%;
+            height: 100%;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 40vh;
+        }
+    </style>
+</head>
+<body>
+    <%- include('navbar') %>
+
+    <div id="dataContainer" data-json='<%= data %>'></div>
+
+    <div class="w3-display-container full-height" style="padding-left: 15%;">
+        <div class="row half-height" id="salesChartContainer">
+            <div class="col-sm-12">
+            <select id="yearSelector" class="form-select" aria-label="Select Year"></select>
+            <br>
+            <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+        <br>
+        <div class="row half-height">
+            <div class="split-chart-container">
+            <div class="split-chart" id="batchBarChartContainer"></div>
+                <canvas id="batchBarChart"></canvas>
+            </div>
+            </div>
+        </div>
+        <br>
+        <div class="row half-height"></div>
+            <div class="split-chart-container">
+            <div class="split-chart" id="customerPieChartContainer">
+                <canvas id="customerPieChart"></canvas>
+            </div>
+            </div>
+        </div></div>
+        
+        <script src="/script/homeScript.js"></script>
+    </div>
+</body>
+</html>

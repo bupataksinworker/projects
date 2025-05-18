@@ -81,12 +81,15 @@ function openEditBatchModal(batchID) {
                 document.getElementById('modal_costOfBatchNew').value = batch.costOfBatchNew;
                 document.getElementById('modal_costOfBatchLabor').value = batch.costOfBatchLabor;
 
-                // ตั้งค่า checkbox ให้ถูกเลือก
+                // ตั้งค่า checkbox ให้ถูกเลือกและตรวจสอบเงื่อนไข
                 const typeCheckboxes = document.querySelectorAll('input[name="modal_typeID"]');
                 const selectedTypeIDs = batch.typeID.map(type => type._id.toString());
-
+                const originCode = batch.typeID[0]?.originID?.originCode; // ใช้ originCode ของ type แรกใน batch
+                console.log('originCode:', originCode);
                 typeCheckboxes.forEach(checkbox => {
+                    const checkboxOriginCode = checkbox.dataset.originCode; // สมมติว่า originCode ถูกเก็บใน data-origin-code
                     checkbox.checked = selectedTypeIDs.includes(checkbox.value);
+                    checkbox.disabled = checkboxOriginCode && checkboxOriginCode !== originCode; // disable เฉพาะเมื่อ originCode ไม่ตรงกัน
                 });
 
                 // ตรวจสอบว่า Bootstrap ถูกโหลดก่อนใช้งาน
@@ -114,6 +117,10 @@ function submitEditBatch() {
 
     // เก็บค่า checkbox ที่ถูกเลือก
     const typeCheckboxes = document.querySelectorAll('input[name="modal_typeID"]:checked');
+    if (typeCheckboxes.length === 0) {
+        alert('กรุณาเลือกประเภทอย่างน้อย 1 ค่า');
+        return;
+    }
     const typeIDs = Array.from(typeCheckboxes).map(cb => cb.value);
 
     const batchName = document.getElementById('modal_batchName').value;

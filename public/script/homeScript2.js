@@ -43,8 +43,10 @@ async function updateBatchTable() {
         });
 
         // เตรียมตัวแปรรวมข้ามชุด
-        let totalMyn = {cost:0, total:0, totalPrice:0, waiting:0, waitingPrice:0, sold:0, soldPrice:0, netSale:0, stock:0, stockPrice:0};
-        let totalMoz = {cost:0, total:0, totalPrice:0, waiting:0, waitingPrice:0, sold:0, soldPrice:0, netSale:0, stock:0, stockPrice:0};
+        let totalMyn = { cost: 0, total: 0, totalPrice: 0, waiting: 0, waitingPrice: 0, sold: 0, soldPrice: 0, netSale: 0, stock: 0, stockPrice: 0 };
+        let totalMyn2 = { cost: 0, total: 0, totalPrice: 0, waiting: 0, waitingPrice: 0, sold: 0, soldPrice: 0, netSale: 0, stock: 0, stockPrice: 0 };
+        let totalMoz = { cost: 0, total: 0, totalPrice: 0, waiting: 0, waitingPrice: 0, sold: 0, soldPrice: 0, netSale: 0, stock: 0, stockPrice: 0 };
+        let totalMoz2 = { cost: 0, total: 0, totalPrice: 0, waiting: 0, waitingPrice: 0, sold: 0, soldPrice: 0, netSale: 0, stock: 0, stockPrice: 0 };
 
         // เพิ่ม modal popup สำหรับแสดงแถวปกติ
         if (!document.getElementById('detailModal')) {
@@ -56,8 +58,8 @@ async function updateBatchTable() {
               </div>
             </div>`;
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            document.getElementById('closeDetailModal').onclick = function() {
-              document.getElementById('detailModal').style.display = 'none';
+            document.getElementById('closeDetailModal').onclick = function () {
+                document.getElementById('detailModal').style.display = 'none';
             };
         }
 
@@ -72,24 +74,48 @@ async function updateBatchTable() {
             // สร้าง summary row สำหรับแต่ละ originCode (แสดง numberCell เฉพาะแถวแรกและ rowspan = จำนวน originGroups)
             Object.entries(originGroups).forEach(([origin, originEntries], idxOrigin) => {
                 // รวมค่าทุกคอลัมป์
-                let sumCostOfBatch = 0, sumTotal = 0, sumTotalPrice = 0, sumWaitingForSale = 0, sumWaitingForSalePrice = 0, sumSold = 0, sumSoldPrice = 0, sumSumNetSale = 0, sumTotalStock = 0, sumTotalStockPrice = 0;
+                let sumSumSale = 0, sumCostOfBatch = 0, sumTotal = 0, sumTotalPrice = 0, sumWaitingForSale = 0, sumWaitingForSalePrice = 0, sumSold = 0, sumSoldPrice = 0, sumSumNetSale = 0, sumTotalStock = 0, sumTotalStockPrice = 0;
+                let sumSumSale2 = 0,  sumCostOfBatch2 = 0, sumTotal2 = 0, sumTotalPrice2 = 0, sumWaitingForSale2 = 0, sumWaitingForSalePrice2 = 0, sumSold2 = 0, sumSoldPrice2 = 0, sumSumNetSale2 = 0, sumTotalStock2 = 0, sumTotalStockPrice2 = 0;
                 originEntries.forEach(saleEntry => {
                     const stocks = stockEntries.filter(stockEntry => stockEntry.batchID._id === saleEntry.batchID);
-                    sumCostOfBatch += saleEntry.costOfBatch || 0;
-                    sumTotal += saleEntry.total || 0;
-                    sumTotalPrice += saleEntry.totalPrice || 0;
-                    sumWaitingForSale += saleEntry.waitingForSale || 0;
-                    sumWaitingForSalePrice += saleEntry.waitingForSalePrice || 0;
-                    sumSold += saleEntry.sold || 0;
-                    sumSoldPrice += saleEntry.soldPrice || 0;
-                    sumSumNetSale += saleEntry.sumNetSale || 0;
-                    sumTotalStock += stocks.reduce((sum, stock) => sum + (stock.addStock || 0), 0);
-                    sumTotalStockPrice += stocks.reduce((sum, stock) => sum + (stock.addStock * stock.cost || 0), 0);
+                    if (saleEntry.costOfBatch > 0) {
+                        sumCostOfBatch += saleEntry.costOfBatch || 0;
+                        sumTotal += saleEntry.total || 0;
+                        sumTotalPrice += saleEntry.totalPrice || 0;
+                        sumWaitingForSale += saleEntry.waitingForSale || 0;
+                        sumWaitingForSalePrice += saleEntry.waitingForSalePrice || 0;
+                        sumSold += saleEntry.sold || 0;
+                        sumSoldPrice += saleEntry.soldPrice || 0;
+                        sumSumNetSale += saleEntry.sumNetSale || 0;
+                        sumTotalStock += stocks.reduce((sum, stock) => sum + (stock.addStock || 0), 0);
+                        sumTotalStockPrice += stocks.reduce((sum, stock) => sum + (stock.addStock * stock.cost || 0), 0);
+                    } else if (saleEntry.costOfBatch <= 0) {
+                        sumCostOfBatch2 += saleEntry.costOfBatch || 0;
+                        sumTotal2 += saleEntry.total || 0;
+                        sumTotalPrice2 += saleEntry.totalPrice || 0;
+                        sumWaitingForSale2 += saleEntry.waitingForSale || 0;
+                        sumWaitingForSalePrice2 += saleEntry.waitingForSalePrice || 0;
+                        sumSold2 += saleEntry.sold || 0;
+                        sumSoldPrice2 += saleEntry.soldPrice || 0;
+                        sumSumNetSale2 += saleEntry.sumNetSale || 0;
+                        sumTotalStock2 += stocks.reduce((sum, stock) => sum + (stock.addStock || 0), 0);
+                        sumTotalStockPrice2 += stocks.reduce((sum, stock) => sum + (stock.addStock * stock.cost || 0), 0);
+                    }
+
                 });
+
                 const readyForSale = sumTotalStock + sumTotal - (sumWaitingForSale + sumSold);
                 const readyForSalePrice = sumTotalStockPrice + sumTotalPrice - (sumWaitingForSalePrice + sumSoldPrice);
                 const sumNetScale = ((sumTotalStockPrice + sumTotalPrice) - sumCostOfBatch);
                 const sumNetAll = sumNetScale + sumSumNetSale;
+                sumSumSale = sumTotalStockPrice + sumTotalPrice + sumSumNetSale; // ขายได้
+
+                const readyForSale2 = sumTotalStock2 + sumTotal2 - (sumWaitingForSale2 + sumSold2);
+                const readyForSalePrice2 = sumTotalStockPrice2 + sumTotalPrice2 - (sumWaitingForSalePrice2 + sumSoldPrice2);
+                const sumNetScale2 = ((sumTotalStockPrice2 + sumTotalPrice2) - sumCostOfBatch2);
+                const sumNetAll2 = sumNetScale2 + sumSumNetSale2;
+                sumSumSale2 = sumTotalStockPrice2 + sumTotalPrice2 + sumSumNetSale2; // ขายได้
+
                 // ชื่อ origin
                 let originName = origin;
                 if (origin === 'Myn') originName = 'พม่า';
@@ -97,7 +123,7 @@ async function updateBatchTable() {
                 // summary row (ใช้ numberCell เหมือนแถวปกติ)
                 let numberCell = '';
                 if (idxOrigin === 0) {
-                    numberCell = `<td class="setCenter" rowspan="${Object.keys(originGroups).length}">${number}</td>`;
+                    numberCell = `<td class="setCenter" rowspan="${Object.keys(originGroups).length * 2}">${number}</td>`;
                 }
                 const summaryRow = `
                     <tr class="stock-row summary-row" data-number="${number}">
@@ -105,77 +131,125 @@ async function updateBatchTable() {
                         <td class="setText">${originName}</td>
                         <td class="setNumber">${sumCostOfBatch.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td class="setNumber">${(sumTotalStock + sumTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(sumTotalStockPrice + sumTotalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                        <td class="setNumber">${readyForSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${readyForSalePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                        <td class="setNumber">${sumSumSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td class="setNumber">${sumSold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${sumSoldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                         <td class="setNumber">${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td class="setNumber">${sumSumNetSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td class="setNumber">${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     </tr>
+                    <tr class="stock-row summary-row" data-number="${number}">
+                        <td class="setText">${originName} ไม่มีทุน</td>
+                        <td class="setNumber">${sumCostOfBatch2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td class="setNumber">${(sumTotalStock2 + sumTotal2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(sumTotalStockPrice2 + sumTotalPrice2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                        <td class="setNumber">${sumSumSale2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td class="setNumber">${sumSold2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${sumSoldPrice2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                        <td class="setNumber">${sumNetScale2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td class="setNumber">${sumSumNetSale2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td class="setNumber">${sumNetAll2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    </tr>
                 `;
                 tableBody.insertAdjacentHTML('beforeend', summaryRow);
 
                 // เพิ่ม event ให้ summary row แรกของแต่ละชุด
-                if (idxOrigin === 0) {
+
+                // เพิ่ม event ปิด modal เมื่อคลิกนอกกล่อง
+                const detailModal = document.getElementById('detailModal');
+                if (detailModal && !detailModal._outsideClickHandlerAdded) {
+                    detailModal.addEventListener('click', function (e) {
+                        if (e.target === detailModal) {
+                            detailModal.style.display = 'none';
+                        }
+                    });
+                    detailModal._outsideClickHandlerAdded = true;
+                }
+                if (idxOrigin === 0 && numberCell) {
                     setTimeout(() => {
-                        const summaryRow = document.querySelector(`tr.summary-row[data-number='${number}']`);
+                        // หา td ของ numberCell ที่เพิ่งสร้าง (rowspan)
+                        const summaryRow = tableBody.querySelector(`tr.summary-row[data-number='${number}']`);
                         if (summaryRow) {
-                            summaryRow.style.cursor = 'pointer';
-                            summaryRow.onclick = function() {
-                                // แยก detail row ตาม originCode
-                                const detailByOrigin = { Myn: [], Moz: [], Other: [] };
-                                entries.forEach((saleEntry) => {
-                                    const origin = saleEntry.originCode === 'Myn' ? 'Myn' : saleEntry.originCode === 'Moz' ? 'Moz' : 'Other';
-                                    detailByOrigin[origin].push(saleEntry);
-                                });
-                                let detailHtml = `<h4>รายละเอียดชุดที่ ${number}</h4>`;
-                                // ฟังก์ชันสร้างตาราง detail
-                                function buildDetailTable(originLabel, detailArr) {
-                                    if (detailArr.length === 0) return '';
-                                    let sumCost = 0, sumTotal = 0, sumTotalPrice = 0, sumSold = 0, sumSoldPrice = 0, sumWaiting = 0, sumWaitingPrice = 0, sumNetSaleTotal = 0, sumStock = 0, sumStockPrice = 0;
-                                    let html = `<h5 style="margin:12px 0 4px 0;">${originLabel}</h5><table border="1" style="width:100%;border-collapse:collapse;margin-bottom:12px;"><thead><tr><th>ชื่อชุด</th><th>ทุน</th><th>พลอยชั่งได้</th><th>ขายได้</th><th>ทุนที่ขาย</th><th>กำไรชั่ง</th><th>กำไรขาย</th><th>กำไรรวม</th></tr></thead><tbody>`;
-                                    detailArr.forEach((saleEntry) => {
-                                        const { batchID, batchName, costOfBatch, total, totalPrice, waitingForSale, waitingForSalePrice, sold, soldPrice, sumNetSale } = saleEntry;
-                                        const stocks = stockEntries.filter(stockEntry => stockEntry.batchID._id === batchID);
-                                        const totalStock = stocks.reduce((sum, stock) => sum + (stock.addStock || 0), 0);
-                                        const totalStockPrice = stocks.reduce((sum, stock) => sum + (stock.addStock * stock.cost || 0), 0);
-                                        const readyForSale = totalStock + total - (waitingForSale + sold);
-                                        const readyForSalePrice = totalStockPrice + totalPrice - (waitingForSalePrice + soldPrice);
-                                        const sumNetScale = ((totalStockPrice + totalPrice) - costOfBatch);
-                                        const sumNetAll = sumNetScale + sumNetSale;
-                                        sumCost += costOfBatch || 0;
-                                        sumTotal += total || 0;
-                                        sumTotalPrice += totalPrice || 0;
-                                        sumSold += sold || 0;
-                                        sumSoldPrice += soldPrice || 0;
-                                        sumWaiting += waitingForSale || 0;
-                                        sumWaitingPrice += waitingForSalePrice || 0;
-                                        sumNetSaleTotal += sumNetSale || 0;
-                                        sumStock += totalStock;
-                                        sumStockPrice += totalStockPrice;
-                                        html += `<tr><td>${batchName}</td><td>${costOfBatch.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${(totalStock + total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalStockPrice + totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${readyForSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${readyForSalePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${sumNetSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
+                            const numberTd = summaryRow.querySelector('td[role="numberCell"], td.setCenter');
+                            if (numberTd) {
+                                numberTd.style.cursor = 'pointer';
+                                numberTd.title = 'คลิกเพื่อดูรายละเอียด';
+                                numberTd.onclick = function (e) {
+                                    e.stopPropagation();
+                                    // แยก detail row ตาม originCode
+                                    const detailByOrigin = { Myn: [], Moz: [], Other: [] };
+                                    entries.forEach((saleEntry) => {
+                                        const origin = saleEntry.originCode === 'Myn' ? 'Myn' : saleEntry.originCode === 'Moz' ? 'Moz' : 'Other';
+                                        detailByOrigin[origin].push(saleEntry);
                                     });
-                                    // รวมท้ายตาราง
-                                    const readyForSale = sumStock + sumTotal - (sumWaiting + sumSold);
-                                    const readyForSalePrice = sumStockPrice + sumTotalPrice - (sumWaitingPrice + sumSoldPrice);
-                                    const sumNetScale = ((sumStockPrice + sumTotalPrice) - sumCost);
-                                    const sumNetAll = sumNetScale + sumNetSaleTotal;
-                                    html += `<tr style="background:#f5f5f5;font-weight:bold;"><td>รวม</td><td>${sumCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${(sumStock + sumTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(sumStockPrice + sumTotalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${sumSold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${sumSoldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${readyForSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${readyForSalePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${sumNetSaleTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
-                                    html += '</tbody></table>';
-                                    return html;
-                                }
-                                // end buildDetailTable
-                                detailHtml += buildDetailTable('พม่า', detailByOrigin.Myn);
-                                detailHtml += buildDetailTable('โมซัมบิก', detailByOrigin.Moz);
-                                detailHtml += buildDetailTable('อื่นๆ', detailByOrigin.Other);
-                                document.getElementById('detailModalContent').innerHTML = detailHtml;
-                                document.getElementById('detailModal').style.display = 'flex';
-                            };
+                                    let detailHtml = `<h4>รายละเอียดชุดที่ ${number}</h4>`;
+                                    // ฟังก์ชันสร้างตาราง detail
+                                    function buildDetailTable(originLabel, detailArr) {
+                                        if (detailArr.length === 0) return '';
+                                        let sumCost = 0, sumTotal = 0, sumTotalPrice = 0, sumSold = 0, sumSoldPrice = 0, sumWaiting = 0, sumWaitingPrice = 0, sumNetSaleTotal = 0, sumStock = 0, sumStockPrice = 0;
+                                        let sumSumSale = 0;
+                                        let html = `<h5 style="margin:12px 0 4px 0;">${originLabel}</h5><table border="1" style="width:100%;border-collapse:collapse;margin-bottom:12px;"><thead><tr><th>ชื่อชุด</th><th>ทุน</th><th>พลอยชั่งได้</th><th>ขายได้</th><th>ทุนที่ขาย</th><th>กำไรชั่ง</th><th>กำไรขาย</th><th>กำไรรวม</th></tr></thead><tbody>`;
+                                        detailArr.forEach((saleEntry) => {
+                                            const { batchID, batchName, costOfBatch, total, totalPrice, waitingForSale, waitingForSalePrice, sold, soldPrice, sumNetSale } = saleEntry;
+                                            const stocks = stockEntries.filter(stockEntry => stockEntry.batchID._id === batchID);
+                                            const totalStock = stocks.reduce((sum, stock) => sum + (stock.addStock || 0), 0);
+                                            const totalStockPrice = stocks.reduce((sum, stock) => sum + (stock.addStock * stock.cost || 0), 0);
+                                            const readyForSale = totalStock + total - (waitingForSale + sold);
+                                            const readyForSalePrice = totalStockPrice + totalPrice - (waitingForSalePrice + soldPrice);
+                                            const sumNetScale = ((totalStockPrice + totalPrice) - costOfBatch);
+                                            const sumNetAll = sumNetScale + sumNetSale;
+                                            const sumSale = totalStockPrice + totalPrice + sumNetSale; // ขายได้
+                                            
+                                            sumSumSale += sumSale;
+                                            sumCost += costOfBatch || 0;
+                                            sumTotal += total || 0;
+                                            sumTotalPrice += totalPrice || 0;
+                                            sumSold += sold || 0;
+                                            sumSoldPrice += soldPrice || 0;
+                                            sumWaiting += waitingForSale || 0;
+                                            sumWaitingPrice += waitingForSalePrice || 0;
+                                            sumNetSaleTotal += sumNetSale || 0;
+                                            sumStock += totalStock;
+                                            sumStockPrice += totalStockPrice;
+                                            html += `<tr>
+                                                <td>${batchName}</td>
+                                                <td>${costOfBatch.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td>${(totalStock + total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalStockPrice + totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                                                <td>${sumSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td>${sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                                                <td>${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td>${sumNetSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td>${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            </tr>`;
+                                        });
+                                        // รวมท้ายตาราง
+                                        const readyForSale = sumStock + sumTotal - (sumWaiting + sumSold);
+                                        const readyForSalePrice = sumStockPrice + sumTotalPrice - (sumWaitingPrice + sumSoldPrice);
+                                        const sumNetScale = ((sumStockPrice + sumTotalPrice) - sumCost);
+                                        const sumNetAll = sumNetScale + sumNetSaleTotal;
+                                        html += `<tr style="background:#f5f5f5;font-weight:bold;">
+                                        <td>รวม</td>
+                                        <td>${sumCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                        <td>${(sumStock + sumTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(sumStockPrice + sumTotalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                                        <td>${sumSumSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                        <td>${sumSold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${sumSoldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                                        <td>${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                        <td>${sumNetSaleTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                        <td>${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
+                                        html += '</tbody></table>';
+                                        return html;
+                                    }
+                                    // end buildDetailTable
+                                    detailHtml += buildDetailTable('พม่า', detailByOrigin.Myn);
+                                    detailHtml += buildDetailTable('โมซัมบิก', detailByOrigin.Moz);
+                                    detailHtml += buildDetailTable('อื่นๆ', detailByOrigin.Other);
+                                    document.getElementById('detailModalContent').innerHTML = detailHtml;
+                                    document.getElementById('detailModal').style.display = 'flex';
+                                };
+                            }
                         }
                     }, 0);
                 }
 
                 // สะสมค่ารวมข้ามชุด
-                if(origin === 'Myn') {
+                if (origin === 'Myn') {
                     totalMyn.cost += sumCostOfBatch;
                     totalMyn.total += sumTotal;
                     totalMyn.totalPrice += sumTotalPrice;
@@ -186,8 +260,19 @@ async function updateBatchTable() {
                     totalMyn.netSale += sumSumNetSale;
                     totalMyn.stock += sumTotalStock;
                     totalMyn.stockPrice += sumTotalStockPrice;
+
+                    totalMyn2.cost += sumCostOfBatch2;
+                    totalMyn2.total += sumTotal2;
+                    totalMyn2.totalPrice += sumTotalPrice2;
+                    totalMyn2.waiting += sumWaitingForSale2;
+                    totalMyn2.waitingPrice += sumWaitingForSalePrice2;
+                    totalMyn2.sold += sumSold2;
+                    totalMyn2.soldPrice += sumSoldPrice2;
+                    totalMyn2.netSale += sumSumNetSale2;
+                    totalMyn2.stock += sumTotalStock2;
+                    totalMyn2.stockPrice += sumTotalStockPrice2;
                 }
-                if(origin === 'Moz') {
+                if (origin === 'Moz') {
                     totalMoz.cost += sumCostOfBatch;
                     totalMoz.total += sumTotal;
                     totalMoz.totalPrice += sumTotalPrice;
@@ -198,38 +283,20 @@ async function updateBatchTable() {
                     totalMoz.netSale += sumSumNetSale;
                     totalMoz.stock += sumTotalStock;
                     totalMoz.stockPrice += sumTotalStockPrice;
+
+                    totalMoz2.cost += sumCostOfBatch2;
+                    totalMoz2.total += sumTotal2;
+                    totalMoz2.totalPrice += sumTotalPrice2;
+                    totalMoz2.waiting += sumWaitingForSale2;
+                    totalMoz2.waitingPrice += sumWaitingForSalePrice2;
+                    totalMoz2.sold += sumSold2;
+                    totalMoz2.soldPrice += sumSoldPrice2;
+                    totalMoz2.netSale += sumSumNetSale2;
+                    totalMoz2.stock += sumTotalStock2;
+                    totalMoz2.stockPrice += sumTotalStockPrice2;
                 }
             });
-            // วนลูปแสดงแถวปกติ (ซ่อนแถวปกติด้วย style="display:none;")
-            entries.forEach((saleEntry, idx) => {
-                const { batchID, batchName, originCode, costOfBatch, total, totalPrice, waitingForSale, waitingForSalePrice, sold, soldPrice, sumNetSale } = saleEntry;
-                const stocks = stockEntries.filter(stockEntry => stockEntry.batchID._id === batchID);
-                const totalStock = stocks.reduce((sum, stock) => sum + (stock.addStock || 0), 0);
-                const totalStockPrice = stocks.reduce((sum, stock) => sum + (stock.addStock * stock.cost || 0), 0);
-                const readyForSale = totalStock + total - (waitingForSale + sold);
-                const readyForSalePrice = totalStockPrice + totalPrice - (waitingForSalePrice + soldPrice);
-                const sumNetScale = ((totalStockPrice + totalPrice) - costOfBatch);
-                const sumNetAll = sumNetScale + sumNetSale;
-                // เฉพาะแถวแรกของ group นี้เท่านั้นที่แสดง <td> number
-                let numberCell = '';
-                if (idx === 0) {
-                    numberCell = `<td class="setCenter" rowspan="${entries.length}">${number}</td>`;
-                }
-                const row = `
-                    <tr class="stock-row" data-batchid="${batchID}" style="display:none;">
-                        ${numberCell}
-                    <td class="setText">${batchName}</td>
-                    <td class="setNumber">${costOfBatch.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td class="setNumber">${(totalStock + total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalStockPrice + totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                    <td class="setNumber">${readyForSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${readyForSalePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                    <td class="setNumber">${sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                    <td class="setNumber">${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td class="setNumber">${sumNetSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td class="setNumber">${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    </tr>
-                `;
-                tableBody.insertAdjacentHTML('beforeend', row);
-            });
+
         });
 
         // เพิ่มแถวรวมพม่า
@@ -237,60 +304,99 @@ async function updateBatchTable() {
         const readyForSalePriceMyn = totalMyn.stockPrice + totalMyn.totalPrice - (totalMyn.waitingPrice + totalMyn.soldPrice);
         const sumNetScaleMyn = ((totalMyn.stockPrice + totalMyn.totalPrice) - totalMyn.cost);
         const sumNetAllMyn = sumNetScaleMyn + totalMyn.netSale;
+        const sumSaleMyn = totalMyn.stockPrice + totalMyn.totalPrice + totalMyn.netSale; // ขายได้
+
+        const readyForSaleMyn2 = totalMyn2.stock + totalMyn2.total - (totalMyn2.waiting + totalMyn2.sold);
+        const readyForSalePriceMyn2 = totalMyn2.stockPrice + totalMyn2.totalPrice - (totalMyn2.waitingPrice + totalMyn2.soldPrice);
+        const sumNetScaleMyn2 = ((totalMyn2.stockPrice + totalMyn2.totalPrice) - totalMyn2.cost);
+        const sumNetAllMyn2 = sumNetScaleMyn2 + totalMyn2.netSale;
+        const sumSaleMyn2 = totalMyn2.stockPrice + totalMyn2.totalPrice + totalMyn2.netSale; // ขายได้
+
         const rowMyn = `
             <tr class="stock-row summary-row" style="background:#e6f7ff;font-weight:bold;">
                 <td class="setText" colspan="2">รวมพม่า (ทุกชุดที่เลือก)</td>
                 <td class="setNumber">${totalMyn.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${(totalMyn.stock + totalMyn.total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalMyn.stockPrice + totalMyn.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                <td class="setNumber">${readyForSaleMyn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${readyForSalePriceMyn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                <td class="setNumber">${sumSaleMyn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalMyn.sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalMyn.soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                 <td class="setNumber">${sumNetScaleMyn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalMyn.netSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${sumNetAllMyn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             </tr>
+            <tr class="stock-row summary-row" style="background:#e6f7ff;font-weight:bold;">
+                <td class="setText" colspan="2">รวมพม่า ไม่มีทุน (ทุกชุดที่เลือก)</td>
+                <td class="setNumber">${totalMyn2.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${(totalMyn2.stock + totalMyn2.total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalMyn2.stockPrice + totalMyn2.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                <td class="setNumber">${sumSaleMyn2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${totalMyn2.sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalMyn2.soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                <td class="setNumber">${sumNetScaleMyn2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${totalMyn2.netSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${sumNetAllMyn2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            </tr>
         `;
         tableBody.insertAdjacentHTML('beforeend', rowMyn);
+
         // เพิ่มแถวรวมโมซัมบิก
         const readyForSaleMoz = totalMoz.stock + totalMoz.total - (totalMoz.waiting + totalMoz.sold);
         const readyForSalePriceMoz = totalMoz.stockPrice + totalMoz.totalPrice - (totalMoz.waitingPrice + totalMoz.soldPrice);
         const sumNetScaleMoz = ((totalMoz.stockPrice + totalMoz.totalPrice) - totalMoz.cost);
         const sumNetAllMoz = sumNetScaleMoz + totalMoz.netSale;
+        const sumSaleMoz = totalMoz.stockPrice + totalMoz.totalPrice + totalMoz.netSale; // ขายได้
+
+        const readyForSaleMoz2 = totalMoz2.stock + totalMoz2.total - (totalMoz2.waiting + totalMoz2.sold);
+        const readyForSalePriceMoz2 = totalMoz2.stockPrice + totalMoz2.totalPrice - (totalMoz2.waitingPrice + totalMoz2.soldPrice);
+        const sumNetScaleMoz2 = ((totalMoz2.stockPrice + totalMoz2.totalPrice) - totalMoz2.cost);
+        const sumNetAllMoz2 = sumNetScaleMoz2 + totalMoz2.netSale;
+        const sumSaleMoz2 = totalMoz2.stockPrice + totalMoz2.totalPrice + totalMoz2.netSale; // ขายได้
+
         const rowMoz = `
             <tr class="stock-row summary-row" style="background:#fffbe6;font-weight:bold;">
                 <td class="setText" colspan="2">รวมโมซัมบิก (ทุกชุดที่เลือก)</td>
                 <td class="setNumber">${totalMoz.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${(totalMoz.stock + totalMoz.total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalMoz.stockPrice + totalMoz.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                <td class="setNumber">${readyForSaleMoz.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${readyForSalePriceMoz.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                <td class="setNumber">${sumSaleMoz.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalMoz.sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalMoz.soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                 <td class="setNumber">${sumNetScaleMoz.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalMoz.netSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${sumNetAllMoz.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             </tr>
+             <tr class="stock-row summary-row" style="background:#fffbe6;font-weight:bold;">
+                <td class="setText" colspan="2">รวมโมซัมบิก ไม่มีทัน (ทุกชุดที่เลือก)</td>
+                <td class="setNumber">${totalMoz2.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${(totalMoz2.stock + totalMoz2.total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalMoz2.stockPrice + totalMoz2.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                <td class="setNumber">${sumSaleMoz2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${totalMoz2.sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalMoz2.soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                <td class="setNumber">${sumNetScaleMoz2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${totalMoz2.netSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${sumNetAllMoz2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            </tr>
         `;
         tableBody.insertAdjacentHTML('beforeend', rowMoz);
         // รวมทั้งหมด
         const totalAll = {
-            cost: totalMyn.cost + totalMoz.cost,
-            total: totalMyn.total + totalMoz.total,
-            totalPrice: totalMyn.totalPrice + totalMoz.totalPrice,
-            waiting: totalMyn.waiting + totalMoz.waiting,
-            waitingPrice: totalMyn.waitingPrice + totalMoz.waitingPrice,
-            sold: totalMyn.sold + totalMoz.sold,
-            soldPrice: totalMyn.soldPrice + totalMoz.soldPrice,
-            netSale: totalMyn.netSale + totalMoz.netSale,
-            stock: totalMyn.stock + totalMoz.stock,
-            stockPrice: totalMyn.stockPrice + totalMoz.stockPrice
+            cost: totalMyn.cost + totalMoz.cost + totalMyn2.cost + totalMoz2.cost,
+            total: totalMyn.total + totalMoz.total + totalMyn2.total + totalMoz2.total,
+            totalPrice: totalMyn.totalPrice + totalMoz.totalPrice + totalMyn2.totalPrice + totalMoz2.totalPrice,
+            waiting: totalMyn.waiting + totalMoz.waiting + totalMyn2.waiting + totalMoz2.waiting,
+            waitingPrice: totalMyn.waitingPrice + totalMoz.waitingPrice + totalMyn2.waitingPrice + totalMoz2.waitingPrice,
+            sold: totalMyn.sold + totalMoz.sold + totalMyn2.sold + totalMoz2.sold,
+            soldPrice: totalMyn.soldPrice + totalMoz.soldPrice + totalMyn2.soldPrice + totalMoz2.soldPrice,
+            netSale: totalMyn.netSale + totalMoz.netSale + totalMyn2.netSale + totalMoz2.netSale,
+            stock: totalMyn.stock + totalMoz.stock + totalMyn2.stock + totalMoz2.stock,
+            stockPrice: totalMyn.stockPrice + totalMoz.stockPrice + totalMyn2.stockPrice + totalMoz2.stockPrice
         };
         const readyForSaleAll = totalAll.stock + totalAll.total - (totalAll.waiting + totalAll.sold);
         const readyForSalePriceAll = totalAll.stockPrice + totalAll.totalPrice - (totalAll.waitingPrice + totalAll.soldPrice);
         const sumNetScaleAll = ((totalAll.stockPrice + totalAll.totalPrice) - totalAll.cost);
         const sumNetAllAll = sumNetScaleAll + totalAll.netSale;
+        const sumSaleAll = totalAll.stockPrice + totalAll.totalPrice + totalAll.netSale; // ขายได้
+
         const rowAll = `
             <tr class="stock-row summary-row" style="background:#eaffea;font-weight:bold;">
                 <td class="setText" colspan="2">รวมทั้งหมด (ทุกชุดที่เลือก)</td>
                 <td class="setNumber">${totalAll.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${(totalAll.stock + totalAll.total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalAll.stockPrice + totalAll.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                <td class="setNumber">${readyForSaleAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${readyForSalePriceAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                <td class="setNumber">${sumSaleAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalAll.sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalAll.soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                 <td class="setNumber">${sumNetScaleAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalAll.netSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>

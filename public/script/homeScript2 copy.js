@@ -46,6 +46,21 @@ async function updateBatchTable() {
         let totalMyn = {cost:0, total:0, totalPrice:0, waiting:0, waitingPrice:0, sold:0, soldPrice:0, netSale:0, stock:0, stockPrice:0};
         let totalMoz = {cost:0, total:0, totalPrice:0, waiting:0, waitingPrice:0, sold:0, soldPrice:0, netSale:0, stock:0, stockPrice:0};
 
+        // เพิ่ม modal popup สำหรับแสดงแถวปกติ
+        if (!document.getElementById('detailModal')) {
+            const modalHtml = `
+            <div id="detailModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;">
+              <div style="background:#fff;padding:24px 16px;min-width:320px;max-width:90vw;max-height:90vh;overflow:auto;border-radius:8px;position:relative;">
+                <button id="closeDetailModal" style="position:absolute;top:8px;right:12px;font-size:18px;">&times;</button>
+                <div id="detailModalContent"></div>
+              </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('closeDetailModal').onclick = function() {
+              document.getElementById('detailModal').style.display = 'none';
+            };
+        }
+
         Object.entries(numberGroups).forEach(([number, entries]) => {
             // Group by originCode in this number
             const originGroups = {};
@@ -82,10 +97,10 @@ async function updateBatchTable() {
                 // summary row (ใช้ numberCell เหมือนแถวปกติ)
                 let numberCell = '';
                 if (idxOrigin === 0) {
-                    numberCell = `<td class="setText" rowspan="${Object.keys(originGroups).length}">${number}</td>`;
+                    numberCell = `<td class="setCenter" rowspan="${Object.keys(originGroups).length}">${number}</td>`;
                 }
                 const summaryRow = `
-                    <tr class="stock-row summary-row">
+                    <tr class="stock-row summary-row" data-number="${number}">
                         ${numberCell}
                         <td class="setText">${originName}</td>
                         <td class="setNumber">${sumCostOfBatch.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -98,6 +113,66 @@ async function updateBatchTable() {
                     </tr>
                 `;
                 tableBody.insertAdjacentHTML('beforeend', summaryRow);
+
+                // เพิ่ม event ให้ summary row แรกของแต่ละชุด
+                if (idxOrigin === 0) {
+                    setTimeout(() => {
+                        const summaryRow = document.querySelector(`tr.summary-row[data-number='${number}']`);
+                        if (summaryRow) {
+                            summaryRow.style.cursor = 'pointer';
+                            summaryRow.onclick = function() {
+                                // แยก detail row ตาม originCode
+                                const detailByOrigin = { Myn: [], Moz: [], Other: [] };
+                                entries.forEach((saleEntry) => {
+                                    const origin = saleEntry.originCode === 'Myn' ? 'Myn' : saleEntry.originCode === 'Moz' ? 'Moz' : 'Other';
+                                    detailByOrigin[origin].push(saleEntry);
+                                });
+                                let detailHtml = `<h4>รายละเอียดชุดที่ ${number}</h4>`;
+                                // ฟังก์ชันสร้างตาราง detail
+                                function buildDetailTable(originLabel, detailArr) {
+                                    if (detailArr.length === 0) return '';
+                                    let sumCost = 0, sumTotal = 0, sumTotalPrice = 0, sumSold = 0, sumSoldPrice = 0, sumWaiting = 0, sumWaitingPrice = 0, sumNetSaleTotal = 0, sumStock = 0, sumStockPrice = 0;
+                                    let html = `<h5 style="margin:12px 0 4px 0;">${originLabel}</h5><table border="1" style="width:100%;border-collapse:collapse;margin-bottom:12px;"><thead><tr><th>ชื่อชุด</th><th>ทุน</th><th>พลอยชั่งได้</th><th>ขายได้</th><th>ทุนที่ขาย</th><th>กำไรชั่ง</th><th>กำไรขาย</th><th>กำไรรวม</th></tr></thead><tbody>`;
+                                    detailArr.forEach((saleEntry) => {
+                                        const { batchID, batchName, costOfBatch, total, totalPrice, waitingForSale, waitingForSalePrice, sold, soldPrice, sumNetSale } = saleEntry;
+                                        const stocks = stockEntries.filter(stockEntry => stockEntry.batchID._id === batchID);
+                                        const totalStock = stocks.reduce((sum, stock) => sum + (stock.addStock || 0), 0);
+                                        const totalStockPrice = stocks.reduce((sum, stock) => sum + (stock.addStock * stock.cost || 0), 0);
+                                        const readyForSale = totalStock + total - (waitingForSale + sold);
+                                        const readyForSalePrice = totalStockPrice + totalPrice - (waitingForSalePrice + soldPrice);
+                                        const sumNetScale = ((totalStockPrice + totalPrice) - costOfBatch);
+                                        const sumNetAll = sumNetScale + sumNetSale;
+                                        sumCost += costOfBatch || 0;
+                                        sumTotal += total || 0;
+                                        sumTotalPrice += totalPrice || 0;
+                                        sumSold += sold || 0;
+                                        sumSoldPrice += soldPrice || 0;
+                                        sumWaiting += waitingForSale || 0;
+                                        sumWaitingPrice += waitingForSalePrice || 0;
+                                        sumNetSaleTotal += sumNetSale || 0;
+                                        sumStock += totalStock;
+                                        sumStockPrice += totalStockPrice;
+                                        html += `<tr><td>${batchName}</td><td>${costOfBatch.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${(totalStock + total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalStockPrice + totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${readyForSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${readyForSalePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${sumNetSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
+                                    });
+                                    // รวมท้ายตาราง
+                                    const readyForSale = sumStock + sumTotal - (sumWaiting + sumSold);
+                                    const readyForSalePrice = sumStockPrice + sumTotalPrice - (sumWaitingPrice + sumSoldPrice);
+                                    const sumNetScale = ((sumStockPrice + sumTotalPrice) - sumCost);
+                                    const sumNetAll = sumNetScale + sumNetSaleTotal;
+                                    html += `<tr style="background:#f5f5f5;font-weight:bold;"><td>รวม</td><td>${sumCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${(sumStock + sumTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(sumStockPrice + sumTotalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${sumSold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${sumSoldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${readyForSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${readyForSalePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td><td>${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${sumNetSaleTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
+                                    html += '</tbody></table>';
+                                    return html;
+                                }
+                                // end buildDetailTable
+                                detailHtml += buildDetailTable('พม่า', detailByOrigin.Myn);
+                                detailHtml += buildDetailTable('โมซัมบิก', detailByOrigin.Moz);
+                                detailHtml += buildDetailTable('อื่นๆ', detailByOrigin.Other);
+                                document.getElementById('detailModalContent').innerHTML = detailHtml;
+                                document.getElementById('detailModal').style.display = 'flex';
+                            };
+                        }
+                    }, 0);
+                }
 
                 // สะสมค่ารวมข้ามชุด
                 if(origin === 'Myn') {
@@ -138,7 +213,7 @@ async function updateBatchTable() {
                 // เฉพาะแถวแรกของ group นี้เท่านั้นที่แสดง <td> number
                 let numberCell = '';
                 if (idx === 0) {
-                    numberCell = `<td class="setText" rowspan="${entries.length}">${number}</td>`;
+                    numberCell = `<td class="setCenter" rowspan="${entries.length}">${number}</td>`;
                 }
                 const row = `
                     <tr class="stock-row" data-batchid="${batchID}" style="display:none;">

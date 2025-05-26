@@ -108,7 +108,7 @@ async function updateBatchTable() {
                 const readyForSalePrice = sumTotalStockPrice + sumTotalPrice - (sumWaitingForSalePrice + sumSoldPrice);
                 const sumNetScale = ((sumTotalStockPrice + sumTotalPrice) - sumCostOfBatch);
                 const sumNetAll = sumNetScale + sumSumNetSale;
-                sumSumSale = sumTotalStockPrice + sumTotalPrice + sumSumNetSale; // ขายได้
+                sumSumSale = sumSoldPrice + sumSumNetSale; // ขายได้
 
                 const readyForSale2 = sumTotalStock2 + sumTotal2 - (sumWaitingForSale2 + sumSold2);
                 const readyForSalePrice2 = sumTotalStockPrice2 + sumTotalPrice2 - (sumWaitingForSalePrice2 + sumSoldPrice2);
@@ -189,13 +189,16 @@ async function updateBatchTable() {
                                         detailArr.forEach((saleEntry) => {
                                             const { batchID, batchName, costOfBatch, total, totalPrice, waitingForSale, waitingForSalePrice, sold, soldPrice, sumNetSale } = saleEntry;
                                             const stocks = stockEntries.filter(stockEntry => stockEntry.batchID._id === batchID);
+                                            
                                             const totalStock = stocks.reduce((sum, stock) => sum + (stock.addStock || 0), 0);
                                             const totalStockPrice = stocks.reduce((sum, stock) => sum + (stock.addStock * stock.cost || 0), 0);
                                             const readyForSale = totalStock + total - (waitingForSale + sold);
                                             const readyForSalePrice = totalStockPrice + totalPrice - (waitingForSalePrice + soldPrice);
                                             const sumNetScale = ((totalStockPrice + totalPrice) - costOfBatch);
                                             const sumNetAll = sumNetScale + sumNetSale;
-                                            const sumSale = totalStockPrice + totalPrice + sumNetSale; // ขายได้
+                                            const sumSale = costOfBatch > 0
+                                                ? soldPrice + sumNetSale // ขายได้
+                                                : sumNetSale; // ขายได้
                                             
                                             sumSumSale += sumSale;
                                             sumCost += costOfBatch || 0;
@@ -304,7 +307,7 @@ async function updateBatchTable() {
         const readyForSalePriceMyn = totalMyn.stockPrice + totalMyn.totalPrice - (totalMyn.waitingPrice + totalMyn.soldPrice);
         const sumNetScaleMyn = ((totalMyn.stockPrice + totalMyn.totalPrice) - totalMyn.cost);
         const sumNetAllMyn = sumNetScaleMyn + totalMyn.netSale;
-        const sumSaleMyn = totalMyn.stockPrice + totalMyn.totalPrice + totalMyn.netSale; // ขายได้
+        const sumSaleMyn = totalMyn.soldPrice + totalMyn.netSale; // ขายได้
 
         const readyForSaleMyn2 = totalMyn2.stock + totalMyn2.total - (totalMyn2.waiting + totalMyn2.sold);
         const readyForSalePriceMyn2 = totalMyn2.stockPrice + totalMyn2.totalPrice - (totalMyn2.waitingPrice + totalMyn2.soldPrice);
@@ -341,7 +344,7 @@ async function updateBatchTable() {
         const readyForSalePriceMoz = totalMoz.stockPrice + totalMoz.totalPrice - (totalMoz.waitingPrice + totalMoz.soldPrice);
         const sumNetScaleMoz = ((totalMoz.stockPrice + totalMoz.totalPrice) - totalMoz.cost);
         const sumNetAllMoz = sumNetScaleMoz + totalMoz.netSale;
-        const sumSaleMoz = totalMoz.stockPrice + totalMoz.totalPrice + totalMoz.netSale; // ขายได้
+        const sumSaleMoz = totalMoz.soldPrice + totalMoz.netSale; // ขายได้
 
         const readyForSaleMoz2 = totalMoz2.stock + totalMoz2.total - (totalMoz2.waiting + totalMoz2.sold);
         const readyForSalePriceMoz2 = totalMoz2.stockPrice + totalMoz2.totalPrice - (totalMoz2.waitingPrice + totalMoz2.soldPrice);
@@ -389,7 +392,7 @@ async function updateBatchTable() {
         const readyForSalePriceAll = totalAll.stockPrice + totalAll.totalPrice - (totalAll.waitingPrice + totalAll.soldPrice);
         const sumNetScaleAll = ((totalAll.stockPrice + totalAll.totalPrice) - totalAll.cost);
         const sumNetAllAll = sumNetScaleAll + totalAll.netSale;
-        const sumSaleAll = totalAll.stockPrice + totalAll.totalPrice + totalAll.netSale; // ขายได้
+        const sumSaleAll = sumSaleMyn + sumSaleMyn2 + sumSaleMoz + sumSaleMoz2; // ขายได้
 
         const rowAll = `
             <tr class="stock-row summary-row" style="background:#eaffea;font-weight:bold;">

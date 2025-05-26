@@ -113,8 +113,8 @@ async function updateBatchTable() {
                 const readyForSale2 = sumTotalStock2 + sumTotal2 - (sumWaitingForSale2 + sumSold2);
                 const readyForSalePrice2 = sumTotalStockPrice2 + sumTotalPrice2 - (sumWaitingForSalePrice2 + sumSoldPrice2);
                 const sumNetScale2 = ((sumTotalStockPrice2 + sumTotalPrice2) - sumCostOfBatch2);
-                const sumNetAll2 = sumNetScale2 + sumSumNetSale2;
-                sumSumSale2 = sumTotalStockPrice2 + sumTotalPrice2 + sumSumNetSale2; // ขายได้
+                const sumNetAll2 = sumSoldPrice2 + sumSumNetSale2; // กำไรรวม ไม่มีทุน
+                sumSumSale2 = sumSoldPrice2 + sumSumNetSale2; // ขายได้ ไม่มีทุน
 
                 // ชื่อ origin
                 let originName = origin;
@@ -144,7 +144,7 @@ async function updateBatchTable() {
                         <td class="setNumber">${sumSumSale2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td class="setNumber">${sumSold2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${sumSoldPrice2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                         <td class="setNumber">${sumNetScale2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        <td class="setNumber">${sumSumNetSale2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td class="setNumber">${sumSumSale2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td class="setNumber">${sumNetAll2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     </tr>
                 `;
@@ -184,7 +184,7 @@ async function updateBatchTable() {
                                     function buildDetailTable(originLabel, detailArr) {
                                         if (detailArr.length === 0) return '';
                                         let sumCost = 0, sumTotal = 0, sumTotalPrice = 0, sumSold = 0, sumSoldPrice = 0, sumWaiting = 0, sumWaitingPrice = 0, sumNetSaleTotal = 0, sumStock = 0, sumStockPrice = 0;
-                                        let sumSumSale = 0;
+                                        let sumSumSale = 0, sumNetAllTotal = 0;
                                         let html = `<h5 style="margin:12px 0 4px 0;">${originLabel}</h5><table border="1" style="width:100%;border-collapse:collapse;margin-bottom:12px;"><thead><tr><th>ชื่อชุด</th><th>ทุน</th><th>พลอยชั่งได้</th><th>ขายได้</th><th>ทุนที่ขาย</th><th>กำไรชั่ง</th><th>กำไรขาย</th><th>กำไรรวม</th></tr></thead><tbody>`;
                                         detailArr.forEach((saleEntry) => {
                                             const { batchID, batchName, costOfBatch, total, totalPrice, waitingForSale, waitingForSalePrice, sold, soldPrice, sumNetSale } = saleEntry;
@@ -195,10 +195,17 @@ async function updateBatchTable() {
                                             const readyForSale = totalStock + total - (waitingForSale + sold);
                                             const readyForSalePrice = totalStockPrice + totalPrice - (waitingForSalePrice + soldPrice);
                                             const sumNetScale = ((totalStockPrice + totalPrice) - costOfBatch);
-                                            const sumNetAll = sumNetScale + sumNetSale;
+                                            const sumNetAll = costOfBatch > 0
+                                                ? sumNetScale + sumNetSale // กำไร รวม มีทุน
+                                                : soldPrice + sumNetSale; // กำไร รวม ไม่มีทุน
+
                                             const sumSale = costOfBatch > 0
-                                                ? soldPrice + sumNetSale // ขายได้
-                                                : sumNetSale; // ขายได้
+                                                ? soldPrice + sumNetSale // ขายได้ มีทุน
+                                                : soldPrice + sumNetSale; // ขายได้ ไม่มีทุน
+
+                                            const sumNetSaleAll = costOfBatch > 0
+                                                ? sumNetSale // กำไรขาย มีทุน
+                                                : soldPrice + sumNetSale; // กำไรขาย ไม่มีทุน
                                             
                                             sumSumSale += sumSale;
                                             sumCost += costOfBatch || 0;
@@ -208,9 +215,10 @@ async function updateBatchTable() {
                                             sumSoldPrice += soldPrice || 0;
                                             sumWaiting += waitingForSale || 0;
                                             sumWaitingPrice += waitingForSalePrice || 0;
-                                            sumNetSaleTotal += sumNetSale || 0;
+                                            sumNetSaleTotal += sumNetSaleAll || 0;
                                             sumStock += totalStock;
                                             sumStockPrice += totalStockPrice;
+                                            sumNetAllTotal += sumNetAll || 0;
                                             html += `<tr>
                                                 <td>${batchName}</td>
                                                 <td>${costOfBatch.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -218,7 +226,7 @@ async function updateBatchTable() {
                                                 <td>${sumSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                                 <td>${sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                                                 <td>${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                                <td>${sumNetSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td>${sumNetSaleAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                                 <td>${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>`;
                                         });
@@ -226,7 +234,7 @@ async function updateBatchTable() {
                                         const readyForSale = sumStock + sumTotal - (sumWaiting + sumSold);
                                         const readyForSalePrice = sumStockPrice + sumTotalPrice - (sumWaitingPrice + sumSoldPrice);
                                         const sumNetScale = ((sumStockPrice + sumTotalPrice) - sumCost);
-                                        const sumNetAll = sumNetScale + sumNetSaleTotal;
+             
                                         html += `<tr style="background:#f5f5f5;font-weight:bold;">
                                         <td>รวม</td>
                                         <td>${sumCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -235,7 +243,7 @@ async function updateBatchTable() {
                                         <td>${sumSold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${sumSoldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                                         <td>${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                         <td>${sumNetSaleTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                        <td>${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
+                                        <td>${sumNetAllTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
                                         html += '</tbody></table>';
                                         return html;
                                     }
@@ -312,8 +320,8 @@ async function updateBatchTable() {
         const readyForSaleMyn2 = totalMyn2.stock + totalMyn2.total - (totalMyn2.waiting + totalMyn2.sold);
         const readyForSalePriceMyn2 = totalMyn2.stockPrice + totalMyn2.totalPrice - (totalMyn2.waitingPrice + totalMyn2.soldPrice);
         const sumNetScaleMyn2 = ((totalMyn2.stockPrice + totalMyn2.totalPrice) - totalMyn2.cost);
-        const sumNetAllMyn2 = sumNetScaleMyn2 + totalMyn2.netSale;
-        const sumSaleMyn2 = totalMyn2.stockPrice + totalMyn2.totalPrice + totalMyn2.netSale; // ขายได้
+        const sumNetAllMyn2 = totalMyn2.soldPrice + totalMyn2.netSale;
+        const sumSaleMyn2 = totalMyn2.soldPrice + totalMyn2.netSale; // ขายได้
 
         const rowMyn = `
             <tr class="stock-row summary-row" style="background:#e6f7ff;font-weight:bold;">
@@ -333,7 +341,7 @@ async function updateBatchTable() {
                 <td class="setNumber">${sumSaleMyn2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalMyn2.sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalMyn2.soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                 <td class="setNumber">${sumNetScaleMyn2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td class="setNumber">${totalMyn2.netSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${sumSaleMyn2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${sumNetAllMyn2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             </tr>
         `;
@@ -349,8 +357,8 @@ async function updateBatchTable() {
         const readyForSaleMoz2 = totalMoz2.stock + totalMoz2.total - (totalMoz2.waiting + totalMoz2.sold);
         const readyForSalePriceMoz2 = totalMoz2.stockPrice + totalMoz2.totalPrice - (totalMoz2.waitingPrice + totalMoz2.soldPrice);
         const sumNetScaleMoz2 = ((totalMoz2.stockPrice + totalMoz2.totalPrice) - totalMoz2.cost);
-        const sumNetAllMoz2 = sumNetScaleMoz2 + totalMoz2.netSale;
-        const sumSaleMoz2 = totalMoz2.stockPrice + totalMoz2.totalPrice + totalMoz2.netSale; // ขายได้
+        const sumNetAllMoz2 = totalMoz2.soldPrice + totalMoz2.netSale;
+        const sumSaleMoz2 = totalMoz2.soldPrice + totalMoz2.netSale; // ขายได้
 
         const rowMoz = `
             <tr class="stock-row summary-row" style="background:#fffbe6;font-weight:bold;">
@@ -370,7 +378,7 @@ async function updateBatchTable() {
                 <td class="setNumber">${sumSaleMoz2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalMoz2.sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalMoz2.soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                 <td class="setNumber">${sumNetScaleMoz2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td class="setNumber">${totalMoz2.netSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${sumSaleMoz2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${sumNetAllMoz2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             </tr>
         `;
@@ -384,7 +392,7 @@ async function updateBatchTable() {
             waitingPrice: totalMyn.waitingPrice + totalMoz.waitingPrice + totalMyn2.waitingPrice + totalMoz2.waitingPrice,
             sold: totalMyn.sold + totalMoz.sold + totalMyn2.sold + totalMoz2.sold,
             soldPrice: totalMyn.soldPrice + totalMoz.soldPrice + totalMyn2.soldPrice + totalMoz2.soldPrice,
-            netSale: totalMyn.netSale + totalMoz.netSale + totalMyn2.netSale + totalMoz2.netSale,
+            netSale: totalMyn.netSale + totalMoz.netSale + sumSaleMyn2 + sumSaleMoz2,
             stock: totalMyn.stock + totalMoz.stock + totalMyn2.stock + totalMoz2.stock,
             stockPrice: totalMyn.stockPrice + totalMoz.stockPrice + totalMyn2.stockPrice + totalMoz2.stockPrice
         };

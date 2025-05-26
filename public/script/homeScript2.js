@@ -112,7 +112,7 @@ async function updateBatchTable() {
 
                 const readyForSale2 = sumTotalStock2 + sumTotal2 - (sumWaitingForSale2 + sumSold2);
                 const readyForSalePrice2 = sumTotalStockPrice2 + sumTotalPrice2 - (sumWaitingForSalePrice2 + sumSoldPrice2);
-                const sumNetScale2 = ((sumTotalStockPrice2 + sumTotalPrice2) - sumCostOfBatch2);
+                const sumNetScale2 = 0; // ไม่มีทุน ไม่มีกำไรชั่ง
                 const sumNetAll2 = sumSoldPrice2 + sumSumNetSale2; // กำไรรวม ไม่มีทุน
                 sumSumSale2 = sumSoldPrice2 + sumSumNetSale2; // ขายได้ ไม่มีทุน
 
@@ -184,7 +184,7 @@ async function updateBatchTable() {
                                     function buildDetailTable(originLabel, detailArr) {
                                         if (detailArr.length === 0) return '';
                                         let sumCost = 0, sumTotal = 0, sumTotalPrice = 0, sumSold = 0, sumSoldPrice = 0, sumWaiting = 0, sumWaitingPrice = 0, sumNetSaleTotal = 0, sumStock = 0, sumStockPrice = 0;
-                                        let sumSumSale = 0, sumNetAllTotal = 0;
+                                        let sumSumSale = 0, sumNetAllTotal = 0, sumNetScaleTotal = 0;
                                         let html = `<h5 style="margin:12px 0 4px 0;">${originLabel}</h5><table border="1" style="width:100%;border-collapse:collapse;margin-bottom:12px;"><thead><tr><th>ชื่อชุด</th><th>ทุน</th><th>พลอยชั่งได้</th><th>ขายได้</th><th>ทุนที่ขาย</th><th>กำไรชั่ง</th><th>กำไรขาย</th><th>กำไรรวม</th></tr></thead><tbody>`;
                                         detailArr.forEach((saleEntry) => {
                                             const { batchID, batchName, costOfBatch, total, totalPrice, waitingForSale, waitingForSalePrice, sold, soldPrice, sumNetSale } = saleEntry;
@@ -194,7 +194,10 @@ async function updateBatchTable() {
                                             const totalStockPrice = stocks.reduce((sum, stock) => sum + (stock.addStock * stock.cost || 0), 0);
                                             const readyForSale = totalStock + total - (waitingForSale + sold);
                                             const readyForSalePrice = totalStockPrice + totalPrice - (waitingForSalePrice + soldPrice);
-                                            const sumNetScale = ((totalStockPrice + totalPrice) - costOfBatch);
+                                            const sumNetScale = costOfBatch > 0
+                                            ? ((totalStockPrice + totalPrice) - costOfBatch)
+                                            : 0; // ไม่มีทุน ไม่มีกำไรชั่ง
+
                                             const sumNetAll = costOfBatch > 0
                                                 ? sumNetScale + sumNetSale // กำไร รวม มีทุน
                                                 : soldPrice + sumNetSale; // กำไร รวม ไม่มีทุน
@@ -219,6 +222,8 @@ async function updateBatchTable() {
                                             sumStock += totalStock;
                                             sumStockPrice += totalStockPrice;
                                             sumNetAllTotal += sumNetAll || 0;
+                                            sumNetScaleTotal += sumNetScale || 0;
+
                                             html += `<tr>
                                                 <td>${batchName}</td>
                                                 <td>${costOfBatch.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -241,7 +246,7 @@ async function updateBatchTable() {
                                         <td>${(sumStock + sumTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(sumStockPrice + sumTotalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                                         <td>${sumSumSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                         <td>${sumSold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${sumSoldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                                        <td>${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                        <td>${sumNetScaleTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                         <td>${sumNetSaleTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                         <td>${sumNetAllTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`;
                                         html += '</tbody></table>';
@@ -319,7 +324,7 @@ async function updateBatchTable() {
 
         const readyForSaleMyn2 = totalMyn2.stock + totalMyn2.total - (totalMyn2.waiting + totalMyn2.sold);
         const readyForSalePriceMyn2 = totalMyn2.stockPrice + totalMyn2.totalPrice - (totalMyn2.waitingPrice + totalMyn2.soldPrice);
-        const sumNetScaleMyn2 = ((totalMyn2.stockPrice + totalMyn2.totalPrice) - totalMyn2.cost);
+        const sumNetScaleMyn2 = 0;
         const sumNetAllMyn2 = totalMyn2.soldPrice + totalMyn2.netSale;
         const sumSaleMyn2 = totalMyn2.soldPrice + totalMyn2.netSale; // ขายได้
 
@@ -356,7 +361,7 @@ async function updateBatchTable() {
 
         const readyForSaleMoz2 = totalMoz2.stock + totalMoz2.total - (totalMoz2.waiting + totalMoz2.sold);
         const readyForSalePriceMoz2 = totalMoz2.stockPrice + totalMoz2.totalPrice - (totalMoz2.waitingPrice + totalMoz2.soldPrice);
-        const sumNetScaleMoz2 = ((totalMoz2.stockPrice + totalMoz2.totalPrice) - totalMoz2.cost);
+        const sumNetScaleMoz2 = 0;
         const sumNetAllMoz2 = totalMoz2.soldPrice + totalMoz2.netSale;
         const sumSaleMoz2 = totalMoz2.soldPrice + totalMoz2.netSale; // ขายได้
 
@@ -398,9 +403,9 @@ async function updateBatchTable() {
         };
         const readyForSaleAll = totalAll.stock + totalAll.total - (totalAll.waiting + totalAll.sold);
         const readyForSalePriceAll = totalAll.stockPrice + totalAll.totalPrice - (totalAll.waitingPrice + totalAll.soldPrice);
-        const sumNetScaleAll = ((totalAll.stockPrice + totalAll.totalPrice) - totalAll.cost);
-        const sumNetAllAll = sumNetScaleAll + totalAll.netSale;
         const sumSaleAll = sumSaleMyn + sumSaleMyn2 + sumSaleMoz + sumSaleMoz2; // ขายได้
+        const sumNetScaleAll = sumNetScaleMyn + sumNetScaleMyn2 + sumNetScaleMoz + sumNetScaleMoz2; // กำไรชั่งรวม
+        const sumNetAllAll = sumNetAllMyn + sumNetAllMyn2 + sumNetAllMoz + sumNetAllMoz2; // กำไรรวม
 
         const rowAll = `
             <tr class="stock-row summary-row" style="background:#eaffea;font-weight:bold;">

@@ -92,7 +92,7 @@ async function fetchAndDisplayStockData(year, origins, batchID) {
             const readyForSalePrice = totalStockPrice + totalPrice - (waitingForSalePrice + soldPrice);
 
             // คิดกำไรชั่ง
-            const sumNetScale = ( ( totalStockPrice + totalPrice ) - costOfBatch );
+            const sumNetScale = (costOfBatch > 0) ? ((totalStockPrice + totalPrice) - costOfBatch) : 0;
 
             // รวมกำไรชั่ง กำไรขาย
             const sumNetAll = sumNetScale + sumNetSale;

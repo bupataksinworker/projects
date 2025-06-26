@@ -140,7 +140,7 @@ async function updateBatchTable() {
                     <tr class="stock-row summary-row" data-number="${number}">
                         <td class="setText">${originName} ไม่มีทุน</td>
                         <td class="setNumber">${sumCostOfBatch2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        <td class="setNumber">0.00<br>(0.00)</td>
+                        <td class="setNumber">${(sumTotalStock2 + sumTotal2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(sumTotalStockPrice2 + sumTotalPrice2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                         <td class="setNumber">${sumSumSale2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                         <td class="setNumber">${sumSold2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${sumSoldPrice2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                         <td class="setNumber">${sumNetScale2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -195,14 +195,8 @@ async function updateBatchTable() {
                                             const readyForSale = totalStock + total - (waitingForSale + sold);
                                             const readyForSalePrice = totalStockPrice + totalPrice - (waitingForSalePrice + soldPrice);
                                             const sumNetScale = costOfBatch > 0
-                                                ? ((totalStockPrice + totalPrice) - costOfBatch) //  มีทุน มีกำไรชั่ง
-                                                : 0; // ไม่มีทุน ไม่มีกำไรชั่ง
-                                            const sumWeightGem = costOfBatch > 0
-                                                ? (totalStock + total) // พลอยชั่งได้ มีทุน
-                                                : 0; // พลอยชั่งได้ ไม่มีทุน
-                                            const sumWeightGemPrice = costOfBatch > 0
-                                                ? (totalStockPrice + totalPrice) // ราคา พลอยชั่งได้ มีทุน
-                                                : 0; // ราคา พลอยชั่งได้ ไม่มีทุน
+                                            ? ((totalStockPrice + totalPrice) - costOfBatch)
+                                            : 0; // ไม่มีทุน ไม่มีกำไรชั่ง
 
                                             const sumNetAll = costOfBatch > 0
                                                 ? sumNetScale + sumNetSale // กำไร รวม มีทุน
@@ -218,24 +212,22 @@ async function updateBatchTable() {
                                             
                                             sumSumSale += sumSale;
                                             sumCost += costOfBatch || 0;
-                                            if (costOfBatch > 0) {
-                                                sumTotal += total || 0;
-                                                sumTotalPrice += totalPrice || 0;
-                                                sumStock += totalStock;
-                                                sumStockPrice += totalStockPrice;
-                                            }
+                                            sumTotal += total || 0;
+                                            sumTotalPrice += totalPrice || 0;
                                             sumSold += sold || 0;
                                             sumSoldPrice += soldPrice || 0;
                                             sumWaiting += waitingForSale || 0;
                                             sumWaitingPrice += waitingForSalePrice || 0;
                                             sumNetSaleTotal += sumNetSaleAll || 0;
+                                            sumStock += totalStock;
+                                            sumStockPrice += totalStockPrice;
                                             sumNetAllTotal += sumNetAll || 0;
                                             sumNetScaleTotal += sumNetScale || 0;
 
                                             html += `<tr>
                                                 <td>${batchName}</td>
                                                 <td>${costOfBatch.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                                <td>${(sumWeightGem).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(sumWeightGemPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                                                <td>${(totalStock + total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalStockPrice + totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                                                 <td>${sumSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                                 <td>${sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                                                 <td>${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -350,8 +342,8 @@ async function updateBatchTable() {
             <tr class="stock-row summary-row" style="background:#e6f7ff;font-weight:bold;">
                 <td class="setText" colspan="2">รวมพม่า ไม่มีทุน (ทุกชุดที่เลือก)</td>
                 <td class="setNumber">${totalMyn2.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td class="setNumber">0.00<br>(0.00)</td>
-                <td class="setNumber">${Number(sumSaleMyn2).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td class="setNumber">${(totalMyn2.stock + totalMyn2.total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalMyn2.stockPrice + totalMyn2.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                <td class="setNumber">${sumSaleMyn2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalMyn2.sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalMyn2.soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                 <td class="setNumber">${sumNetScaleMyn2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${sumSaleMyn2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -385,9 +377,9 @@ async function updateBatchTable() {
                 <td class="setNumber">${sumNetAllMoz.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
             </tr>
              <tr class="stock-row summary-row" style="background:#fffbe6;font-weight:bold;">
-                <td class="setText" colspan="2">รวมโมซัมบิก ไม่มีทุน (ทุกชุดที่เลือก)</td>
+                <td class="setText" colspan="2">รวมโมซัมบิก ไม่มีทัน (ทุกชุดที่เลือก)</td>
                 <td class="setNumber">${totalMoz2.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td class="setNumber">0.00<br>(0.00)</td>
+                <td class="setNumber">${(totalMoz2.stock + totalMoz2.total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalMoz2.stockPrice + totalMoz2.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                 <td class="setNumber">${sumSaleMoz2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalMoz2.sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalMoz2.soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                 <td class="setNumber">${sumNetScaleMoz2.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -396,11 +388,11 @@ async function updateBatchTable() {
             </tr>
         `;
         tableBody.insertAdjacentHTML('beforeend', rowMoz);
-        // รวมทั้งหมด (แก้ไขเฉพาะคอลัมน์ที่ 3)
+        // รวมทั้งหมด
         const totalAll = {
             cost: totalMyn.cost + totalMoz.cost + totalMyn2.cost + totalMoz2.cost,
-            total: totalMyn.total + totalMoz.total + totalMyn2.total + totalMoz2.total, // เดิม
-            totalPrice: totalMyn.totalPrice + totalMoz.totalPrice + totalMyn2.totalPrice + totalMoz2.totalPrice, // เดิม
+            total: totalMyn.total + totalMoz.total + totalMyn2.total + totalMoz2.total,
+            totalPrice: totalMyn.totalPrice + totalMoz.totalPrice + totalMyn2.totalPrice + totalMoz2.totalPrice,
             waiting: totalMyn.waiting + totalMoz.waiting + totalMyn2.waiting + totalMoz2.waiting,
             waitingPrice: totalMyn.waitingPrice + totalMoz.waitingPrice + totalMyn2.waitingPrice + totalMoz2.waitingPrice,
             sold: totalMyn.sold + totalMoz.sold + totalMyn2.sold + totalMoz2.sold,
@@ -414,15 +406,12 @@ async function updateBatchTable() {
         const sumSaleAll = sumSaleMyn + sumSaleMyn2 + sumSaleMoz + sumSaleMoz2; // ขายได้
         const sumNetScaleAll = sumNetScaleMyn + sumNetScaleMyn2 + sumNetScaleMoz + sumNetScaleMoz2; // กำไรชั่งรวม
         const sumNetAllAll = sumNetAllMyn + sumNetAllMyn2 + sumNetAllMoz + sumNetAllMoz2; // กำไรรวม
-        // คำนวณค่าคอลัมป์ที่ 3 (พลอยชั่งได้ เฉพาะฝั่งมีทุน)
-        const totalAllGem = totalMyn.stock + totalMyn.total + totalMoz.stock + totalMoz.total;
-        const totalAllGemPrice = totalMyn.stockPrice + totalMyn.totalPrice + totalMoz.stockPrice + totalMoz.totalPrice;
 
         const rowAll = `
             <tr class="stock-row summary-row" style="background:#eaffea;font-weight:bold;">
                 <td class="setText" colspan="2">รวมทั้งหมด (ทุกชุดที่เลือก)</td>
                 <td class="setNumber">${totalAll.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td class="setNumber">${totalAllGem.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalAllGemPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
+                <td class="setNumber">${(totalAll.stock + totalAll.total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalAll.stockPrice + totalAll.totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                 <td class="setNumber">${sumSaleAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="setNumber">${totalAll.sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${totalAll.soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
                 <td class="setNumber">${sumNetScaleAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>

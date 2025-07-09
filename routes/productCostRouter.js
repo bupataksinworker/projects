@@ -150,6 +150,7 @@ router.get('/api/updateTableProductCost', async (req, res) => {
             id: product._id,
             productName: product.productName,
             ber: product.ber,
+            sorter: product.sorter,
             displayName: product.displayName,
             sizeName: product.sizeID.sizeName,
             typeName: product.typeID.typeName,

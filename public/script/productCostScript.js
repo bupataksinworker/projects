@@ -21,8 +21,13 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('modal_editProductCost').addEventListener('shown.bs.modal', function () {
         console.log("✅ Modal is now visible");
     });
+    document.getElementById('costOfProductCost').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // ป้องกัน submit ฟอร์ม
+            addCostProduct();
+        }
+    });
 });
-
 
 
 window.onload = async function () {
@@ -107,7 +112,7 @@ async function addCostProduct() {
         });
 
         const result = await response.json();
-        alert(result.message);
+        // alert(result.message);
         updateTableProductCost();
 
         // ✅ ถ้ามีฟังก์ชัน `updateDropdownSaleEntry()` ให้เรียกใช้งาน สำหรับ popup หน้า manageSaleEntry
@@ -130,7 +135,7 @@ function updateTableProductCost() {
         .then(data => {
             let tableHTML = data.map((item, index) => `
                 <tr>
-                    <td>${index + 1}</td>
+                    <td title="sorter : ${item.sorter ?? '-'}">${index + 1}</td>
                     <td>${item.ber || ''} ${item.productName || '-'}</td>
                     <td>${item.ber || '-'}</td>
                     <td>${item.displayName || '-'}</td>
@@ -265,7 +270,7 @@ function deleteProductCostOne(costID) {
     const result = confirm('ต้องการลบราคาสินค้านี้? ' + costID);
     const productIDInput = document.getElementById('modal_edit_id');
     const productID = productIDInput.value;
-    
+
     if (result) {
         fetch('/deleteID', {
             method: 'POST',

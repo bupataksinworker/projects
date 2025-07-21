@@ -179,4 +179,39 @@ router.post('/deleteSize', async (req, res) => {
 });
 
 
+// POST /moveSize
+router.post('/moveSize', async (req, res) => {
+    const { sizeID, direction, grainID } = req.body;
+    try {
+        // ดึง size ทั้งหมดของ grain เดียวกัน เรียงตาม sorter
+        const sizes = await Size.find({ grainID }).sort({ sorter: 1 });
+        const currentIndex = sizes.findIndex(s => s._id.toString() === sizeID);
+        if (currentIndex === -1) return res.json({ success: false, message: 'ไม่พบขนาด' });
+
+        let swapIndex;
+        if (direction === 'up' && currentIndex > 0) {
+            swapIndex = currentIndex - 1;
+        } else if (direction === 'down' && currentIndex < sizes.length - 1) {
+            swapIndex = currentIndex + 1;
+        } else {
+            return res.json({ success: false, message: 'ไม่สามารถสลับลำดับได้' });
+        }
+
+        // สลับค่า sorter
+        const currentSize = sizes[currentIndex];
+        const swapSize = sizes[swapIndex];
+        const tempSorter = currentSize.sorter;
+        currentSize.sorter = swapSize.sorter;
+        swapSize.sorter = tempSorter;
+
+        await currentSize.save();
+        await swapSize.save();
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.json({ success: false, message: 'เกิดข้อผิดพลาด' });
+    }
+});
+
 module.exports = router;

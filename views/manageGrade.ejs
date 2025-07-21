@@ -35,6 +35,7 @@
                                     <th scope="col">ชื่อเกรด</th>
                                     <th scope="col">แก้ไข</th>
                                     <th scope="col">ลบข้อมูล</th>
+                                    <th scope="col">สลับตำแหน่ง</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -60,6 +61,18 @@
                                                 <input type="hidden" name="delete_id" value="<%= grade._id %>">
                                                 <button type="submit" class="btn btn-danger ml-2"
                                                     onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้? ')">ลบ</button>
+                                            </form>
+                                        </td>
+                                        <td>
+                                            <form action="/moveGrade" method="POST" style="display:inline;">
+                                                <input type="hidden" name="grade_id" value="<%= grade._id %>">
+                                                <input type="hidden" name="direction" value="up">
+                                                <button type="submit" class="btn btn-secondary btn-sm" <%= index === 0 ? 'disabled' : '' %> title="เลื่อนขึ้น">&#8593;</button>
+                                            </form>
+                                            <form action="/moveGrade" method="POST" style="display:inline;">
+                                                <input type="hidden" name="grade_id" value="<%= grade._id %>">
+                                                <input type="hidden" name="direction" value="down">
+                                                <button type="submit" class="btn btn-secondary btn-sm" <%= index === grades.length - 1 ? 'disabled' : '' %> title="เลื่อนลง">&#8595;</button>
                                             </form>
                                         </td>
                                     </tr>

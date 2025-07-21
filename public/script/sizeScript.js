@@ -23,6 +23,10 @@ function fetchSizes(grainID) {
                         ลบ
                     </button>
                 </td>`;
+                html += `<td>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="moveSize('${size._id}', 'up')" ${index === 0 ? 'disabled' : ''} title="เลื่อนขึ้น">&#8593;</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="moveSize('${size._id}', 'down')" ${index === sizes.length - 1 ? 'disabled' : ''} title="เลื่อนลง">&#8595;</button>
+                </td>`;
                 html += '</tr>';
             });
 
@@ -165,5 +169,29 @@ if (typeof window !== 'undefined') {
             // เรียกใช้ fetchSizes เพื่อแสดงข้อมูล
             fetchSizes(grainID);
         }
+    });
+}
+
+function moveSize(sizeID, direction) {
+    const grainID = document.getElementById('grainID').value;
+
+    fetch('/moveSize', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ sizeID, direction, grainID })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            fetchSizes(grainID); // รีเฟรชตารางหลังสลับ
+        } else {
+            alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถสลับลำดับได้'));
+        }
+    })
+    .catch(error => {
+        console.error('เกิดข้อผิดพลาด:', error);
+        alert('เกิดข้อผิดพลาด: ' + error.message);
     });
 }

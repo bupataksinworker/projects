@@ -152,4 +152,38 @@ router.post('/deleteGrade', async (req, res) => {
     }
 });
 
+// POST /moveGrade
+router.post('/moveGrade', async (req, res) => {
+    const { grade_id, direction } = req.body;
+    try {
+        const grades = await Grade.find().sort({ sorter: 1 });
+        const currentIndex = grades.findIndex(g => g._id.toString() === grade_id);
+        if (currentIndex === -1) return res.redirect('back');
+
+        let swapIndex;
+        if (direction === 'up' && currentIndex > 0) {
+            swapIndex = currentIndex - 1;
+        } else if (direction === 'down' && currentIndex < grades.length - 1) {
+            swapIndex = currentIndex + 1;
+        } else {
+            return res.redirect('back');
+        }
+
+        // สลับค่า sorter
+        const currentGrade = grades[currentIndex];
+        const swapGrade = grades[swapIndex];
+        const tempSorter = currentGrade.sorter;
+        currentGrade.sorter = swapGrade.sorter;
+        swapGrade.sorter = tempSorter;
+
+        await currentGrade.save();
+        await swapGrade.save();
+
+        res.redirect('back');
+    } catch (err) {
+        console.error(err);
+        res.redirect('back');
+    }
+});
+
 module.exports = router;

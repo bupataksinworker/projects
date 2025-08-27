@@ -9,7 +9,23 @@ const Product = require('../models/product');
 const Cost = require('../models/cost');
 const Type = require('../models/type');
 const Size = require('../models/size');
+
 const Grade = require('../models/grade');
+const SaleEntry = require('../models/saleEntry');
+// ตรวจสอบว่า productID ถูกใช้งานใน saleEntry หรือไม่
+router.get('/api/isProductUsedInSaleEntry', async (req, res) => {
+    try {
+        const { productID } = req.query;
+        if (!productID) {
+            return res.status(400).json({ success: false, message: 'Missing productID' });
+        }
+        const used = await SaleEntry.exists({ productID });
+        res.json({ used: !!used });
+    } catch (error) {
+        console.error('Error checking product usage in saleEntry:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
 
 // Middleware to check login status
 router.use((req, res, next) => {

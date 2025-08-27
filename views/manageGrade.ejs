@@ -59,8 +59,11 @@
                                         <td>
                                             <form action="/deleteGrade" method="POST" style="display: inline;">
                                                 <input type="hidden" name="delete_id" value="<%= grade._id %>">
-                                                <button type="submit" class="btn btn-danger ml-2"
-                                                    onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้? ')">ลบ</button>
+                                                <% if (grade.isUsedInProducts === true) { %>
+                                                    <button type="button" class="btn btn-danger ml-2" disabled title="ถูกใช้งานในสินค้า ลบไม่ได้">ลบ</button>
+                                                <% } else { %>
+                                                    <button type="submit" class="btn btn-danger ml-2" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลนี้? ')">ลบ</button>
+                                                <% } %>
                                             </form>
                                         </td>
                                         <td>

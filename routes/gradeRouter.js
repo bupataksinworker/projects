@@ -26,10 +26,21 @@ router.get('/manageGrade', async (req, res) => {
 
         // ดึงข้อมูลทั้งหมดจาก MongoDB
         const grades = await Grade.find().sort({ sorter: 1 }); // เรียงจากน้อยไปมาก
-        console.log(grades);
+
+        // ตรวจสอบว่า grade ถูกใช้งานใน products หรือ stock หรือไม่
+        const Product = require('../models/product');
+        const Stock = require('../models/stock');
+        const usedGradeIdsProduct = await Product.distinct('gradeID');
+        const usedGradeIdsStock = await Stock.distinct('gradeID');
+        // รวม id ที่ถูกใช้ใน product และ stock
+        const usedGradeIds = [...new Set([...usedGradeIdsProduct, ...usedGradeIdsStock])];
+        const gradesWithUsage = grades.map(grade => {
+            const isUsedInProducts = usedGradeIds.some(id => id.toString() === grade._id.toString());
+            return { ...grade.toObject(), isUsedInProducts };
+        });
 
         // ส่งข้อมูลไปยังหน้า manageGrade.ejs
-        res.render('manageGrade', { grades });
+        res.render('manageGrade', { grades: gradesWithUsage });
     } catch (error) {
         console.error('Error fetching data:', error);
         res.status(500).send('Internal Server Error');

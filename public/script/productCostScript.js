@@ -125,15 +125,24 @@ async function addCostProduct() {
     }
 }
 
-function updateTableProductCost() {
+
+async function updateTableProductCost() {
     const typeID = document.getElementById('typeIDCost').value;
     const sizeID = document.getElementById('sizeIDCost').value || '';
     const gradeID = document.getElementById('gradeIDCost').value || '';
 
-    fetch(`/api/updateTableProductCost?typeID=${typeID}&sizeID=${sizeID}&gradeID=${gradeID}`)
-        .then(response => response.json())
-        .then(data => {
-            let tableHTML = data.map((item, index) => `
+    try {
+        const response = await fetch(`/api/updateTableProductCost?typeID=${typeID}&sizeID=${sizeID}&gradeID=${gradeID}`);
+        const data = await response.json();
+
+        // ตรวจสอบแต่ละ product ว่าใช้งานใน saleEntry หรือไม่
+        const usageChecks = await Promise.all(
+            data.map(item => fetch(`/api/isProductUsedInSaleEntry?productID=${item.id}`).then(res => res.json()))
+        );
+
+        let tableHTML = data.map((item, index) => {
+            const used = usageChecks[index].used;
+            return `
                 <tr>
                     <td title="sorter : ${item.sorter ?? '-'}">${index + 1}</td>
                     <td>${item.ber || ''} ${item.productName || '-'}</td>
@@ -149,13 +158,15 @@ function updateTableProductCost() {
                         </button>
                     </td>
                     <td>
-                        <button class='btn btn-danger' onclick="deleteProductCost('${item.id}')">ลบ</button>
+                        <button class='btn btn-danger' onclick="deleteProductCost('${item.id}')" ${used ? 'disabled' : ''}>ลบ</button>
                     </td>
                 </tr>
-            `).join('');
-            document.getElementById('tableProductCostData').innerHTML = tableHTML;
-        })
-        .catch(error => console.error('Error updating table:', error));
+            `;
+        }).join('');
+        document.getElementById('tableProductCostData').innerHTML = tableHTML;
+    } catch (error) {
+        console.error('Error updating table:', error);
+    }
 }
 
 

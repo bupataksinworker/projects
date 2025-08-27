@@ -48,78 +48,133 @@ function findStock() {
 }
 
 
-// ฟังก์ชันดึงข้อมูลและแสดงผลในตาราง
-async function fetchAndDisplayStockData(year, origins, batchID) {
-    try {
-        // สร้าง query string สำหรับพารามิเตอร์ year, origins, และ batchID
-        const params = new URLSearchParams({ year });
-        if (origins && origins.length > 0) params.append('origins', origins.join(','));
-        if (batchID) params.append('batchID', batchID);
+async function fetchAndDisplayStockData(year, origins = [], batchID) {
+  try {
+    const params = new URLSearchParams();
+    if (year) params.set('year', year);
+    if (origins?.length) params.set('origins', origins.join(','));
 
-        // ดึงค่า sets ที่ถูกเลือก
-        const sets = document.querySelectorAll('input[name="set"]:checked');
-        const setNumber = sets.length > 0 ? Array.from(sets).map(set => set.value) : [];
-        if (setNumber.length > 0) params.append('setNumber', setNumber.join(','));
+    // sets (ชุด)
+    const sets = document.querySelectorAll('input[name="set"]:checked');
+    const setNumber = sets.length ? Array.from(sets).map(s => Number(s.value)) : [];
+    if (setNumber.length) params.set('setNumber', setNumber.join(','));
 
+    if (batchID) params.set('batchID', batchID);
 
-        // Fetch ข้อมูลจาก API
-        const response = await fetch(`/api/manageStock?${params.toString()}`);
-        const { saleEntries, stockEntries } = await response.json();
+    const res = await fetch(`/api/manageStock?${params.toString()}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { saleEntries = [], stockEntries = [], batchList = [] } = await res.json();
 
-        if (!saleEntries || !Array.isArray(saleEntries)) {
-            console.error('Invalid saleEntries data:', saleEntries);
-            return;
-        }
+    const yy = year ? (Number(year) - 1957) : null; // ค.ศ. -> ปี พ.ศ.ท้ายสองหลักที่ใช้ใน batch.batchYear
+    const setSet = new Set(setNumber);
+    const normId = v => String((v && typeof v === 'object') ? (v._id ?? v) : v);
 
-        // ล้างข้อมูลเก่าจากตาราง
-        const tableBody = document.querySelector('#stockTableBody');
-        tableBody.innerHTML = '';
+    // ฟังก์ชันเช็คว่า batch เข้าเงื่อนไข year/setNumber ไหม (อาศัยข้อมูลจาก batch ที่มากับเอกสาร)
+    const matchFilters = (batchLike) => {
+      const b = batchLike?.batchID ?? batchLike; // รองรับทั้งรูป {batchID:{...}} หรือ batch เอง
+      const by = Number(b?.batchYear);
+      const num = Number(b?.number);
+      if (yy !== null && by && by !== yy) return false;
+      if (setSet.size && num && !setSet.has(num)) return false;
+      return true;
+    };
 
-        // แสดงข้อมูลในตาราง
-        saleEntries.forEach(saleEntry => {
-            const { batchID, batchName, costOfBatch, total, totalPrice, waitingForSale, waitingForSalePrice, sold, soldPrice, sumNetSale } = saleEntry;
-            console.log(saleEntry)
-            // ค้นหาข้อมูล stock ที่ตรงกับ batchID
-            const stocks = stockEntries.filter(stockEntry => stockEntry.batchID._id === batchID);
-            console.log(stockEntries)
-
-            // ดึงค่า addStock และคำนวณ totalStock และ totalStockPrice แบบรวมค่า
-            const totalStock = stocks.reduce((sum, stock) => sum + (stock.addStock || 0), 0);
-            const totalStockPrice = stocks.reduce((sum, stock) => sum + (stock.addStock * stock.cost || 0), 0);
-
-            // คำนวณค่า readyForSale และ readyForSalePrice
-            const readyForSale = totalStock + total - (waitingForSale + sold);
-            const readyForSalePrice = totalStockPrice + totalPrice - (waitingForSalePrice + soldPrice);
-
-            // คิดกำไรชั่ง
-            const sumNetScale = (costOfBatch > 0) ? ((totalStockPrice + totalPrice) - costOfBatch) : 0;
-
-            // รวมกำไรชั่ง กำไรขาย
-            const sumNetAll = sumNetScale + sumNetSale;
-            // สร้างแถวในตาราง
-            const row = `
-                <tr class="stock-row" data-batchid="${batchID}">
-                    <td class="setText">${batchName}</td>
-                    <td class="setNumber">${readyForSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${readyForSalePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                    <td class="setNumber">${waitingForSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${waitingForSalePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                    <td class="setNumber">${sold.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${soldPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                    <td class="setNumber">${(totalStock + total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<br>(${(totalStockPrice + totalPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</td>
-                    <td class="setNumber">${(costOfBatch).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td class="setNumber">${sumNetScale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td class="setNumber">${sumNetSale.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td class="setNumber">${sumNetAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    </tr>
-            `;
-            tableBody.insertAdjacentHTML('beforeend', row);
-        });
-
-        // เพิ่ม event listener ให้กับแถวในตารางใหม่ที่ถูกสร้าง
-        addRowClickListeners();
-
-    } catch (error) {
-        console.error('Error fetching stock data:', error);
+    // ---- รวม STOCK (เฉพาะที่ match เงื่อนไข) ----
+    const stockAggByBatch = new Map();
+    for (const s of stockEntries) {
+      if (!matchFilters(s)) continue; // กรองด้วย year & set
+      const id = normId(s.batchID);
+      const cur = stockAggByBatch.get(id) || {
+        batchID: id,
+        batchName: s.batchID?.batchName ?? '(ไม่ทราบชื่อชุด)',
+        costOfBatch: Number(s.batchID?.costOfBatch ?? 0),
+        totalStock: 0,
+        totalStockPrice: 0
+      };
+      const addStock = Number(s.addStock ?? 0);
+      const cost = Number(s.cost ?? 0);
+      cur.totalStock += addStock;
+      cur.totalStockPrice += addStock * cost;
+      stockAggByBatch.set(id, cur);
     }
+
+    // ---- รวม SALE (เฉพาะที่ match เงื่อนไข) ----
+    const saleByBatch = new Map(
+      saleEntries.filter(e => matchFilters(e.batchID)).map(e => [normId(e.batchID), e])
+    );
+
+    // รวม id ที่จะเรนเดอร์ (และถ้ามี batchID ให้ตัดเหลือชุดเดียว)
+    let allIds = new Set([...stockAggByBatch.keys(), ...saleByBatch.keys()]);
+    if (batchID) {
+      // เรนเดอร์เฉพาะเมื่อ batchID นี้ “เข้าเงื่อนไข” year & setNumber
+      const okStock = stockEntries.some(s => normId(s.batchID) === String(batchID) && matchFilters(s));
+      const okSale  = saleEntries.some(e => normId(e.batchID) === String(batchID) && matchFilters(e.batchID));
+      if (okStock || okSale) {
+        allIds = new Set([String(batchID)]);
+      } else {
+        allIds = new Set(); // ไม่เข้าเงื่อนไขก็ไม่แสดง
+      }
+    }
+
+    const tbody = document.querySelector('#stockTableBody');
+    tbody.innerHTML = '';
+    const fmt = n => Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    for (const id of allIds) {
+      const stock = stockAggByBatch.get(id) || { totalStock: 0, totalStockPrice: 0, batchName: '(ไม่ทราบชื่อชุด)', costOfBatch: 0 };
+      const sale = saleByBatch.get(id) || {
+        batchID: id,
+        batchName: stock.batchName,
+        costOfBatch: stock.costOfBatch,
+        total: 0, totalPrice: 0,
+        waitingForSale: 0, waitingForSalePrice: 0,
+        sold: 0, soldPrice: 0,
+        sumNetSale: 0
+      };
+
+      const readyForSale      = (stock.totalStock + sale.total) - (sale.waitingForSale + sale.sold);
+      const readyForSalePrice = (stock.totalStockPrice + sale.totalPrice) - (sale.waitingForSalePrice + sale.soldPrice);
+      const sumNetScale       = Number(sale.costOfBatch ?? 0) > 0 ? ((stock.totalStockPrice + sale.totalPrice) - Number(sale.costOfBatch ?? 0)) : 0;
+      const sumNetAll         = sumNetScale + Number(sale.sumNetSale ?? 0);
+
+      tbody.insertAdjacentHTML('beforeend', `
+        <tr class="stock-row" data-batchid="${id}">
+          <td class="setText">${sale.batchName}</td>
+          <td class="setNumber">${fmt(readyForSale)}<br>(${fmt(readyForSalePrice)})</td>
+          <td class="setNumber">${fmt(sale.waitingForSale)}<br>(${fmt(sale.waitingForSalePrice)})</td>
+          <td class="setNumber">${fmt(sale.sold)}<br>(${fmt(sale.soldPrice)})</td>
+          <td class="setNumber">${fmt(stock.totalStock + sale.total)}<br>(${fmt(stock.totalStockPrice + sale.totalPrice)})</td>
+          <td class="setNumber">${fmt(sale.costOfBatch)}</td>
+          <td class="setNumber">${fmt(sumNetScale)}</td>
+          <td class="setNumber">${fmt(sale.sumNetSale)}</td>
+          <td class="setNumber">${fmt(sumNetAll)}</td>
+        </tr>
+      `);
+    }
+
+    // แสดง batch ว่าง (ต้อง match year/setNumber ด้วย) และเฉพาะตอนที่ไม่กรอง batchID
+    if (!batchID && Array.isArray(batchList)) {
+      const used = new Set([...allIds]);
+      for (const b of batchList) {
+        if (!matchFilters(b)) continue;
+        const id = normId(b._id);
+        if (used.has(id)) continue;
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr class="stock-row unused-batch" data-batchid="${id}">
+            <td class="setText">${b.batchName}</td>
+            <td class="setNumber" colspan="8" style="text-align:center;color:#888;">ยังไม่มีข้อมูลขายหรือสต๊อก</td>
+          </tr>
+        `);
+      }
+    }
+
+    addRowClickListeners();
+  } catch (err) {
+    console.error('Error fetching stock data:', err);
+  }
 }
+
+
 
 
 

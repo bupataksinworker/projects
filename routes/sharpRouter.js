@@ -26,10 +26,18 @@ router.get('/manageSharp', async (req, res) => {
 
         // ดึงข้อมูลทั้งหมดจาก MongoDB
         const sharps = await Sharp.find();
-        console.log(sharps);
+
+        // ตรวจสอบว่า sharp ถูกใช้งานใน saleentry หรือไม่ โดยเทียบกับ saleentry.sharp (array)
+        const SaleEntry = require('../models/saleEntry');
+        // ดึง saleentry ทั้งหมดที่มี sharp
+        const usedSharpNames = await SaleEntry.distinct('sharp');
+        const sharpsWithUsage = sharps.map(sharp => {
+            const isUsedInProducts = usedSharpNames.includes(sharp.sharpName);
+            return { ...sharp.toObject(), isUsedInProducts };
+        });
 
         // ส่งข้อมูลไปยังหน้า manageSharp.ejs
-        res.render('manageSharp', { sharps });
+        res.render('manageSharp', { sharps: sharpsWithUsage });
     } catch (error) {
         console.error('Error fetching data:', error);
         res.status(500).send('Internal Server Error');

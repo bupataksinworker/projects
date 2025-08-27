@@ -13,6 +13,7 @@ router.use((req, res, next) => {
 });
 
 //เรียกใช้งาน model
+const Product = require('../models/product');
 const Type = require('../models/type');
 const Grain = require('../models/grain');
 const Origin = require('../models/origin');
@@ -33,8 +34,19 @@ router.get('/manageType', async (req, res) => {
         const origins = await Origin.find();
         const heats = await Heat.find();
 
+        // ตรวจสอบว่า type ถูกใช้งานใน products หรือ stock หรือไม่
+        const Stock = require('../models/stock');
+        const usedTypeIdsProduct = await Product.distinct('typeID');
+        const usedTypeIdsStock = await Stock.distinct('typeID');
+        // รวม id ที่ถูกใช้ใน product และ stock
+        const usedTypeIds = [...new Set([...usedTypeIdsProduct, ...usedTypeIdsStock])];
+        const typesWithUsage = types.map(type => {
+            const isUsedInProducts = usedTypeIds.some(id => id.toString() === type._id.toString());
+            return { ...type.toObject(), isUsedInProducts };
+        });
+        // console.log(typesWithUsage);
         // ส่งข้อมูลไปยังหน้า manageType.ejs
-        res.render('manageType', { types, grains, origins, heats });
+        res.render('manageType', { types: typesWithUsage, grains, origins, heats });
     } catch (error) {
         console.error('Error fetching data:', error);
         res.status(500).send('Internal Server Error');

@@ -4,6 +4,10 @@ const mongoose = require('mongoose');
 // ฟังก์ชันตรวจสอบการเข้าสู่ระบบ
 const { checkLoggedIn } = require('../db/authUtils');
 
+const SaleEntry = require('../models/saleEntry');
+const Stock = require('../models/stock');
+
+
 // Middleware ตรวจสอบการเข้าสู่ระบบ
 router.use((req, res, next) => {
     if (!checkLoggedIn(req)) {
@@ -65,29 +69,46 @@ router.post('/addBatch', async (req, res) => {
 
 // ดึงข้อมูล Batch ตามเงื่อนไข
 router.get('/batchForm', async (req, res) => {
-    try {
-        const { batchYear, number, typeID } = req.query;
+  try {
+    const { batchYear, number, typeID } = req.query;
 
-        const query = {};
-        if (batchYear) query.batchYear = batchYear;
-        if (number) query.number = number;
-        if (typeID) query.typeID = typeID;
+    const query = {};
+    if (batchYear) query.batchYear = batchYear;
+    if (number) query.number = number;
+    if (typeID) query.typeID = typeID;
 
-        const batchs = await Batch.find(query).populate({
-            path: 'typeID',
-            populate: [
-                { path: 'grainID', select: 'grainName' },
-                { path: 'originID', select: 'originName' },
-                { path: 'heatID', select: 'heatName' }
-            ]
-        });
+    const batchs = await Batch.find(query).populate({
+      path: 'typeID',
+      populate: [
+        { path: 'grainID', select: 'grainName' },
+        { path: 'originID', select: 'originName' },
+        { path: 'heatID', select: 'heatName' }
+      ]
+    });
 
-        res.json({ batchs });
-    } catch (error) {
-        console.error('Error retrieving batches:', error);
-        res.status(500).send('Server error retrieving batch data');
-    }
+    // ทำ flag isUsedInProducts แบบรวดเดียว
+    const ids = batchs.map(b => b._id);
+    const [saleUsedIds, stockUsedIds] = await Promise.all([
+      SaleEntry.distinct('batchID', { batchID: { $in: ids } }),
+      Stock.distinct('batchID', { batchID: { $in: ids } }),
+    ]);
+    const used = new Set([
+      ...saleUsedIds.map(String),
+      ...stockUsedIds.map(String),
+    ]);
+
+    const batchsWithFlag = batchs.map(b => ({
+      ...b.toObject(),
+      isUsedInProducts: used.has(String(b._id)),
+    }));
+
+    res.json({ batchs: batchsWithFlag });
+  } catch (error) {
+    console.error('Error retrieving batches:', error);
+    res.status(500).send('Server error retrieving batch data');
+  }
 });
+
 
 // ดึงข้อมูล Batch เพื่อแก้ไข
 router.get('/getBatchById', async (req, res) => {
@@ -171,15 +192,28 @@ router.post('/updateBatch', async (req, res) => {
 
 // ลบข้อมูล Batch
 router.post('/deleteBatch', async (req, res) => {
-    try {
-        const { delete_id } = req.body;
+  try {
+    const { delete_id } = req.body;
 
-        await Batch.findByIdAndDelete(delete_id);
-        res.json({ success: true, message: 'ลบสำเร็จ' });
-    } catch (error) {
-        console.error('Error deleting batch:', error);
-        res.status(500).send('เกิดข้อผิดพลาดในการลบข้อมูล');
+    const [inSale, inStock] = await Promise.all([
+      SaleEntry.exists({ batchID: delete_id }),
+      Stock.exists({ batchID: delete_id }),
+    ]);
+
+    if (inSale || inStock) {
+      return res.status(400).json({
+        success: false,
+        message: 'ชุดนี้ถูกใช้งานในสินค้า/สต๊อก ลบไม่ได้',
+      });
     }
+
+    await Batch.findByIdAndDelete(delete_id);
+    res.json({ success: true, message: 'ลบสำเร็จ' });
+  } catch (error) {
+    console.error('Error deleting batch:', error);
+    res.status(500).send('เกิดข้อผิดพลาดในการลบข้อมูล');
+  }
 });
+
 
 module.exports = router;

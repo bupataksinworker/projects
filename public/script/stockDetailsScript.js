@@ -33,7 +33,7 @@ function updateTableType(year, batchID) {
                 defaultOption.text = 'เลือกประเภท'; // ข้อความที่แสดงใน dropdown
                 defaultOption.disabled = true; // ปิดการใช้งานตัวเลือกนี้
                 defaultOption.selected = true; // ตั้งค่าให้เป็นค่า default ที่ถูกเลือก
-                // dropdown.appendChild(defaultOption);
+                dropdown.appendChild(defaultOption);
 
 
                 batchDetails.typeID.forEach(type => {

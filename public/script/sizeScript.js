@@ -18,11 +18,13 @@ function fetchSizes(grainID) {
                     '<button type="submit" class="btn btn-primary">แก้ไข</button>' +
                     '</form>' +
                     '</td>';
-                html += `<td>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteSize('${size._id}')">
-                        ลบ
-                    </button>
-                </td>`;
+                html += `<td>`;
+                if (size.isUsedInProducts === true) {
+                    html += `<button type="button" class="btn btn-danger btn-sm" disabled title="ถูกใช้งานในสินค้า ลบไม่ได้">ลบ</button>`;
+                } else {
+                    html += `<button type="button" class="btn btn-danger btn-sm" onclick="deleteSize('${size._id}')">ลบ</button>`;
+                }
+                html += `</td>`;
                 html += `<td>
                     <button type="button" class="btn btn-secondary btn-sm" onclick="moveSize('${size._id}', 'up')" ${index === 0 ? 'disabled' : ''} title="เลื่อนขึ้น">&#8593;</button>
                     <button type="button" class="btn btn-secondary btn-sm" onclick="moveSize('${size._id}', 'down')" ${index === sizes.length - 1 ? 'disabled' : ''} title="เลื่อนลง">&#8595;</button>

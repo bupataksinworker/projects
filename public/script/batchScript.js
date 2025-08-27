@@ -38,33 +38,36 @@ function batchForm(batchYear,number,typeIDs) {
 }
 
 function createTable(batchs) {
-    var tableHTML = '';
+  var tableHTML = '';
 
-    batchs.forEach((batch, index) => {
-        const typeNames = batch.typeID.map(type => type.typeName).join(', ');
+  batchs.forEach((batch, index) => {
+    const typeNames = batch.typeID.map(type => type.typeName).join(', ');
 
-        tableHTML += '<tr>';
-        tableHTML += `<td>${index + 1}</td>`;
-        tableHTML += `<td>${batch.batchName}</td>`;
-        tableHTML += `<td>${typeNames}</td>`;
-        tableHTML += `<td>${batch.number}</td>`;
-        tableHTML += `<td>${batch.batchYear}</td>`;
-        tableHTML += `<td>${addCommas(batch.costOfBatch)}</td>`;
-        tableHTML += `<td>${batch.costOfBatch > 0 ? 'มีทุน' : 'ไม่มีทุน'}</td>`;
-        tableHTML += `<td>${addCommas(batch.costOfBatchBefore)}</td>`;
-        tableHTML += `<td>${addCommas(batch.costOfBatchNew)}</td>`;
-        tableHTML += `<td>${addCommas(batch.costOfBatchLabor)}</td>`;
-        tableHTML += `<td>
-            <button type="button" class="btn btn-primary btn-sm" onclick="openEditBatchModal('${batch._id}')">แก้ไข</button>
-        </td>`;
-        tableHTML += `<td>
-            <button type="button" class="btn btn-danger btn-sm" onclick="deleteBatch('${batch._id}')">ลบ</button>
-        </td>`;
-        tableHTML += '</tr>';
-    });
+    tableHTML += '<tr>';
+    tableHTML += `<td>${index + 1}</td>`;
+    tableHTML += `<td>${batch.batchName}</td>`;
+    tableHTML += `<td>${typeNames}</td>`;
+    tableHTML += `<td>${batch.number}</td>`;
+    tableHTML += `<td>${batch.batchYear}</td>`;
+    tableHTML += `<td>${addCommas(batch.costOfBatch)}</td>`;
+    tableHTML += `<td>${batch.costOfBatch > 0 ? 'มีทุน' : 'ไม่มีทุน'}</td>`;
+    tableHTML += `<td>${addCommas(batch.costOfBatchBefore)}</td>`;
+    tableHTML += `<td>${addCommas(batch.costOfBatchNew)}</td>`;
+    tableHTML += `<td>${addCommas(batch.costOfBatchLabor)}</td>`;
+    tableHTML += `<td>
+      <button type="button" class="btn btn-primary btn-sm" onclick="openEditBatchModal('${batch._id}')">แก้ไข</button>
+    </td>`;
+    tableHTML += `<td>${
+      batch.isUsedInProducts
+        ? `<button type="button" class="btn btn-danger btn-sm" disabled title="ถูกใช้งานในสินค้า/สต๊อก ลบไม่ได้">ลบ</button>`
+        : `<button type="button" class="btn btn-danger btn-sm" onclick="deleteBatch('${batch._id}')">ลบ</button>`
+    }</td>`;
+    tableHTML += '</tr>';
+  });
 
-    document.getElementById('tableBatch').innerHTML = tableHTML;
+  document.getElementById('tableBatch').innerHTML = tableHTML;
 }
+
 
 function openEditBatchModal(batchID) {
     fetch(`/getBatchById?batchID=${batchID}`)

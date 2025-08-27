@@ -33,222 +33,211 @@ router.get('/manageStockDetails', (req, res) => {
 
 // API route Table Batch
 router.get('/api/manageStock', async (req, res) => {
-    try {
-        const { year, origins, batchID, setNumber: rawSetNumber } = req.query;
-        const setNumber = rawSetNumber || 0;
-        console.log("setNumber : " + setNumber)
-        const filters = [];
+  try {
+    const { year, origins, batchID, setNumber: rawSetNumber } = req.query;
 
-        // Filter by year
-        if (year) {
-            const startDate = moment().year(year).startOf('year').toDate();
-            const endDate = moment().year(year).endOf('year').toDate();
-            filters.push({ entryDate: { $gte: startDate, $lte: endDate } });
-        }
+    // --- แปลงพารามิเตอร์ ---
+    const yy = year ? (Number(year) - 1957) : null; // 2025 -> 68 (พ.ศ. สองหลัก)
+    const setNumbers = rawSetNumber ? rawSetNumber.split(',').map(Number) : [];
+    const originsArray = origins ? origins.split(',') : [];
 
-        const aggregatePipeline = [
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "productID",
-                    foreignField: "_id",
-                    as: "product"
-                }
-            },
-            {
-                $unwind: "$product"
-            },
-            {
-                $lookup: {
-                    from: "types",
-                    localField: "product.typeID",
-                    foreignField: "_id",
-                    as: "product.type"
-                }
-            },
-            {
-                $unwind: "$product.type"
-            },
-            {
-                $lookup: {
-                    from: "origins",
-                    localField: "product.type.originID",
-                    foreignField: "_id",
-                    as: "product.type.origin"
-                }
-            },
-            {
-                $unwind: "$product.type.origin"
-            },
-            {
-                $lookup: {
-                    from: "batchs",
-                    localField: "batchID",
-                    foreignField: "_id",
-                    as: "batch"
-                }
-            },
-            {
-                $unwind: "$batch"
-            },
-            {
-                $lookup: {
-                    from: "sales", // ชื่อคอลเลคชัน Sale
-                    localField: "saleID", // ฟิลด์ที่เชื่อมโยงกับ Sale
-                    foreignField: "_id",
-                    as: "sale"
-                }
-            },
-            {
-                $unwind: "$sale" // ทำให้ข้อมูลใน sale เป็นเอกสารเดียว
-            }            
-        ];
+    console.log('year :', year);
+    console.log('setNumber :', rawSetNumber || '');
 
-        // Filter by origins
-        if (origins) {
-            const originsArray = origins.split(',');
-            filters.push({ 'product.type.origin.originCode': { $in: originsArray } });
-        }
+    // ---------- PIPELINE สำหรับ SaleEntry ----------
+    const saleFilters = [];
 
-        // Filter by setNumber
-        if (setNumber) {
-            const setNumberArray = setNumber.split(',').map(Number); // แปลงเป็นตัวเลข
-            filters.push({ 'batch.number': { $in: setNumberArray } });
-        }
-
-        // Apply filters to pipeline
-        if (filters.length > 0) {
-            aggregatePipeline.push({ $match: { $and: filters } });
-        }
-
-        // Group ข้อมูลจาก SaleEntry
-        aggregatePipeline.push(
-            {
-                $group: {
-                    _id: "$batchID",
-                    batchName: { $first: "$batch.batchName" },
-                    costOfBatch: { $first: "$batch.costOfBatch" },
-                    displayName: { $first: "$product.displayName" },
-                    sorter: { $first: "$sorter" },
-
-                    // คำนวณค่าอื่นๆ จาก saleEntry
-                    total: { $sum: 0 },
-                    totalPrice: { $sum: 0 },
-                    sold: {
-                        $sum: {
-                            $cond: {
-                                if: { $eq: ["$entryStatus", "Y"] },
-                                then: "$closeWeight",
-                                else: 0
-                            }
-                        }
-                    },
-                    waitingForSale: {
-                        $sum: {
-                            $cond: {
-                                if: { $eq: ["$entryStatus", "N"] },
-                                then: "$openWeight",
-                                else: 0
-                            }
-                        }
-                    },
-                    soldPrice: {
-                        $sum: {
-                            $cond: {
-                                if: { $eq: ["$entryStatus", "Y"] },
-                                then: { $multiply: ["$closeWeight", "$cost"] },
-                                else: 0
-                            }
-                        }
-                    },
-                    waitingForSalePrice: {
-                        $sum: {
-                            $cond: {
-                                if: { $eq: ["$entryStatus", "N"] },
-                                then: { $multiply: ["$openWeight", "$cost"] },
-                                else: 0
-                            }
-                        }
-                    },
-                    sumNetSale: {
-                        $sum: {
-                            $cond: {
-                                if: { $eq: ["$entryStatus", "Y"] },
-                                then: {
-                                    $subtract: [
-                                        {
-                                            $subtract: [
-                                                { $multiply: ["$closeWeight", "$closePrice"] },
-                                                { $multiply: ["$closeWeight", "$cost"] }
-                                            ]
-                                        },
-                                        {
-                                            $multiply: [
-                                                { $multiply: ["$closeWeight", "$closePrice"] },
-                                                { $divide: ["$sale.discount", 100] }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                else: 0
-                            }
-                        }
-                    }
-                }
-            },
-            {
-                $project: { // ใช้ส่งข้อมูลที่เลือกไปใช้งาน
-                    _id: 0,
-                    batchID: "$_id",
-                    batchName: 1,
-                    costOfBatch: 1,
-                    displayName: 1,
-                    sorter: 1,
-                    total: 1,
-                    totalPrice: 1,
-                    sold: 1,
-                    waitingForSale: 1,
-                    soldPrice: 1,
-                    waitingForSalePrice: 1,
-                    sumNetSale: 1
-                }
-            },
-            {
-                $sort: { displayName: 1, sorter: 1 }
-            }
-        );
-
-        // ดึงข้อมูลจาก SaleEntry
-        const saleEntries = await SaleEntry.aggregate(aggregatePipeline);
-
-        // ดึงข้อมูล Stock แยกจาก SaleEntry โดยใช้ batchID
-        let stockFilters = [];
-        if (batchID) {
-            stockFilters.push({ batchID });
-        }
-
-        // ตรวจสอบว่า stockFilters มีข้อมูลหรือไม่ก่อนใช้ $or
-        let stockEntries = [];
-        if (stockFilters.length > 0) {
-            stockEntries = await Stock.find({ $or: stockFilters })
-                .populate('typeID')
-                .populate('sizeID')
-                .populate('gradeID');
-        } else {
-            stockEntries = await Stock.find()
-                .populate('typeID')
-                .populate('sizeID')
-                .populate('gradeID');
-        }
-
-
-        // ส่งข้อมูลไปยัง client
-        res.json({ saleEntries, stockEntries });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error retrieving stock data' });
+    // ใส่ batchID (ObjectId)
+    if (batchID) {
+      if (!mongoose.Types.ObjectId.isValid(batchID)) {
+        return res.status(400).json({ message: 'Invalid batchID' });
+      }
+      saleFilters.push({ batchID: new mongoose.Types.ObjectId(batchID) });
     }
+
+    // เริ่ม pipeline
+    const aggregatePipeline = [
+      // product -> type -> origin
+      { $lookup: { from: 'products', localField: 'productID', foreignField: '_id', as: 'product' } },
+      { $unwind: '$product' },
+      { $lookup: { from: 'types', localField: 'product.typeID', foreignField: '_id', as: 'product.type' } },
+      { $unwind: '$product.type' },
+      { $lookup: { from: 'origins', localField: 'product.type.originID', foreignField: '_id', as: 'product.type.origin' } },
+      { $unwind: '$product.type.origin' },
+
+      // batch
+      { $lookup: { from: 'batchs', localField: 'batchID', foreignField: '_id', as: 'batch' } },
+      { $unwind: '$batch' },
+
+      // sale (เผื่อบางเอกสารไม่มี saleID)
+      { $lookup: { from: 'sales', localField: 'saleID', foreignField: '_id', as: 'sale' } },
+      { $unwind: { path: '$sale', preserveNullAndEmptyArrays: true } }
+    ];
+
+    // year -> เทียบที่ batch.batchYear
+    if (yy !== null) saleFilters.push({ 'batch.batchYear': yy });
+
+    // setNumber -> เทียบที่ batch.number
+    if (setNumbers.length) saleFilters.push({ 'batch.number': { $in: setNumbers } });
+
+    // origins (ถ้าระบุ)
+    if (originsArray.length) {
+      saleFilters.push({ 'product.type.origin.originCode': { $in: originsArray } });
+    }
+
+    if (saleFilters.length) aggregatePipeline.push({ $match: { $and: saleFilters } });
+
+    // Group จาก SaleEntry
+    aggregatePipeline.push(
+      {
+        $group: {
+          _id: '$batchID',
+          batchName: { $first: '$batch.batchName' },
+          costOfBatch: { $first: '$batch.costOfBatch' },
+          displayName: { $first: '$product.displayName' },
+          sorter: { $first: '$sorter' },
+
+          total: { $sum: 0 },
+          totalPrice: { $sum: 0 },
+
+          sold: {
+            $sum: {
+              $cond: [{ $eq: ['$entryStatus', 'Y'] }, '$closeWeight', 0]
+            }
+          },
+          waitingForSale: {
+            $sum: {
+              $cond: [{ $eq: ['$entryStatus', 'N'] }, '$openWeight', 0]
+            }
+          },
+          soldPrice: {
+            $sum: {
+              $cond: [
+                { $eq: ['$entryStatus', 'Y'] },
+                { $multiply: ['$closeWeight', '$cost'] },
+                0
+              ]
+            }
+          },
+          waitingForSalePrice: {
+            $sum: {
+              $cond: [
+                { $eq: ['$entryStatus', 'N'] },
+                { $multiply: ['$openWeight', '$cost'] },
+                0
+              ]
+            }
+          },
+          sumNetSale: {
+            $sum: {
+              $cond: [
+                { $eq: ['$entryStatus', 'Y'] },
+                {
+                  $subtract: [
+                    { $subtract: [{ $multiply: ['$closeWeight', '$closePrice'] }, { $multiply: ['$closeWeight', '$cost'] }] },
+                    { $multiply: [{ $multiply: ['$closeWeight', '$closePrice'] }, { $divide: ['$sale.discount', 100] }] }
+                  ]
+                },
+                0
+              ]
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          batchID: '$_id',
+          batchName: 1,
+          costOfBatch: 1,
+          displayName: 1,
+          sorter: 1,
+          total: 1,
+          totalPrice: 1,
+          sold: 1,
+          waitingForSale: 1,
+          soldPrice: 1,
+          waitingForSalePrice: 1,
+          sumNetSale: 1
+        }
+      },
+      { $sort: { displayName: 1, sorter: 1 } }
+    );
+
+    const saleEntries = await SaleEntry.aggregate(aggregatePipeline);
+
+    // ---------- PIPELINE สำหรับ Stock (คงรูปแบบเอกสารดิบ + ฝัง batch เป็นอ็อบเจกต์) ----------
+    const stockPipeline = [];
+
+    // batchID
+    if (batchID) {
+      stockPipeline.push({ $match: { batchID: new mongoose.Types.ObjectId(batchID) } });
+    }
+
+    // join batch สำหรับกรอง year/set และใช้ชื่อชุด
+    stockPipeline.push(
+      { $lookup: { from: 'batchs', localField: 'batchID', foreignField: '_id', as: 'batch' } },
+      { $unwind: '$batch' }
+    );
+
+    // year / setNumber ที่ batch
+    if (yy !== null) stockPipeline.push({ $match: { 'batch.batchYear': yy } });
+    if (setNumbers.length) stockPipeline.push({ $match: { 'batch.number': { $in: setNumbers } } });
+
+    // (ออปชัน) origins สำหรับ stock: type -> origin (ใส่เฉพาะเมื่อมี origins)
+    if (originsArray.length) {
+      stockPipeline.push(
+        { $lookup: { from: 'types', localField: 'typeID', foreignField: '_id', as: 'type' } },
+        { $unwind: '$type' },
+        { $lookup: { from: 'origins', localField: 'type.originID', foreignField: '_id', as: 'origin' } },
+        { $unwind: '$origin' },
+        { $match: { 'origin.originCode': { $in: originsArray } } }
+      );
+    }
+
+    // จัดรูปให้ batchID เป็นอ็อบเจกต์ (เหมือน populate) + ส่งฟิลด์ที่ client ใช้
+    stockPipeline.push({
+      $project: {
+        _id: 1,
+        addStock: 1,
+        cost: 1,
+        typeID: 1,
+        sizeID: 1,
+        gradeID: 1,
+        // แทนที่ batchID ด้วยเอกสาร batch (ให้ client อ่าน batchID.batchName/costOfBatch ได้)
+        batchID: '$batch'
+      }
+    });
+
+    const stockEntries = await Stock.aggregate(stockPipeline);
+
+    // ---------- batchList: ชุดที่ตรง year/setNumber แต่ยังไม่มีทั้ง sale/stock ----------
+    const usedBatchIds = new Set([
+      ...saleEntries.map(e => String(e.batchID)),
+      ...stockEntries.map(e => String(e.batchID?._id))
+    ]);
+
+    const batchFind = {};
+    if (yy !== null) batchFind.batchYear = yy;
+    if (setNumbers.length) batchFind.number = { $in: setNumbers };
+
+    let batchList = [];
+    if (Object.keys(batchFind).length) {
+      const allBatches = await Batch.find(batchFind).select('_id batchName batchYear number costOfBatch').lean();
+      batchList = allBatches.filter(b => !usedBatchIds.has(String(b._id)));
+    }
+
+    console.log('saleEntries :', saleEntries.length);
+    console.log('stockEntries :', stockEntries.length);
+    console.log('batchList :', batchList.length);
+
+    return res.json({ saleEntries, stockEntries, batchList });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error retrieving stock data' });
+  }
 });
+
 
 
 // API route Table 1
@@ -477,7 +466,7 @@ router.get('/api/getGradeBySize/:batchID/:typeID/:sizeID', async (req, res) => {
             $or: stockFilters
         }).populate('typeID').populate('sizeID').populate('gradeID');
 
-        
+
         let products;
         if (typeID) {
             products = await Product.find({ typeID, sizeID });

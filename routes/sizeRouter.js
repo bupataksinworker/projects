@@ -61,8 +61,20 @@ router.get('/sizeTableBody', async (req, res) => {
             sizes = await Size.find().populate('grainID').sort({ sorter: 1 });
         }
 
+        // ตรวจสอบว่า size ถูกใช้งานใน products หรือ stock หรือไม่
+        const Product = require('../models/product');
+        const Stock = require('../models/stock');
+        const usedSizeIdsProduct = await Product.distinct('sizeID');
+        const usedSizeIdsStock = await Stock.distinct('sizeID');
+        // รวม id ที่ถูกใช้ใน product และ stock
+        const usedSizeIds = [...new Set([...usedSizeIdsProduct, ...usedSizeIdsStock])];
+        const sizesWithUsage = sizes.map(size => {
+            const isUsedInProducts = usedSizeIds.some(id => id.toString() === size._id.toString());
+            return { ...size.toObject(), isUsedInProducts };
+        });
+
         // ส่งข้อมูลขนาดเฉพาะเป็น JSON กลับไปที่หน้า manageSize.ejs
-        res.json({ sizes });
+        res.json({ sizes: sizesWithUsage });
 
     } catch (error) {
         console.error('Error fetching data:', error);

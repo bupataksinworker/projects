@@ -192,62 +192,6 @@ router.get('/api/updateTableProductCost', async (req, res) => {
     }
 });
 
-// New: ดึงสินค้าตามเกรดเมื่อเลือกเกรดโดยไม่ได้เลือกประเภทและไซส์
-router.get('/api/getProductsByGrade', async (req, res) => {
-    try {
-        const { gradeID, sortBy } = req.query;
-
-        if (!gradeID) {
-            return res.status(400).json({ message: 'Missing gradeID' });
-        }
-
-        const products = await Product.find({ gradeID })
-            .populate('sizeID', 'sizeName sorter')
-            .populate('typeID', 'typeName')
-            .populate('gradeID', 'gradeName sorter');
-
-        const productData = await Promise.all(products.map(async product => {
-            const latestCost = await Cost.findOne({ productID: product._id }).sort({ sorter: -1 });
-            return {
-                id: product._id,
-                productName: product.productName,
-                ber: product.ber,
-                sorter: product.sorter,
-                displayName: product.displayName,
-                sizeName: product.sizeID ? product.sizeID.sizeName : '-',
-                typeName: product.typeID ? product.typeID.typeName : '-',
-                gradeName: product.gradeID ? product.gradeID.gradeName : '-',
-                latestCost: latestCost ? latestCost.costOfProduct : null,
-                sizeSorter: product.sizeID ? product.sizeID.sorter : 0,
-                gradeSorter: product.gradeID ? product.gradeID.sorter : 0
-            };
-        }));
-
-        // If requested, sort by typeName (alphabetical). Otherwise fallback to sizeSorter/gradeSorter
-        if (sortBy === 'type') {
-            productData.sort((a, b) => {
-                const ta = (a.typeName || '').toString();
-                const tb = (b.typeName || '').toString();
-                if (ta < tb) return -1;
-                if (ta > tb) return 1;
-                // fallback to existing sorters to keep deterministic order
-                if (a.sizeSorter !== b.sizeSorter) return a.sizeSorter - b.sizeSorter;
-                return a.gradeSorter - b.gradeSorter;
-            });
-        } else {
-            productData.sort((a, b) => {
-                if (a.sizeSorter !== b.sizeSorter) return a.sizeSorter - b.sizeSorter;
-                return a.gradeSorter - b.gradeSorter;
-            });
-        }
-
-        res.json(productData);
-    } catch (error) {
-        console.error('Error fetching products by grade:', error);
-        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลสินค้า' });
-    }
-});
-
 // เส้นทางสำหรับลบข้อมูลสินค้า
 router.post('/deleteProductCost', async (req, res) => {
     try {

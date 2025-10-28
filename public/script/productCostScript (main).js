@@ -90,63 +90,7 @@ async function selectedSizeCost() {
 
 function selectedGradeCost() {
     document.getElementById('costOfProductCost').value = '';
-    // ถ้าไม่ได้เลือก type และ size ให้เรียก API ใหม่ที่ค้นหาตาม grade เท่านั้น
-    const typeID = document.getElementById('typeIDCost').value;
-    const sizeID = document.getElementById('sizeIDCost').value;
-    const gradeID = document.getElementById('gradeIDCost').value;
-
-    if ((!typeID || typeID === '') && (!sizeID || sizeID === '') && gradeID) {
-        fetchProductsByGrade(gradeID);
-        return;
-    }
-
     updateTableProductCost();
-}
-
-// ดึงสินค้าที่มี grade เดียวกัน (ใช้เมื่อเลือกเกรดโดยไม่เลือก type/size)
-async function fetchProductsByGrade(gradeID) {
-    try {
-        // ถ้ามี checkbox สำหรับเรียงตามประเภท ให้แนบ param sortBy=type
-        let url = `/api/getProductsByGrade?gradeID=${gradeID}`;
-        const sortCheckbox = document.getElementById('sortByType');
-        if (sortCheckbox && sortCheckbox.checked) {
-            url += '&sortBy=type';
-        }
-        const response = await fetch(url);
-        const data = await response.json();
-
-        // ตรวจสอบแต่ละ product ว่าใช้งานใน saleEntry หรือไม่
-        const usageChecks = await Promise.all(
-            data.map(item => fetch(`/api/isProductUsedInSaleEntry?productID=${item.id}`).then(res => res.json()))
-        );
-
-        let tableHTML = data.map((item, index) => {
-            const used = usageChecks[index].used;
-            return `
-                <tr>
-                    <td title="sorter : ${item.sorter ?? '-'}">${index + 1}</td>
-                    <td>${item.ber || ''} ${item.productName || '-'}</td>
-                    <td>${item.ber || '-'}</td>
-                    <td>${item.displayName || '-'}</td>
-                    <td>${item.sizeName || '-'}</td>
-                    <td>${item.typeName || '-'}</td>
-                    <td>${item.gradeName || '-'}</td>
-                    <td>${item.latestCost ? item.latestCost.toFixed(2) : '-'}</td>
-                    <td>
-                        <button class="btn btn-primary" onclick="openEditProductCostModal('${item.id}')">
-                            แก้ไข
-                        </button>
-                    </td>
-                    <td>
-                        <button class='btn btn-danger' onclick="deleteProductCost('${item.id}')" ${used ? 'disabled' : ''}>ลบ</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-        document.getElementById('tableProductCostData').innerHTML = tableHTML;
-    } catch (error) {
-        console.error('Error fetching products by grade:', error);
-    }
 }
 
 async function addCostProduct() {

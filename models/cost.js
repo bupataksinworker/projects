@@ -12,7 +12,7 @@ let costSchema = mongoose.Schema({
         type: Number,
         required: true,
         min: 0,
-        max: 99999999.99,
+        max: 999999999.99,
         precision: 2,
     },
     productID: {

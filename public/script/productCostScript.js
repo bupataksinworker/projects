@@ -113,7 +113,20 @@ async function fetchProductsByGrade(gradeID) {
             url += '&sortBy=type';
         }
         const response = await fetch(url);
-        const data = await response.json();
+        let data = await response.json();
+
+        // ถ้าผู้ใช้เลือกให้เรียงตามประเภท แต่ server ไม่ได้เรียงกลับมา (หรือ checkbox มีอยู่แต่ server ไม่รองรับ)
+        if (sortCheckbox && sortCheckbox.checked) {
+            data = data.slice().sort((a, b) => {
+                const ta = (a.typeName || '').toString().toLowerCase();
+                const tb = (b.typeName || '').toString().toLowerCase();
+                if (ta < tb) return -1;
+                if (ta > tb) return 1;
+                // ถ้าชื่อประเภทเท่ากัน ให้ fallback ไปใช้ sorter เดิมเพื่อความแน่นอน
+                if ((a.sizeSorter || 0) !== (b.sizeSorter || 0)) return (a.sizeSorter || 0) - (b.sizeSorter || 0);
+                return (a.gradeSorter || 0) - (b.gradeSorter || 0);
+            });
+        }
 
         // ตรวจสอบแต่ละ product ว่าใช้งานใน saleEntry หรือไม่
         const usageChecks = await Promise.all(

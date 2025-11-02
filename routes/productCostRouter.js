@@ -214,6 +214,7 @@ router.get('/api/getProductsByGrade', async (req, res) => {
                 ber: product.ber,
                 sorter: product.sorter,
                 displayName: product.displayName,
+                typeID: product.typeID ? product.typeID._id.toString() : '',
                 sizeName: product.sizeID ? product.sizeID.sizeName : '-',
                 typeName: product.typeID ? product.typeID.typeName : '-',
                 gradeName: product.gradeID ? product.gradeID.gradeName : '-',
@@ -222,20 +223,23 @@ router.get('/api/getProductsByGrade', async (req, res) => {
                 gradeSorter: product.gradeID ? product.gradeID.sorter : 0
             };
         }));
-
-        // If requested, sort by typeName (alphabetical). Otherwise fallback to sizeSorter/gradeSorter
+        // Default: sort by typeID (so grade-only search is grouped by type)
+        // If caller explicitly requests sortBy=type, sort alphabetically by typeName instead
         if (sortBy === 'type') {
             productData.sort((a, b) => {
                 const ta = (a.typeName || '').toString();
                 const tb = (b.typeName || '').toString();
                 if (ta < tb) return -1;
                 if (ta > tb) return 1;
-                // fallback to existing sorters to keep deterministic order
                 if (a.sizeSorter !== b.sizeSorter) return a.sizeSorter - b.sizeSorter;
                 return a.gradeSorter - b.gradeSorter;
             });
         } else {
             productData.sort((a, b) => {
+                const ta = (a.typeID || '').toString();
+                const tb = (b.typeID || '').toString();
+                if (ta < tb) return -1;
+                if (ta > tb) return 1;
                 if (a.sizeSorter !== b.sizeSorter) return a.sizeSorter - b.sizeSorter;
                 return a.gradeSorter - b.gradeSorter;
             });

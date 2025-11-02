@@ -115,25 +115,14 @@ async function fetchProductsByGrade(gradeID) {
         const response = await fetch(url);
         let data = await response.json();
 
-        // ถ้า checkbox ถูกติ๊ก ให้ server พยายามเรียงตาม typeName (sortBy=type)
-        // แต่ถ้าไม่มี checkbox หรือไม่ติ๊ก จะทำ client-side sort ตาม typeID เพื่อจัดกลุ่มตามประเภท
+        // ถ้าผู้ใช้เลือกให้เรียงตามประเภท แต่ server ไม่ได้เรียงกลับมา (หรือ checkbox มีอยู่แต่ server ไม่รองรับ)
         if (sortCheckbox && sortCheckbox.checked) {
-            // server was requested to sort; if data is not sorted by typeName, we also enforce alphabetical typeName here
             data = data.slice().sort((a, b) => {
                 const ta = (a.typeName || '').toString().toLowerCase();
                 const tb = (b.typeName || '').toString().toLowerCase();
                 if (ta < tb) return -1;
                 if (ta > tb) return 1;
-                if ((a.sizeSorter || 0) !== (b.sizeSorter || 0)) return (a.sizeSorter || 0) - (b.sizeSorter || 0);
-                return (a.gradeSorter || 0) - (b.gradeSorter || 0);
-            });
-        } else {
-            // default client-side grouping by typeID
-            data = data.slice().sort((a, b) => {
-                const ta = (a.typeID || '').toString();
-                const tb = (b.typeID || '').toString();
-                if (ta < tb) return -1;
-                if (ta > tb) return 1;
+                // ถ้าชื่อประเภทเท่ากัน ให้ fallback ไปใช้ sorter เดิมเพื่อความแน่นอน
                 if ((a.sizeSorter || 0) !== (b.sizeSorter || 0)) return (a.sizeSorter || 0) - (b.sizeSorter || 0);
                 return (a.gradeSorter || 0) - (b.gradeSorter || 0);
             });

@@ -23,6 +23,7 @@ const stockRouter = require('./routes/stockRouter');
 const reportTransactionRouter = require('./routes/reportTransactionRouter');
 const gradeDetailsRouter = require('./routes/gradeDetailsRouter');
 const productCostRouter = require('./routes/productCostRouter');
+const exportRouter = require('./routes/exportRouter');
 
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
@@ -128,6 +129,7 @@ app.use(stockRouter);
 app.use(reportTransactionRouter);
 app.use(gradeDetailsRouter);
 app.use(productCostRouter);
+app.use('/export', exportRouter);
 
 app.listen(3000, () => {
   console.log('🚀 Server running on port 3000');

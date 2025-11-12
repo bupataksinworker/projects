@@ -1,0 +1,12 @@
+﻿[2025-11-11 14:06:55] Found mongodump in PATH
+[2025-11-11 14:06:55] Starting mongodump for DB='bupataksin' -> C:\WEB\backupSystem\bupataksin_latest.gz
+[2025-11-11 14:06:55] CMD: mongodump --db bupataksin --archive= C:\WEB\backupSystem\bupataksin_latest.gz --gzip
+[2025-11-11 14:06:57] âŒ mongodump failed or output not found, rc=1
+[2025-11-11 14:12:21] Found mongodump in PATH
+[2025-11-11 14:12:21] Starting mongodump for DB='bupataksin' -> C:\WEB\backupSystem\bupataksin_latest.gz
+[2025-11-11 14:12:21] CMD: mongodump --db bupataksin --archive= C:\WEB\backupSystem\bupataksin_latest.gz --gzip
+[2025-11-11 14:12:22] âŒ mongodump failed or output not found, rc=1
+[2025-11-11 14:13:02] Found mongodump in PATH
+[2025-11-11 14:13:02] Starting mongodump for DB='bupataksin' -> C:\WEB\backupSystem\bupataksin_backup_2025-11-11.gz
+[2025-11-11 14:13:02] CMD: mongodump --db bupataksin --archive= C:\WEB\backupSystem\bupataksin_backup_2025-11-11.gz --gzip
+[2025-11-11 14:13:03] âŒ mongodump failed or output not found, rc=1

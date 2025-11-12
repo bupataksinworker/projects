@@ -68,7 +68,8 @@
             transition: background-color 0.3s ease;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 5px;
             text-align: center;
@@ -103,6 +104,7 @@
             padding: 18px 12px;
             border: none;
         }
+
         .side-menu button {
             padding: 10px 18px;
             background: #5bb6f7;
@@ -111,9 +113,10 @@
             border-radius: 6px;
             font-size: 15px;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
             transition: background 0.2s;
         }
+
         .side-menu button:hover {
             background: #3498db;
         }
@@ -121,22 +124,27 @@
         .section-content {
             display: none;
         }
+
         .section-content.active {
             display: block;
         }
+
         /* สำหรับกราฟที่ใช้ flex ให้ใช้ important เพื่อ override */
         .section-content.flex-section {
             display: none !important;
         }
+
         .section-content.flex-section.active {
             display: flex !important;
         }
+
         .w3-display-container.full-height {
             max-width: 100%;
             margin-left: 100px;
             margin-right: 100px;
             padding-left: 0;
         }
+
         @media (max-width: 1800px) {
             .w3-display-container.full-height {
                 max-width: 98vw;
@@ -144,6 +152,7 @@
                 margin-right: 20px;
             }
         }
+
         @media (max-width: 900px) {
             .w3-display-container.full-height {
                 margin-left: 0;
@@ -151,6 +160,7 @@
                 padding-left: 0;
             }
         }
+
         .section-content {
             min-height: 400px;
             max-height: 80vh;
@@ -158,33 +168,39 @@
             margin-bottom: 32px;
             background: #fff;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
             padding: 24px 16px 16px 16px;
             /* กำหนดให้ใช้ความกว้างเต็ม container ไม่เปลี่ยนขอบซ้ายขวา */
             width: 100%;
             box-sizing: border-box;
         }
+
         .section-content.flex-section {
             align-items: center;
             justify-content: center;
         }
+
         table {
             max-width: 100%;
             overflow-x: auto;
         }
+
         canvas {
             max-width: 100% !important;
             max-height: 60vh !important;
         }
+
         @media (max-width: 900px) {
             .w3-display-container.full-height {
                 padding-left: 0;
             }
+
             .side-menu {
                 right: 5px;
                 top: 60px;
                 padding: 8px 4px;
             }
+
             .section-content {
                 padding: 10px 2px 8px 2px;
             }
@@ -202,6 +218,7 @@
                 <button onclick="scrollToSection('salesChart')">กราฟยอดขาย</button>
                 <button onclick="scrollToSection('batchBarChart')">กราฟชุด</button>
                 <button onclick="scrollToSection('customerPieChart')">กราฟลูกค้า</button>
+                
             </div>
 
             <div class="w3-display-container full-height" style="padding-left: 15%;">
@@ -283,13 +300,15 @@
                     }
                 }
                 // Show only the first section on load
-                document.addEventListener('DOMContentLoaded', function() {
+                document.addEventListener('DOMContentLoaded', function () {
                     document.querySelectorAll('.section-content').forEach((el, idx) => {
-                        if(idx === 0) el.classList.add('active');
+                        if (idx === 0) el.classList.add('active');
                         else el.classList.remove('active');
                     });
                 });
             </script>
+
+
     </body>
 
     </html>

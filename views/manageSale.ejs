@@ -1,5 +1,6 @@
 <%- include('head') %>
-</head>
+  </head>
+
   <body>
     <%- include('navbar') %>
       <br>
@@ -29,7 +30,7 @@
                       <option value="<%= customer._id %>">
                         <%= customer.customerName %>
                       </option>
-                    <% }); %>
+                      <% }); %>
                   </select>
                 </td>
                 <td class="col-sm-1 text-center"><b>รายย่อย:</b></td>
@@ -61,7 +62,7 @@
         </div>
 
         <br>
-        
+
         <div class="row">
           <div class="col-sm-1"></div>
           <div class="col-sm-11">
@@ -84,17 +85,14 @@
               </tbody>
             </table>
             <div id="pagination"></div>
-            <hr>
-
-                <!----------------- EXPORT DATA ----------------->
-            <button id="exportBtn" type="button"
-              class="btn btn-info btn-sm rounded-pill shadow-sm"
+            <!----------------- EXPORT DATA ----------------->
+            <button id="exportBtn" type="button" class="btn btn-info btn-sm rounded-pill shadow-sm"
               style="background: linear-gradient(135deg,#20c997,#138496);border:0;padding:6px 14px;font-weight:600;transition:transform .12s,box-shadow .12s;"
               title="Export data">
               <i class="fas fa-file-download" style="margin-right:8px;"></i> EXPORT DATA
             </button>
-                <!----------------- EXPORT DATA ----------------->
-
+            <!----------------- EXPORT DATA ----------------->
+            <hr>
           </div>
 
           <!-- -----------------createBillModal-------------------------------------------------------------------------------------------------- -->
@@ -110,20 +108,21 @@
                       <tr>
                         <td>
                           <label for="inputCustomerName">ลูกค้า:</label>
-                          <select class="form-control" id="inputCustomerName" onchange="updateSubCustomerNames()" required>
+                          <select class="form-control" id="inputCustomerName" onchange="updateSubCustomerNames()"
+                            required>
                             <option value="">เลือกลูกค้า...</option>
                             <% customers.forEach(function(customer) { %>
                               <option value="<%= customer._id %>">
                                 <%= customer.customerName %>
                               </option>
-                            <% }); %>
+                              <% }); %>
                           </select>
                         </td>
                         <td>
                           <label for="inputSubCustomerName">รายย่อย:</label>
                           <select class="form-control" id="subCustomerDropdown" name="subCustomerID">
                             <option value="">กรุณาเลือกลูกค้าก่อน</option>
-                          </select>                      
+                          </select>
                         </td>
                       </tr>
                       <tr>
@@ -148,13 +147,14 @@
                       <tr>
                         <td colspan="2" class="text-right">
                           <button type="button" class="btn btn-primary" onclick="submitCreateBill()">บันทึก</button>
-                          <button type="button" class="btn btn-secondary" onclick="closeModalCreateBill()">ยกเลิก</button>
+                          <button type="button" class="btn btn-secondary"
+                            onclick="closeModalCreateBill()">ยกเลิก</button>
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </form>
-                
+
               </div>
             </div>
           </div>
@@ -172,16 +172,16 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({})
           });
-                    const j = await res.json();
-                    if (j.ok) {
-                        alert('Export started/finished. ตรวจ log ใน server หรือดาวน์โหลดไฟล์จาก Google Drive');
-                        console.log(j);
-                    } else {
-                        alert('Export failed: ' + (j.message || 'unknown'));
-                        console.error(j);
-                    }
-                });
-            </script>
+          const j = await res.json();
+          if (j.ok) {
+            alert('Export started/finished. ตรวจ log ใน server หรือดาวน์โหลดไฟล์จาก Google Drive');
+            console.log(j);
+          } else {
+            alert('Export failed: ' + (j.message || 'unknown'));
+            console.error(j);
+          }
+        });
+      </script>
   </body>
 
   </html>

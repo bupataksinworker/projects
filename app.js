@@ -131,6 +131,126 @@ app.use(gradeDetailsRouter);
 app.use(productCostRouter);
 app.use('/export', exportRouter);
 
-app.listen(3000, () => {
+app.listen(3000, async () => {
   console.log('🚀 Server running on port 3000');
+  
+  // เรียก export อัตโนมัติหลัง server เริ่มทำงาน
+  setTimeout(async () => {
+    try {
+      console.log('🔄 Starting auto export...');
+      const nodeExport = require('./lib/nodeExport');
+      const fs = require('fs');
+      const pathModule = require('path');
+      
+      // ดึงรายชื่อ collections ทั้งหมด
+      const db = mongoose.connection.db;
+      const list = await db.listCollections().toArray();
+      const names = list.map(c => c.name).filter(name => !name.startsWith('system.'));
+      
+      console.log(`📦 Found ${names.length} collections to export`);
+      
+      // โหลด models จากโฟลเดอร์ models เพื่อดึง schema paths
+      const modelsDir = pathModule.join(__dirname, 'models');
+      try {
+        const modelFiles = fs.readdirSync(modelsDir).filter(f => f.endsWith('.js'));
+        for (const mf of modelFiles) {
+          try {
+            require(pathModule.join(modelsDir, mf));
+          } catch (e) {
+            // ignore model load errors
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+      
+      for (const col of names) {
+        try {
+          console.log(`  ⏳ Exporting ${col}...`);
+          
+          // หา fields อัตโนมัติเหมือนใน exportRouter
+          let autoFields = '';
+          const models = mongoose.models || {};
+          const foundModel = Object.values(models).find(m => m.collection && m.collection.name === col);
+          
+          if (foundModel && foundModel.schema) {
+            const schemaPaths = Object.keys(foundModel.schema.paths || {});
+            const safeSchema = schemaPaths.filter(k => /^[a-z0-9_\.\$\-]+$/i.test(k));
+            try {
+              const samples = await db.collection(col).aggregate([{ $sample: { size: 1000 } }]).toArray();
+              const paths = new Set();
+              const isBSONObjectId = (v) => v && (v._bsontype === 'ObjectID' || v._bsontype === 'ObjectId');
+              const collect = (obj, prefix = '') => {
+                if (!obj || typeof obj !== 'object') return;
+                for (const k of Object.keys(obj)) {
+                  const v = obj[k];
+                  const pathStr = prefix ? `${prefix}.${k}` : k;
+                  if (v === null || v === undefined) {
+                    paths.add(pathStr);
+                  } else if (Array.isArray(v)) {
+                    paths.add(pathStr);
+                  } else if (isBSONObjectId(v) || v instanceof Date || typeof v !== 'object') {
+                    paths.add(pathStr);
+                  } else {
+                    paths.add(pathStr);
+                    collect(v, pathStr);
+                  }
+                }
+              };
+              for (const doc of samples) collect(doc, '');
+              const safeSample = Array.from(paths).filter(k => /^[a-z0-9_\.\$\-]+$/i.test(k));
+              const union = Array.from(new Set([...safeSchema, ...safeSample]));
+              autoFields = union.join(',');
+            } catch (e) {
+              autoFields = safeSchema.join(',');
+            }
+          } else {
+            try {
+              const samples = await db.collection(col).aggregate([{ $sample: { size: 200 } }]).toArray();
+              const paths = new Set();
+              const isBSONObjectId = (v) => v && (v._bsontype === 'ObjectID' || v._bsontype === 'ObjectId');
+              const collect = (obj, prefix = '') => {
+                if (!obj || typeof obj !== 'object') return;
+                for (const k of Object.keys(obj)) {
+                  const v = obj[k];
+                  const pathStr = prefix ? `${prefix}.${k}` : k;
+                  if (v === null || v === undefined) {
+                    paths.add(pathStr);
+                  } else if (Array.isArray(v)) {
+                    paths.add(pathStr);
+                  } else if (isBSONObjectId(v) || v instanceof Date || typeof v !== 'object') {
+                    paths.add(pathStr);
+                  } else {
+                    paths.add(pathStr);
+                    collect(v, pathStr);
+                  }
+                }
+              };
+              for (const doc of samples) collect(doc, '');
+              const safe = Array.from(paths).filter(k => /^[a-z0-9_\.\$\-]+$/i.test(k));
+              autoFields = safe.join(',');
+            } catch (aggErr) {
+              const doc = await db.collection(col).findOne();
+              if (doc && typeof doc === 'object') {
+                const keys = Object.keys(doc).filter(k => /^[a-z0-9_\.\$\-]+$/i.test(k));
+                autoFields = keys.join(',');
+              }
+            }
+          }
+          
+          console.log(`    📋 Fields count: ${(autoFields||'').split(',').filter(Boolean).length}`);
+          
+          // เรียก nodeExport
+          const result = await nodeExport.exportCollectionToCSV(col, autoFields);
+          console.log(`  ✅ ${col} exported successfully (${result.headersCount} columns)`);
+        } catch (err) {
+          console.error(`  ❌ Error exporting ${col}:`, err.message);
+        }
+      }
+      
+      console.log('✅ Auto export completed!');
+    } catch (error) {
+      console.error('❌ Auto export failed:', error.message);
+    }
+  }, 3000); // รอ 3 วินาที หลัง server เริ่มทำงาน
 });

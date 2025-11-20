@@ -11,19 +11,26 @@
           </label>
         </div>
         <br>
-        <div class="row">
-          <div class="col-sm-1"></div>
-          <div class="col-sm-1">
-            <button type="button" class="btn btn-success btn-xs" onclick="openModalCreateBill()"
-              title="คลิกเพื่อเปิดเมนูสร้างบิลใหม่" style="background: linear-gradient(135deg,#20c997,#138496);width:100px;height: 35px;">
-              <i class="fas fa-plus"></i> <span style="font-size: x-small;"><b>NEW BILL</b></span></button>
-          </div>
-          <div class="col-sm-9">
+        <div class="row" style="margin-bottom:10px;">
 
+          <!-- ปุ่ม NEW BILL -->
+          <div class="col-sm-1 text-center"></div>
+          <div class="col-sm-1 text-center">
+            <button type="button" class="btn btn-success btn-xs" onclick="openModalCreateBill()"
+              title="คลิกเพื่อเปิดเมนูสร้างบิลใหม่"
+              style="background: linear-gradient(135deg,#20c997,#138496);width:100%;height:35px;">
+              <i class="fas fa-plus"></i>
+              <b style="font-size:12px;">NEW BILL</b>
+            </button>
+          </div>
+
+          <!-- ฟอร์มค้นหา -->
+          <div class="col-sm-8">
             <table class="w3-table">
               <tr class="active">
-                <td class="col-sm-1 text-center"><b>ลูกค้า:</b></td>
-                <td class="col-sm-2">
+
+                <td class="text-right" style="width:10%;"><b>ลูกค้า:</b></td>
+                <td style="width:20%;">
                   <select class="form-control" id="customerDropdown"
                     onchange="getSubCustomerNames();loadSales(currentPage);">
                     <option value="">เลือกลูกค้า...</option>
@@ -34,42 +41,47 @@
                       <% }); %>
                   </select>
                 </td>
-                <td class="col-sm-1 text-center"><b>รายย่อย:</b></td>
-                <td class="col-sm-2">
+
+                <td class="text-right" style="width:10%;"><b>รายย่อย:</b></td>
+                <td style="width:20%;">
                   <select class="form-control" id="subCustomerID" disabled onchange="loadSales(currentPage);">
                     <option value="">กรุณาเลือกลูกค้าก่อน</option>
                   </select>
                 </td>
-                <td class="col-sm-1 text-center"><b>วันที่:</b></td>
-                <td class="col-sm-1">
-                  <input type="date" class="date form-control" id="inputDateStart"
-                    value="<%= new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().slice(0, 10) %>"
+
+                <td class="text-right" style="width:10%;"><b>วันที่:</b></td>
+                <td style="width:15%;">
+                  <input type="date" class="form-control" id="inputDateStart"
+                    value="<%= new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString().slice(0,10) %>"
                     onchange="loadSales(currentPage);">
                 </td>
-                <td class="col-sm-1 text-center"><b>ถึงวันที่:</b></td>
-                <td class="col-sm-1">
-                  <input type="date" class="date form-control" id="inputDateEnd"
-                    value="<%= new Date().toISOString().slice(0, 10) %>" onchange="loadSales(currentPage);">
+
+                <td class="text-right" style="width:10%;"><b>ถึง:</b></td>
+                <td style="width:15%;">
+                  <input type="date" class="form-control" id="inputDateEnd"
+                    value="<%= new Date().toISOString().slice(0,10) %>" onchange="loadSales(currentPage);">
                 </td>
-                <td>
-                  <button type="button" class="btn btn-default btn-sm"
-                    style="width: 80px;background-color:rgb(219, 219, 219)"
+
+                <td style="width:10%;">
+                  <button class="btn btn-default btn-sm" style="width:100%;background:#dbdbdb;"
                     onclick="window.location.reload();"><b>ล้าง</b></button>
                 </td>
+
               </tr>
             </table>
+          </div>
 
-          </div>
-          <div class="col-sm-1">
-            <!----------------- EXPORT DATA ----------------->
+          <!-- ปุ่ม EXPORT -->
+          <div class="col-sm-2 text-center">
             <button id="exportBtn" type="button" class="btn btn-info btn-sm"
-              style="background: linear-gradient(135deg,#20c997,#138496);width:100px;height: 30px;"
-              title="Export data">
-              <i class="fas fa-file-download"></i> <span style="font-size: x-small;"><b>EXPORT DATA</b></span>
+              style="background: linear-gradient(135deg,#20c997,#138496);width:100%;height:30px;" title="Export data">
+              <i class="fas fa-file-download"></i>
+              <b style="font-size:12px;">EXPORT DATA</b>
             </button>
-            <!----------------- EXPORT DATA ----------------->
           </div>
+
         </div>
+
 
         <br>
 
@@ -185,6 +197,7 @@
           }
         });
       </script>
+      
   </body>
 
   </html>

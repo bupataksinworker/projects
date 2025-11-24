@@ -1,4 +1,4 @@
-﻿grainID,sizeName,sorter,_id,__v,sorter.bytes,sorter.bytes.0,sorter.bytes.1,sorter.bytes.2,sorter.bytes.3,sorter.bytes.4,sorter.bytes.5,sorter.bytes.6,sorter.bytes.7,sorter.bytes.8,sorter.bytes.9,sorter.bytes.10,sorter.bytes.11,sorter.bytes.12,sorter.bytes.13,sorter.bytes.14,sorter.bytes.15,sorter.$numberDecimal
+﻿grainID,sizeName,sorter,_id,__v,sorter.$numberDecimal,sorter.bytes,sorter.bytes.0,sorter.bytes.1,sorter.bytes.2,sorter.bytes.3,sorter.bytes.4,sorter.bytes.5,sorter.bytes.6,sorter.bytes.7,sorter.bytes.8,sorter.bytes.9,sorter.bytes.10,sorter.bytes.11,sorter.bytes.12,sorter.bytes.13,sorter.bytes.14,sorter.bytes.15
 677cadc90930e80452a6e334,ไซส์ 1 ก,1,678f2957c996ede64c957eb2,0,,,,,,,,,,,,,,,,,,
 677cadc90930e80452a6e334,ไซส์ 2 ก,2,678f295dc996ede64c957eb9,0,,,,,,,,,,,,,,,,,,
 677cadc90930e80452a6e334,8x6,3,678f2966c996ede64c957ec0,0,,,,,,,,,,,,,,,,,,
@@ -66,10 +66,10 @@
 677cae4c0930e80452a6e336,▯4x3,65,67ce8aca0a66069219aecc4b,0,,,,,,,,,,,,,,,,,,
 677cae4c0930e80452a6e336,▯3.5x2,66,67ce8ad30a66069219aecc52,0,,,,,,,,,,,,,,,,,,
 677cae4c0930e80452a6e336,□ 3 มิล,67,67ce8ade0a66069219aecc59,0,,,,,,,,,,,,,,,,,,
-677cadc90930e80452a6e334,test,,68106a98a01ae8a44a6e6220,0,,,,,,,,,,,,,,,,,,2001-02-01T17:00:00.000Z
-677cae1f0930e80452a6e335,▢ 5 มิล,,686ddcd948953b38cef14c6b,0,,221,0,0,0,0,0,0,0,0,0,0,0,0,0,62,48,
-677cae1f0930e80452a6e335,6.5x4.5,,686df3f6cd4af51ab96c6551,0,,135,1,0,0,0,0,0,0,0,0,0,0,0,0,62,48,
-677cae1f0930e80452a6e335,▯พิเศษ,,686df436cd4af51ab96c6558,0,,155,1,0,0,0,0,0,0,0,0,0,0,0,0,62,48,
+677cadc90930e80452a6e334,test,,68106a98a01ae8a44a6e6220,0,2001-02-01T17:00:00.000Z,,,,,,,,,,,,,,,,,
+677cae1f0930e80452a6e335,▢ 5 มิล,,686ddcd948953b38cef14c6b,0,,,221,0,0,0,0,0,0,0,0,0,0,0,0,0,62,48
+677cae1f0930e80452a6e335,6.5x4.5,,686df3f6cd4af51ab96c6551,0,,,135,1,0,0,0,0,0,0,0,0,0,0,0,0,62,48
+677cae1f0930e80452a6e335,▯พิเศษ,,686df436cd4af51ab96c6558,0,,,155,1,0,0,0,0,0,0,0,0,0,0,0,0,62,48
 677cae1f0930e80452a6e335,▣ 4มิล,72,68ba5ce144305b22fce5e6d4,0,,,,,,,,,,,,,,,,,,
 677cadc90930e80452a6e334,⦻ 6 มิล,72,68cb7ccc31b6322182087867,0,,,,,,,,,,,,,,,,,,
 677cadc90930e80452a6e334,⦻ 6.5มิล,73,68cb7ce431b6322182087877,0,,,,,,,,,,,,,,,,,,

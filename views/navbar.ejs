@@ -1,45 +1,52 @@
+<style>
+    .nav-active {
+        background-color: #000 !important;
+        color: #fff !important;
+    }
+</style>
+
 <nav class="w3-sidebar w3-bar-block w3-small w3-hide-small w3-center d-flex flex-column align-items-stretch" style="width: 10%;">
     <div class="w3-dropdown-hover">
-        <a href="/home" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+        <a href="/home" class="w3-bar-item w3-button w3-padding-large w3-hover-black" data-page="/home">
             <i class="fa-solid fa-house w3-xlarge"></i><br>
             <b>บุพทักษิณ</b>
         </a>
     </div>
     
     <div class="w3-dropdown-hover">
-        <a href="/manageCustomer" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+        <a href="/manageCustomer" class="w3-bar-item w3-button w3-padding-large w3-hover-black" data-page="/manageCustomer">
             <i class="fa-solid fa-cubes w3-xlarge"></i><br>
             <b>ลูกค้า</b>
         </a>
     </div>
     
     <div class="w3-dropdown-hover">
-        <a href="/manageSale" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+        <a href="/manageSale" class="w3-bar-item w3-button w3-padding-large w3-hover-black" data-page="/manageSale">
             <i class="fa-solid fa-keyboard w3-xlarge"></i><br>
             <b>ขาย</b>
         </a>
-        <a href="/reportSaleEntry" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+        <a href="/reportSaleEntry" class="w3-bar-item w3-button w3-padding-large w3-hover-black" data-page="/reportSaleEntry">
             <i class="fa-solid fa-th-list w3-xlarge"></i><br>
             <b>รายการสินค้า</b>
         </a>
     </div>
 
     <div class="w3-dropdown-hover">
-        <a href="/manageStock" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+        <a href="/manageStock" class="w3-bar-item w3-button w3-padding-large w3-hover-black" data-page="/manageStock">
             <i class="fa-solid fa-cubes w3-xlarge"></i><br>
             <b>สต๊อกสินค้า</b>
         </a>
     </div>
     
     <div class="w3-dropdown-hover">
-        <a href="/manageBatch" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+        <a href="/manageBatch" class="w3-bar-item w3-button w3-padding-large w3-hover-black" data-page="/manageBatch">
             <i class="fa-solid fa-cubes w3-xlarge"></i><br>
             <b>ชุด</b>
         </a>
     </div>
 
     <div class="w3-dropdown-hover">
-        <a href="/manageProductCost" class="w3-bar-item w3-button w3-padding-large w3-hover-black">
+        <a href="/manageProductCost" class="w3-bar-item w3-button w3-padding-large w3-hover-black" data-page="/manageProductCost">
             <i class="fa-solid fa-cubes w3-xlarge"></i><br>
             <b>สินค้าและต้นทุน</b>
         </a>
@@ -73,19 +80,19 @@
                 <i class="fa-solid fa-folder-open w3-xlarge"></i><br>
                 <b>ต้นทุน</b>
             </a> -->
-            <a href="/manageType" class="w3-bar-item w3-button w3-hover-black">
+            <a href="/manageType" class="w3-bar-item w3-button w3-hover-black" data-page="/manageType">
                 <i class="fa-solid fa-folder-open w3-xlarge"></i><br>
                 <b>ประเภท</b>
             </a>
-            <a href="/manageSize" class="w3-bar-item w3-button w3-hover-black">
+            <a href="/manageSize" class="w3-bar-item w3-button w3-hover-black" data-page="/manageSize">
                 <i class="fa-solid fa-folder-open w3-xlarge"></i><br>
                 <b>ไซส์</b>
             </a>
-            <a href="/manageGrade" class="w3-bar-item w3-button w3-hover-black">
+            <a href="/manageGrade" class="w3-bar-item w3-button w3-hover-black" data-page="/manageGrade">
                 <i class="fa-solid fa-folder-open w3-xlarge"></i><br>
                 <b>เกรด</b>
             </a>
-            <a href="/manageSharp" class="w3-bar-item w3-button w3-hover-black">
+            <a href="/manageSharp" class="w3-bar-item w3-button w3-hover-black" data-page="/manageSharp">
                 <i class="fa-solid fa-folder-open w3-xlarge"></i><br>
                 <b>รูปร่าง</b>
             </a>
@@ -98,3 +105,18 @@
         </button>
     </form>
 </nav>
+
+<script>
+    // เพิ่ม class active ให้เมนูที่ตรงกับ URL ปัจจุบัน
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('nav a[data-page]');
+        
+        navLinks.forEach(link => {
+            const pagePath = link.getAttribute('data-page');
+            if (currentPath === pagePath) {
+                link.classList.add('nav-active');
+            }
+        });
+    });
+</script>

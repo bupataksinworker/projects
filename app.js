@@ -134,10 +134,12 @@ app.use('/export', exportRouter);
 app.listen(3000, async () => {
   console.log('🚀 Server running on port 3000');
   
-  // เรียก export อัตโนมัติหลัง server เริ่มทำงาน
+  // เรียก export อัตโนมัติหลัง server เริ่มทำงาน 30 นาที
+  const AUTO_EXPORT_DELAY = 30 * 60 * 1000; // 30 นาที = 1,800,000 มิลลิวินาที
+  
   setTimeout(async () => {
     try {
-      console.log('🔄 Starting auto export...');
+      console.log('🔄 Starting auto export (after 30 minutes)...');
       const nodeExport = require('./lib/nodeExport');
       const fs = require('fs');
       const pathModule = require('path');
@@ -252,5 +254,7 @@ app.listen(3000, async () => {
     } catch (error) {
       console.error('❌ Auto export failed:', error.message);
     }
-  }, 3000); // รอ 3 วินาที หลัง server เริ่มทำงาน
+  }, AUTO_EXPORT_DELAY); // รอ 30 นาที หลัง server เริ่มทำงาน
+  
+  console.log(`⏰ Auto export scheduled to run in 30 minutes`);
 });
